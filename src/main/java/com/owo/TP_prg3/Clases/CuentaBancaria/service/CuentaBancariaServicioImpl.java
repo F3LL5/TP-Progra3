@@ -1,0 +1,92 @@
+package com.owo.TP_prg3.Clases.CuentaBancaria.service;
+
+import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CreateCuentaBancariaDTO;
+import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CuentaBancariaDTO;
+import com.owo.TP_prg3.Clases.CuentaBancaria.dto.UpdateCuentaBancariaDTO;
+import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancaria;
+import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancariaRepositorio;
+import com.owo.TP_prg3.Clases.Entidad.modelo.EntidadRepositorio;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import jakarta.persistence.EntityNotFoundException;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class CuentaBancariaServicioImpl implements CuentaBancariaServicio {
+
+    @Autowired
+    private CuentaBancariaRepositorio cuentaBancariaRepositorio;
+    @Autowired
+    private EntidadRepositorio entidadRepositorio;
+
+    private CuentaBancariaDTO convertirA_DTO(CuentaBancaria cuentaBancaria) {
+        return new CuentaBancariaDTO(
+                cuentaBancaria.getCuentaBancariaId(),
+                cuentaBancaria.getEntidad() != null ? cuentaBancaria.getEntidad().getEntidad_id() : null,
+                cuentaBancaria.getSaldo()
+        );
+    }
+
+    private CuentaBancaria convertirA_CuentaBancaria(CreateCuentaBancariaDTO cuentaBancariaDTO) {
+        CuentaBancaria cuentaBancaria = new CuentaBancaria();
+
+        entidadRepositorio.findById(cuentaBancariaDTO.getEntidadId())
+                .ifPresentOrElse(
+                        cuentaBancaria::setEntidad,
+                        () -> { throw new EntityNotFoundException("Entidad con ID " + cuentaBancariaDTO.getEntidadId() + " no encontrada."); }
+                );
+
+        cuentaBancaria.setSaldo(cuentaBancariaDTO.getSaldo());
+        return cuentaBancaria;
+    }
+
+    @Override
+    public List<CuentaBancariaDTO> getAllCuentasBancarias() {
+        return cuentaBancariaRepositorio.findAll()
+                .stream()
+                .map(this::convertirA_DTO)
+                .toList();
+    }
+
+    @Override
+    public Optional<CuentaBancariaDTO> getCuentaBancariaById(Long id) {
+        return cuentaBancariaRepositorio.findById(id).map(this::convertirA_DTO);
+    }
+
+    @Override
+    public CuentaBancariaDTO createCuentaBancaria(CreateCuentaBancariaDTO createCuentaBancariaDTO) {
+        CuentaBancaria cuentaBancaria = convertirA_CuentaBancaria(createCuentaBancariaDTO);
+        CuentaBancaria savedCuentaBancaria = cuentaBancariaRepositorio.save(cuentaBancaria);
+        return convertirA_DTO(savedCuentaBancaria);
+    }
+
+    @Override
+    public Optional<CuentaBancariaDTO> updateCuentaBancaria(Long id, UpdateCuentaBancariaDTO updateCuentaBancariaDTO) {
+        return cuentaBancariaRepositorio.findById(id)
+                .map(cuentaBancaria -> {
+                    if (updateCuentaBancariaDTO.getEntidadId() != null) {
+                        entidadRepositorio.findById(updateCuentaBancariaDTO.getEntidadId())
+                                .ifPresentOrElse(
+                                        cuentaBancaria::setEntidad,
+                                        () -> { throw new EntityNotFoundException("Entidad con ID " + updateCuentaBancariaDTO.getEntidadId() + " no encontrada."); }
+                                );
+                    }
+                    if (updateCuentaBancariaDTO.getSaldo() != null) {
+                        cuentaBancaria.setSaldo(updateCuentaBancariaDTO.getSaldo());
+                    }
+                    CuentaBancaria updatedCuentaBancaria = cuentaBancariaRepositorio.save(cuentaBancaria);
+                    return convertirA_DTO(updatedCuentaBancaria);
+                });
+    }
+
+    @Override
+    public boolean deleteCuentaBancaria(Long id) {
+        if (cuentaBancariaRepositorio.existsById(id)) {
+            cuentaBancariaRepositorio.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+}

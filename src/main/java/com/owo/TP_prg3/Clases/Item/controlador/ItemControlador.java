@@ -4,6 +4,7 @@ import com.owo.TP_prg3.Clases.Item.dto.CreateItemDTO;
 import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import com.owo.TP_prg3.Clases.Item.dto.UpdateItemDTO;
 import com.owo.TP_prg3.Clases.Item.service.ItemServicioImpl;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,11 +27,11 @@ public class ItemControlador {
 
     @GetMapping("/{id}")
     public ItemDTO getItemById(@PathVariable Long id){
-        return itemServicio.getProductById(id).get();
+        return itemServicio.getProductById(id).orElse(null);
     }
 
     @PostMapping
-    public ItemDTO createItem(@RequestBody CreateItemDTO createItemDTO){
+    public ItemDTO createItem(@Valid @RequestBody CreateItemDTO createItemDTO){
         return itemServicio.createProduct(createItemDTO);
     }
 
@@ -40,7 +41,7 @@ public class ItemControlador {
     }
 
     @PatchMapping("/{id}")
-    public Optional<ItemDTO> updateItem(@PathVariable Long id, @RequestBody UpdateItemDTO updateItemDTO){
+    public Optional<ItemDTO> updateItem(@PathVariable Long id,@Valid @RequestBody UpdateItemDTO updateItemDTO){
         return itemServicio.updateProduct(id, updateItemDTO);
     }
 }

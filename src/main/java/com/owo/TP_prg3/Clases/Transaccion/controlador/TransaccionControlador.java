@@ -1,0 +1,47 @@
+package com.owo.TP_prg3.Clases.Transaccion.controlador;
+
+import com.owo.TP_prg3.Clases.Transaccion.dto.CreateTransaccionDTO;
+import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
+import com.owo.TP_prg3.Clases.Transaccion.dto.UpdateTransaccionDTO;
+import com.owo.TP_prg3.Clases.Transaccion.service.TransaccionServicioImpl;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/transacciones")
+public class TransaccionControlador {
+
+    @Autowired
+    private TransaccionServicioImpl transaccionServicio;
+
+    @GetMapping
+    public ResponseEntity<List<TransaccionDTO>> getAllTransacciones(){
+        List<TransaccionDTO> transacciones = transaccionServicio.getAllTransacciones();
+        return ResponseEntity.ok(transacciones);
+    }
+
+    @GetMapping("/{id}")
+    public TransaccionDTO getTransaccionById(@PathVariable Long id){
+        return transaccionServicio.getTransaccionById(id).orElse(null);
+    }
+
+    @PostMapping
+    public TransaccionDTO createTransaccion(@Valid @RequestBody CreateTransaccionDTO createTransaccionDTO){
+        return transaccionServicio.createTransaccion(createTransaccionDTO);
+    }
+
+    @DeleteMapping("/{id}")
+    public boolean deleteTransaccion(@PathVariable Long id){
+        return transaccionServicio.deleteTransaccion(id);
+    }
+
+    @PatchMapping("/{id}")
+    public Optional<TransaccionDTO> updateTransaccion(@PathVariable Long id, @Valid @RequestBody UpdateTransaccionDTO updateTransaccionDTO){
+        return transaccionServicio.updateTransaccion(id, updateTransaccionDTO);
+    }
+}
