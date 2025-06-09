@@ -1,4 +1,4 @@
-package com.owo.TP_prg3.Clases;
+package com.owo.TP_prg3.Clases.Item.modelo;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -11,7 +11,8 @@ import lombok.NoArgsConstructor;
 @Data @AllArgsConstructor @NoArgsConstructor
 
 public class Item {
-    @Id @Column(name = "item_id", unique = true)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "item_id", unique = true)
     protected Long item_id;
 
     @Column(nullable = false)

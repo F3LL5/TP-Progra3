@@ -2,74 +2,75 @@ create database if not exists comercio;
 use comercio;
 
 create table if not exists items (
-item_id long auto_increment primary key,
-nombre varchar(100) not null,
-categoria varchar(100) not null,
-costo decimal(10,2) not null
+	item_id int auto_increment primary key,
+	nombre varchar(100) not null,
+	categoria varchar(100) not null,
+	costo decimal(10,2) not null
 );
 
 create table entidades(
-entidad_id long auto_increment primary key,
-nombre varchar(100),
-tipo varchar(100) not null,
-edad int not null,
-dni int not null unique
+	entidad_id int auto_increment primary key,
+	nombre varchar(100),
+	tipo_entidad varchar(100) not null,
+	rol varchar(100) not null,
+    edad int not null,
+	dni int not null unique
 );
 
 create table if not exists puestos(
-puesto_id long auto_increment primary key,
-nombre varchar(100) not null,
-duenio_id long,
-foreign key(duenio_id) references entidades(entidad_id)
+	puesto_id int auto_increment primary key,
+	nombre varchar(100) not null,
+	duenio_id int not null,
+	foreign key(duenio_id) references entidades(entidad_id)
 	on delete cascade
 	on update cascade
 );
 
 create table if not exists inventario_puesto (
-inventario_id long auto_increment primary key,
-cantidad int not null,
-puesto_id long,
-item_id long,
-stock_min int not null,
-precio_venta decimal(10,2) not null,
-foreign key(puesto_id) references entidades(entidad_id),
-foreign key(item_id) references items(item_id)
+	inventario_id int auto_increment primary key,
+	cantidad int not null,
+	puesto_id int,
+	item_id int,
+	stock_min int not null,
+	precio_venta decimal(10,2) not null,
+	foreign key(puesto_id) references entidades(entidad_id),
+	foreign key(item_id) references items(item_id)
 	on delete cascade
 	on update cascade
 );
 
 create table if not exists detalles_pedido (
-detalle_pedido_id long auto_increment primary key,
-item_id long,
-cantidad int not null,
-precio_total decimal(10,2) not null,
-foreign key(item_id) references items(item_id)
+	detalle_pedido_id int auto_increment primary key,
+	item_id int,
+	cantidad int not null,
+	precio_total decimal(10,2) not null,
+	foreign key(item_id) references items(item_id)
 	on delete cascade
 	on update cascade
 );
 
 create table if not exists cuenta_bancaria(
-cuenta_bancaria_id long auto_increment primary key,
-entidad_id long,
-saldo decimal (10,2) not null,
-foreign key(entidad_id) references entidades(entidad_id) 
+	cuenta_bancaria_id int auto_increment primary key,
+	entidad_id int,
+	saldo decimal (10,2) not null,
+	foreign key(entidad_id) references entidades(entidad_id) 
 );
 
 create table if not exists transacciones(
-transaccion_id long auto_increment primary key,
-tipo varchar(100) not null,
-fecha timestamp default current_timestamp,
-monto decimal(10,2) not null,
-cuenta_origen_id long,
-cuenta_destino_id long,
-foreign key(cuenta_origen_id) references cuenta_bancaria(cuenta_bancaria_id),
-foreign key(cuenta_destino_id) references cuenta_bancaria(cuenta_bancaria_id) 
+	transaccion_id int auto_increment primary key,
+	tipo varchar(100) not null,
+	fecha timestamp default current_timestamp,
+	monto decimal(10,2) not null,
+	cuenta_origen_id int,
+	cuenta_destino_id int,
+	foreign key(cuenta_origen_id) references cuenta_bancaria(cuenta_bancaria_id),
+	foreign key(cuenta_destino_id) references cuenta_bancaria(cuenta_bancaria_id) 
 );
 
 create table if not exists pedidos (
-pedido_id long auto_increment primary key,
-transaccion_id long,
-detalle_pedido_id long,
-foreign key(transaccion_id) references transacciones(transaccion_id),
-foreign key(detalle_pedido_id) references detalles_pedido(detalle_pedido_id)
+	pedido_id int auto_increment primary key,
+	transaccion_id int,
+	detalle_pedido_id int,
+	foreign key(transaccion_id) references transacciones(transaccion_id),
+	foreign key(detalle_pedido_id) references detalles_pedido(detalle_pedido_id)
 );
