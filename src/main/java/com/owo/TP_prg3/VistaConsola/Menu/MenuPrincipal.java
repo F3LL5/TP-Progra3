@@ -31,6 +31,7 @@ public class MenuPrincipal {
                 1. Gestionar Entidades
                 2. Gestionar Usuarios
                 3. Gestionar Puestos
+                4. Gestionar Items
                 0. Salir
                 Ingrese una opción: """);
             opcion = scanner.nextLine();
@@ -47,6 +48,10 @@ public class MenuPrincipal {
                 case "3" -> {
                     MenuPuestos menuPuestos = new MenuPuestos(authService.getAuthHeader());
                     menuPuestos.gestionar();
+                }
+                case "4" ->{
+                    MenuItem menuItem=new MenuItem(authService.getAuthHeader());
+                    menuItem.gestionar();
                 }
                 case "0" -> System.out.println("Saliendo del programa.");
                 default -> System.out.println("Opción no válida.");
