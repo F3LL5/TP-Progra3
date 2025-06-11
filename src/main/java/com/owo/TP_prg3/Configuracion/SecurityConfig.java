@@ -1,6 +1,6 @@
 package com.owo.TP_prg3.Configuracion;
 
-import com.owo.TP_prg3.VistaConsola.Login.service.CustomUserDetailsService;
+import com.owo.TP_prg3.VistaConsola.User.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,11 +26,15 @@ public class SecurityConfig {
         return http
                 .authorizeHttpRequests(
                         authorize -> authorize
-                                // El endpoint de login y perfil debe ser accesible para autenticarse
-                                .requestMatchers("/api/auth/login", "/api/auth/profile").authenticated()
-                                // El resto de endpoints de entidades ahora requieren autenticación
-                                .requestMatchers("/api/entidades/**").hasAnyRole("ADMIN", "DUENO") // Ejemplo de roles
-                                .anyRequest().denyAll() // Denegar todo lo demás por seguridad
+                                .requestMatchers("/api/auth/profile").authenticated()
+                                // El rol ADMIN tiene acceso total a CUALQUIER endpoint bajo /api/
+                                .requestMatchers("/api/**").hasRole("ADMIN")
+
+                                // Si hubiera otros roles con acceso específico a ciertas rutas
+                                // Por ejemplo, si "DUENO" solo puede ver algunas cosas:
+                                // .requestMatchers("/api/puestos/**").hasAnyRole("ADMIN", "DUENO")
+
+                                .anyRequest().denyAll()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -1,4 +1,4 @@
-package com.owo.TP_prg3.VistaConsola.Login.modelo;
+package com.owo.TP_prg3.VistaConsola.User.modelo;
 
 import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
 import jakarta.persistence.*;

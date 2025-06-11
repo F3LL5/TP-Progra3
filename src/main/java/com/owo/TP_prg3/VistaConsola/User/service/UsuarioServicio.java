@@ -1,13 +1,13 @@
-package com.owo.TP_prg3.VistaConsola.Login.service;
+package com.owo.TP_prg3.VistaConsola.User.service;
 
 
 import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
 import com.owo.TP_prg3.Clases.Entidad.modelo.EntidadRepositorio;
 import com.owo.TP_prg3.Clases.Entidad.modelo.TipoEntidad;
-import com.owo.TP_prg3.VistaConsola.Login.dto.CreateUsuarioDTO;
-import com.owo.TP_prg3.VistaConsola.Login.modelo.RolUsuario;
-import com.owo.TP_prg3.VistaConsola.Login.modelo.Usuario;
-import com.owo.TP_prg3.VistaConsola.Login.modelo.UsuarioRepositorio;
+import com.owo.TP_prg3.VistaConsola.User.dto.CreateUsuarioDTO;
+import com.owo.TP_prg3.VistaConsola.User.modelo.RolUsuario;
+import com.owo.TP_prg3.VistaConsola.User.modelo.Usuario;
+import com.owo.TP_prg3.VistaConsola.User.modelo.UsuarioRepositorio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

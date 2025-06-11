@@ -15,9 +15,6 @@ public class MenuEntidades {
         this.authHeader = authHeader;
     }
 
-    /**
-     * Muestra el menú de gestión de Entidades y maneja la lógica.
-     */
     public void gestionar() throws IOException {
         String opcion;
         do {
@@ -76,10 +73,14 @@ public class MenuEntidades {
         System.out.print("Contraseña: ");
         String password = scanner.nextLine();
 
-        String jsonBody = String.format(
-                "{\"nombre\":\"%s\", \"tipoEntidad\":\"%s\", \"rol\":\"%s\", \"edad\":%d, \"dni\":%d, \"password\":\"%s\"}",
-                nombre, tipoEntidad, rol, edad, dni, password
-        );
+        String jsonBody = "{" +
+                "\"nombre\":\"" + nombre + "\",\n" +
+                "\"tipoEntidad\":\"" + tipoEntidad + "\",\n" +
+                "\"rol\":\"" + rol + "\",\n" +
+                "\"edad\":" + edad + ",\n" +
+                "\"dni\":" + dni + ",\n" +
+                "\"password\":\"" + password + "\"\n" +
+                "}";
         HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
     }
 
@@ -95,15 +96,52 @@ public class MenuEntidades {
         System.out.println("Ingrese los nuevos datos (deje en blanco para no modificar):");
         System.out.print("Nuevo Nombre: ");
         String nombre = scanner.nextLine();
+        System.out.print("Nuevo Tipo de Entidad [DUENO_PUESTO, CLIENTE, PROVEEDOR, ADMIN] (deje en blanco para no modificar): ");
+        String tipoEntidad = scanner.nextLine();
+        System.out.print("Nuevo Rol (ej: ADMIN, DUENO) (deje en blanco para no modificar): ");
+        String rol = scanner.nextLine();
+        System.out.print("Nueva Edad (deje en blanco para no modificar): ");
+        String edadStr = scanner.nextLine();
 
-        StringBuilder jsonBodyBuilder = new StringBuilder("{");
-        if (!nombre.isEmpty()) jsonBodyBuilder.append(String.format("\"nombre\":\"%s\",", nombre));
-        // Agrega aquí más campos si deseas que se puedan modificar
+        StringBuilder jsonBodyBuilder = new StringBuilder("{\n");
+        boolean firstField = true;
 
-        if (jsonBodyBuilder.length() > 1) {
-            jsonBodyBuilder.deleteCharAt(jsonBodyBuilder.length() - 1); // Elimina la última coma
+        // Agrega el campo 'nombre' si no está vacío
+        if (!nombre.isEmpty()) {
+            jsonBodyBuilder.append("  \"nombre\":\"").append(nombre).append("\"");
+            firstField = false;
         }
-        jsonBodyBuilder.append("}");
+
+        if (!tipoEntidad.isEmpty()) {
+            if (!firstField) {
+                jsonBodyBuilder.append(",\n");
+            }
+            jsonBodyBuilder.append("  \"tipoEntidad\":\"").append(tipoEntidad).append("\"");
+            firstField = false;
+        }
+
+        if (!rol.isEmpty()) {
+            if (!firstField) {
+                jsonBodyBuilder.append(",\n");
+            }
+            jsonBodyBuilder.append("  \"rol\":\"").append(rol).append("\"");
+            firstField = false;
+        }
+
+        if (!edadStr.isEmpty()) {
+            try {
+                int edad = Integer.parseInt(edadStr);
+                if (!firstField) {
+                    jsonBodyBuilder.append(",\n");
+                }
+                jsonBodyBuilder.append("  \"edad\":").append(edad);
+                firstField = false;
+            } catch (NumberFormatException e) {
+                System.err.println("Advertencia: Edad inválida. Este campo no será modificado.");
+            }
+        }
+
+        jsonBodyBuilder.append("\n}");
 
         HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBodyBuilder.toString());
     }

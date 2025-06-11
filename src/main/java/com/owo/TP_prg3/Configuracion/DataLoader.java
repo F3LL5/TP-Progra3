@@ -4,9 +4,9 @@ package com.owo.TP_prg3.Configuracion;
 import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
 import com.owo.TP_prg3.Clases.Entidad.modelo.EntidadRepositorio;
 import com.owo.TP_prg3.Clases.Entidad.modelo.TipoEntidad;
-import com.owo.TP_prg3.VistaConsola.Login.dto.CreateUsuarioDTO;
-import com.owo.TP_prg3.VistaConsola.Login.modelo.UsuarioRepositorio;
-import com.owo.TP_prg3.VistaConsola.Login.service.UsuarioServicio;
+import com.owo.TP_prg3.VistaConsola.User.dto.CreateUsuarioDTO;
+import com.owo.TP_prg3.VistaConsola.User.modelo.UsuarioRepositorio;
+import com.owo.TP_prg3.VistaConsola.User.service.UsuarioServicio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -50,8 +50,6 @@ public class DataLoader implements CommandLineRunner {
             }
 
             // 2. Crear el usuario si no existe ya un usuario con ese DNI.
-            // Esto evita intentar crear el mismo usuario si la aplicación se reinicia
-            // y la entidad ya fue creada en una ejecución anterior.
             if (!usuarioRepositorio.existsByDni(adminDni)) {
                 CreateUsuarioDTO adminDto = new CreateUsuarioDTO();
                 adminDto.setDni(adminDni);
@@ -60,7 +58,6 @@ public class DataLoader implements CommandLineRunner {
                 try {
                     usuarioServicio.crearUsuario(adminDto);
                     System.out.println("Usuario ADMINISTRADOR '" + adminPassword + "' creado con DNI: " + adminDni);
-                    System.out.println("¡ADVERTENCIA: Recuerda cambiar la contraseña por defecto de este usuario ADMINISTRADOR después del primer inicio de sesión!");
                 } catch (RuntimeException e) {
                     System.err.println("Error al crear el usuario administrador inicial: " + e.getMessage());
                 }

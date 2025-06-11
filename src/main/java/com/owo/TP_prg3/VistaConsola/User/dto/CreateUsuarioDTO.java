@@ -1,4 +1,4 @@
-package com.owo.TP_prg3.VistaConsola.Login.dto;
+package com.owo.TP_prg3.VistaConsola.User.dto;
 
 import lombok.Data;
 
