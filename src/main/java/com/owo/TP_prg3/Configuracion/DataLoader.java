@@ -44,7 +44,7 @@ public class DataLoader implements CommandLineRunner {
                 adminEntidad.setNombre("Administrador Inicial");
                 adminEntidad.setTipoEntidad(TipoEntidad.ADMIN);
                 adminEntidad.setEdad(0);
-                adminEntidad.setRol("ADMIN");
+                adminEntidad.setRol("ROLE_ADMIN");
                 entidadRepositorio.save(adminEntidad);
                 System.out.println("Entidad ADMINISTRADOR creada para DNI: " + adminDni);
             }

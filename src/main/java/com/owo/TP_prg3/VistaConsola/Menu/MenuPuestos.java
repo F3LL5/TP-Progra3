@@ -56,11 +56,11 @@ public class MenuPuestos {
     private void agregar() throws IOException {
         System.out.println("AGREGAR NUEVO PUESTO");
         System.out.println("Ingrese NOMBRE: "); String nombre = scanner.next();
-        System.out.println("Ingrese ID dueño: "); String id = scanner.next();
+        System.out.println("Ingrese ID dueño: "); String duenioId = scanner.next();
 
         String jsonBody = String.format(
-                "{\"nombre\":\"%s\", \"duenio\": {\"entidad_id\": %s}}",
-                nombre, id
+                "{\"nombre\":\"%s\", \"duenioId\": %s}",
+                nombre, duenioId
         );
         HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
     }
