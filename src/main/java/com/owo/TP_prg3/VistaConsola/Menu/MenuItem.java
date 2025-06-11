@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class MenuItem {
-    private static final String API_URL = "http://localhost:8080/api/usuarios";
+    private static final String API_URL = "http://localhost:8080/api/items";
     private final String authHeader;
     private final Scanner scanner = new Scanner(System.in);
 
@@ -62,12 +62,13 @@ private void agregar() throws IOException {
     String categoria= scanner.nextLine();
 
     System.out.println("Costo del item:");
-    double costo=scanner.nextDouble();
+    double costo= Double.parseDouble(scanner.nextLine());
 
-    String jsonBody = String.format(
-            "{\"nombre\":\"%s\", \"categoria\":\"%s\", \"costo\":\"%s\"}",
-            nombre, categoria, costo
-    );
+    String jsonBody = "{" +
+            "\"nombre\":\"" + nombre + "\",\n" +
+            "\"categoria\":\"" + categoria + "\",\n" +
+            "\"costo\":" + costo + "\n" +
+            "}";
     HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
 }
 
