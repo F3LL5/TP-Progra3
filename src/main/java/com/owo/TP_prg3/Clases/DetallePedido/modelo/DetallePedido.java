@@ -1,5 +1,6 @@
 package com.owo.TP_prg3.Clases.DetallePedido.modelo;
 
+import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -23,8 +24,13 @@ public class DetallePedido {
     @Column(name = "detalle_pedido_id")
     protected Long detallePedidoId;
 
+    // Muchos detalles de pedido pueden pertenecer a un solo pedido
     @ManyToOne
-    @JoinColumn(name = "item_id", referencedColumnName = "item_id")
+    @JoinColumn(name = "pedido_id", referencedColumnName = "pedido_id", nullable = false)
+    protected Pedido pedido;
+
+    @ManyToOne
+    @JoinColumn(name = "item_id", referencedColumnName = "item_id", nullable = false)
     protected Item item;
 
     @Column(nullable = false)

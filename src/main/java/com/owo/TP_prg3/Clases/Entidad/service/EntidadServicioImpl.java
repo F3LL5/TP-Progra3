@@ -92,4 +92,12 @@ public class EntidadServicioImpl implements EntidadServicio {
         }
         return false;
     }
+
+    @Override
+    public Optional<Entidad> findByDni(int dni) {
+        return entidadRepositorio.findAll()
+                .stream()
+                .filter(entidad -> entidad.getDni() == dni)
+                .findFirst();
+    }
 }

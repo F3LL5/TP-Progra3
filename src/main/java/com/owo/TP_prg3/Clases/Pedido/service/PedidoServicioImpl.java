@@ -1,5 +1,7 @@
 package com.owo.TP_prg3.Clases.Pedido.service;
 
+import com.owo.TP_prg3.Clases.DetallePedido.dto.DetallePedidoDTO;
+import com.owo.TP_prg3.Clases.DetallePedido.service.DetallePedidoServicioImpl;
 import com.owo.TP_prg3.Clases.Pedido.dto.CreatePedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.UpdatePedidoDTO;
@@ -14,6 +16,7 @@ import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class PedidoServicioImpl implements PedidoServicio {
@@ -22,53 +25,49 @@ public class PedidoServicioImpl implements PedidoServicio {
     private PedidoRepositorio pedidoRepositorio;
     @Autowired
     private TransaccionRepositorio transaccionRepositorio;
+
     @Autowired
-    private DetallePedidoRepositorio detallePedidoRepositorio;
+    private DetallePedidoServicioImpl detallePedidoServicio;
+
 
     private PedidoDTO convertirA_DTO(Pedido pedido) {
+        List<DetallePedidoDTO> detalles = pedido.getDetallesPedido().stream()
+                        .map(detalle -> detallePedidoServicio.getDetallePedidoById(detalle.getDetallePedidoId()).orElse(null))
+                        .filter(java.util.Objects::nonNull)
+                        .collect(Collectors.toList());
+
         return new PedidoDTO(
                 pedido.getPedidoId(),
-                pedido.getTransaccion() != null ? pedido.getTransaccion().getTransaccionId() : null,
-                pedido.getDetallePedido() != null ? pedido.getDetallePedido().getDetallePedidoId() : null
+                pedido.getTransaccion().getTransaccionId(),
+                detalles
         );
-    }
-
-    private Pedido convertirA_Pedido(CreatePedidoDTO pedidoDTO) {
-        Pedido pedido = new Pedido();
-
-        transaccionRepositorio.findById(pedidoDTO.getTransaccionId())
-                .ifPresentOrElse(
-                        pedido::setTransaccion,
-                        () -> { throw new EntityNotFoundException("Transaccion con ID " + pedidoDTO.getTransaccionId() + " no encontrada."); }
-                );
-
-        detallePedidoRepositorio.findById(pedidoDTO.getDetallePedidoId())
-                .ifPresentOrElse(
-                        pedido::setDetallePedido,
-                        () -> { throw new EntityNotFoundException("DetallePedido con ID " + pedidoDTO.getDetallePedidoId() + " no encontrado."); }
-                );
-
-        return pedido;
     }
 
     @Override
     public List<PedidoDTO> getAllPedidos() {
-        return pedidoRepositorio.findAll()
-                .stream()
+        return pedidoRepositorio.findAll().stream()
                 .map(this::convertirA_DTO)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override
     public Optional<PedidoDTO> getPedidoById(Long id) {
-        return pedidoRepositorio.findById(id).map(this::convertirA_DTO);
+        return pedidoRepositorio.findById(id)
+                .map(this::convertirA_DTO);
     }
 
     @Override
     @Transactional
     public PedidoDTO createPedido(CreatePedidoDTO createPedidoDTO) {
-        Pedido pedido = convertirA_Pedido(createPedidoDTO);
-        Pedido savedPedido = pedidoRepositorio.save(pedido);
+        Pedido nuevoPedido = new Pedido();
+
+        transaccionRepositorio.findById(createPedidoDTO.getTransaccionId())
+                .ifPresentOrElse(
+                        nuevoPedido::setTransaccion,
+                        () -> { throw new EntityNotFoundException("Transaccion con ID " + createPedidoDTO.getTransaccionId() + " no encontrada."); }
+                );
+
+        Pedido savedPedido = pedidoRepositorio.save(nuevoPedido);
         return convertirA_DTO(savedPedido);
     }
 
@@ -79,22 +78,9 @@ public class PedidoServicioImpl implements PedidoServicio {
                 .map(pedido -> {
                     if (updatePedidoDTO.getTransaccionId() != null) {
                         transaccionRepositorio.findById(updatePedidoDTO.getTransaccionId())
-                                .ifPresentOrElse(
-                                        pedido::setTransaccion,
-                                        () -> { throw new EntityNotFoundException("Transaccion con ID " + updatePedidoDTO.getTransaccionId() + " no encontrada."); }
-                                );
-                    } else if (pedido.getTransaccion() != null) { // Handle explicit null to dissociate
+                                .ifPresentOrElse( pedido::setTransaccion, () -> { throw new EntityNotFoundException("Transaccion con ID " + updatePedidoDTO.getTransaccionId() + " no encontrada."); });
+                    } else if (pedido.getTransaccion() != null) {
                         pedido.setTransaccion(null);
-                    }
-
-                    if (updatePedidoDTO.getDetallePedidoId() != null) {
-                        detallePedidoRepositorio.findById(updatePedidoDTO.getDetallePedidoId())
-                                .ifPresentOrElse(
-                                        pedido::setDetallePedido,
-                                        () -> { throw new EntityNotFoundException("DetallePedido con ID " + updatePedidoDTO.getDetallePedidoId() + " no encontrado."); }
-                                );
-                    } else if (pedido.getDetallePedido() != null) { // Handle explicit null to dissociate
-                        pedido.setDetallePedido(null);
                     }
 
                     Pedido updatedPedido = pedidoRepositorio.save(pedido);

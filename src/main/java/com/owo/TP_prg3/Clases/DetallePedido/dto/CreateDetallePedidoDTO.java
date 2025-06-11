@@ -12,14 +12,17 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateDetallePedidoDTO {
-    @NotNull
+    @NotNull(message = "El ID del pedido es obligatorio.")
+    protected Long pedidoId;
+
+    @NotNull(message = "El ID del item es obligatorio.")
     protected Long itemId;
 
-    @NotNull
-    @Min(value = 1)
+    @NotNull(message = "La cantidad es obligatoria.")
+    @Min(value = 1, message = "La cantidad debe ser al menos 1.")
     protected Integer cantidad;
 
-    @NotNull
-    @Min(value = 0)
+    @NotNull(message = "El precio total es obligatorio.")
+    @Min(value = 0, message = "El precio total no puede ser negativo.")
     protected BigDecimal precioTotal;
 }

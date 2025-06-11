@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class DetallePedidoDTO {
     protected Long detallePedidoId;
+    protected Long pedidoId;
     protected Long itemId;
     protected Integer cantidad;
     protected BigDecimal precioTotal;

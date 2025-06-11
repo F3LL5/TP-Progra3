@@ -18,8 +18,9 @@ public class Entidad {
     @Column(nullable = false)
     protected String nombre;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "tipo_entidad", nullable = false)
-    protected String tipoEntidad;
+    private TipoEntidad tipoEntidad;
 
     @Column(nullable = false)
     protected String rol;

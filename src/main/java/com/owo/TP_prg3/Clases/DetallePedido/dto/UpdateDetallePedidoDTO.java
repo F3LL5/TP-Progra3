@@ -11,6 +11,9 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateDetallePedidoDTO {
+
+    protected Long pedidoId;
+
     protected Long itemId;
 
     @Min(value = 1)
@@ -18,4 +21,5 @@ public class UpdateDetallePedidoDTO {
 
     @Min(value = 0)
     protected BigDecimal precioTotal;
+
 }

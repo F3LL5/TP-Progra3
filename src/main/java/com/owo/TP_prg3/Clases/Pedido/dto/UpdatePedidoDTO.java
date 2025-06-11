@@ -9,5 +9,4 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UpdatePedidoDTO {
     protected Long transaccionId;
-    protected Long detallePedidoId;
 }

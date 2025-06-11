@@ -6,6 +6,7 @@ import com.owo.TP_prg3.Clases.DetallePedido.dto.UpdateDetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedido;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedidoRepositorio;
 import com.owo.TP_prg3.Clases.Item.modelo.ItemRepositorio;
+import com.owo.TP_prg3.Clases.Pedido.modelo.PedidoRepositorio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityNotFoundException;
@@ -20,10 +21,13 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
     private DetallePedidoRepositorio detallePedidoRepositorio;
     @Autowired
     private ItemRepositorio itemRepositorio;
+    @Autowired
+    private PedidoRepositorio pedidoRepositorio;
 
     private DetallePedidoDTO convertirA_DTO(DetallePedido detallePedido) {
         return new DetallePedidoDTO(
                 detallePedido.getDetallePedidoId(),
+                detallePedido.getPedido() != null ? detallePedido.getPedido().getPedidoId() : null, // Obtener ID del pedido
                 detallePedido.getItem() != null ? detallePedido.getItem().getItem_id() : null,
                 detallePedido.getCantidad(),
                 detallePedido.getPrecioTotal()
@@ -59,8 +63,26 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
 
     @Override
     public DetallePedidoDTO createDetallePedido(CreateDetallePedidoDTO createDetallePedidoDTO) {
-        DetallePedido detallePedido = convertirA_DetallePedido(createDetallePedidoDTO);
-        DetallePedido savedDetallePedido = detallePedidoRepositorio.save(detallePedido);
+        DetallePedido nuevoDetallePedido = new DetallePedido();
+
+        // Buscar y establecer el Pedido
+        pedidoRepositorio.findById(createDetallePedidoDTO.getPedidoId())
+                .ifPresentOrElse(
+                        nuevoDetallePedido::setPedido,
+                        () -> { throw new EntityNotFoundException("Pedido con ID " + createDetallePedidoDTO.getPedidoId() + " no encontrado."); }
+                );
+
+        // Buscar y establecer el Item
+        itemRepositorio.findById(createDetallePedidoDTO.getItemId())
+                .ifPresentOrElse(
+                        nuevoDetallePedido::setItem,
+                        () -> { throw new EntityNotFoundException("Item con ID " + createDetallePedidoDTO.getItemId() + " no encontrado."); }
+                );
+
+        nuevoDetallePedido.setCantidad(createDetallePedidoDTO.getCantidad());
+        nuevoDetallePedido.setPrecioTotal(createDetallePedidoDTO.getPrecioTotal());
+
+        DetallePedido savedDetallePedido = detallePedidoRepositorio.save(nuevoDetallePedido);
         return convertirA_DTO(savedDetallePedido);
     }
 
@@ -68,6 +90,16 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
     public Optional<DetallePedidoDTO> updateDetallePedido(Long id, UpdateDetallePedidoDTO updateDetallePedidoDTO) {
         return detallePedidoRepositorio.findById(id)
                 .map(detallePedido -> {
+                    // Actualizar el Pedido si se proporciona
+                    if (updateDetallePedidoDTO.getPedidoId() != null) {
+                        pedidoRepositorio.findById(updateDetallePedidoDTO.getPedidoId())
+                                .ifPresentOrElse(
+                                        detallePedido::setPedido,
+                                        () -> { throw new EntityNotFoundException("Pedido con ID " + updateDetallePedidoDTO.getPedidoId() + " no encontrado."); }
+                                );
+                    }
+
+                    // Actualizar el Item si se proporciona
                     if (updateDetallePedidoDTO.getItemId() != null) {
                         itemRepositorio.findById(updateDetallePedidoDTO.getItemId())
                                 .ifPresentOrElse(

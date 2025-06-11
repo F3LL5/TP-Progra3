@@ -1,5 +1,6 @@
 package com.owo.TP_prg3.Clases.Entidad.dto;
 
+import com.owo.TP_prg3.Clases.Entidad.modelo.TipoEntidad;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -14,7 +15,7 @@ public class UpdateEntidadDTO {
     protected String nombre;
 
     @Size(max = 100, message = "El tipo de entidad no debe pasar los 100 caracteres.")
-    protected String tipoEntidad;
+    protected TipoEntidad tipoEntidad;
 
     @Size(max = 100, message = "El rol no debe pasar los 100 caracteres.")
     protected String rol;
