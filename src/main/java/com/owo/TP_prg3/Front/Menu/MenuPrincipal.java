@@ -1,15 +1,15 @@
-package com.owo.TP_prg3.VistaConsola.Menu;
+package com.owo.TP_prg3.Front.Menu;
 
 
-import com.owo.TP_prg3.VistaConsola.AuthService;
-import com.owo.TP_prg3.VistaConsola.UsuarioAutenticado;
+import com.owo.TP_prg3.Front.Auntenticacion.AuthService;
+import com.owo.TP_prg3.Front.Auntenticacion.UsuarioAutenticado;
 
 import java.io.IOException;
 import java.util.Scanner;
 
 public class MenuPrincipal {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         System.out.println("--- Cliente de Consola para API ---");
         AuthService authService = new AuthService();
         UsuarioAutenticado usuario = null;

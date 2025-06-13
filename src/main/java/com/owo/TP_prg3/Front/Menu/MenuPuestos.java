@@ -1,6 +1,6 @@
-package com.owo.TP_prg3.VistaConsola.Menu;
+package com.owo.TP_prg3.Front.Menu;
 
-import com.owo.TP_prg3.VistaConsola.HttpService;
+import com.owo.TP_prg3.Front.HttpService;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -12,7 +12,7 @@ public class MenuPuestos {
 
     public MenuPuestos(String authHeader) {this.authHeader = authHeader;}
 
-    public void gestionar() throws IOException{
+    public void gestionar() throws IOException, InterruptedException {
         String opcion;
         do {
             mostrar_menu();
@@ -42,18 +42,18 @@ public class MenuPuestos {
                 INGRESE LA OPCIÓN QUE DESEE:\s""");
     }
 
-    private void obtener_todos() throws IOException {
+    private void obtener_todos() throws IOException, InterruptedException {
         System.out.println("OBTENIENDO PUESTOS...");
         HttpService.realizarPeticion("GET", API_URL, authHeader, null);
     }
 
-    private void buscar_x_id() throws IOException {
+    private void buscar_x_id() throws IOException, InterruptedException {
         System.out.println("INGRESE ID DEL PUESTO: ");
         String id = scanner.next();
         HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null);
     }
 
-    private void agregar() throws IOException {
+    private void agregar() throws IOException, InterruptedException {
         System.out.println("AGREGAR NUEVO PUESTO");
         System.out.println("Ingrese NOMBRE: "); String nombre = scanner.next();
         System.out.println("Ingrese ID dueño: "); String duenioId = scanner.next();
@@ -65,13 +65,13 @@ public class MenuPuestos {
         HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
     }
 
-    private void eliminar() throws IOException {
+    private void eliminar() throws IOException, InterruptedException {
         System.out.println("Ingrese ID del puesto que desea eliminar: ");
         String id = scanner.next();
         HttpService.realizarPeticion("DELETE", API_URL + "/" + id, authHeader, null);
     }
 
-    private void modificar() throws IOException {
+    private void modificar() throws IOException, InterruptedException {
         System.out.println("Ingrese ID del puesto que desea modificar: ");
         String id = scanner.next();
         System.out.println("Ingrese los nuevos datos: ");

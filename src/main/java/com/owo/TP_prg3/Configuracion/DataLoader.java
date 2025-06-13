@@ -4,9 +4,9 @@ package com.owo.TP_prg3.Configuracion;
 import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
 import com.owo.TP_prg3.Clases.Entidad.modelo.EntidadRepositorio;
 import com.owo.TP_prg3.Clases.Entidad.modelo.TipoEntidad;
-import com.owo.TP_prg3.VistaConsola.User.dto.CreateUsuarioDTO;
-import com.owo.TP_prg3.VistaConsola.User.modelo.UsuarioRepositorio;
-import com.owo.TP_prg3.VistaConsola.User.service.UsuarioServicio;
+import com.owo.TP_prg3.Clases.User.dto.CreateUsuarioDTO;
+import com.owo.TP_prg3.Clases.User.modelo.UsuarioRepositorio;
+import com.owo.TP_prg3.Clases.User.service.UsuarioServicio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -38,7 +38,7 @@ public class DataLoader implements CommandLineRunner {
             String adminPassword = "0000"; // Contraseña temporal
 
             // 1. Verificar si ya existe una entidad con el DNI del administrador, si no, crearla.
-            if (!entidadRepositorio.findByDni(adminDni).isPresent()) {
+            if (entidadRepositorio.findByDni(adminDni).isEmpty()) {
                 Entidad adminEntidad = new Entidad();
                 adminEntidad.setDni(adminDni);
                 adminEntidad.setNombre("Administrador Inicial");

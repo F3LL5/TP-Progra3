@@ -1,6 +1,6 @@
 package com.owo.TP_prg3.Configuracion;
 
-import com.owo.TP_prg3.VistaConsola.User.service.CustomUserDetailsService;
+import com.owo.TP_prg3.Clases.User.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

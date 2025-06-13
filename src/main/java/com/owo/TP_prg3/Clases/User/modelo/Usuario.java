@@ -1,4 +1,4 @@
-package com.owo.TP_prg3.VistaConsola.User.modelo;
+package com.owo.TP_prg3.Clases.User.modelo;
 
 import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
 import jakarta.persistence.*;
@@ -18,7 +18,7 @@ public class Usuario {
     private Integer dni;
 
     @Column(nullable = false)
-    private String password; // ¡Aquí va la contraseña!
+    private String password;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

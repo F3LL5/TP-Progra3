@@ -1,8 +1,8 @@
-package com.owo.TP_prg3.VistaConsola.User.service;
+package com.owo.TP_prg3.Clases.User.service;
 
-import com.owo.TP_prg3.VistaConsola.User.modelo.Usuario;
+import com.owo.TP_prg3.Clases.User.modelo.Usuario;
 
-import com.owo.TP_prg3.VistaConsola.User.modelo.UsuarioRepositorio;
+import com.owo.TP_prg3.Clases.User.modelo.UsuarioRepositorio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;

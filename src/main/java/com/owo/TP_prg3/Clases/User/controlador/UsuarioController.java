@@ -1,7 +1,7 @@
-package com.owo.TP_prg3.VistaConsola.User.controlador;
+package com.owo.TP_prg3.Clases.User.controlador;
 
-import com.owo.TP_prg3.VistaConsola.User.dto.CreateUsuarioDTO;
-import com.owo.TP_prg3.VistaConsola.User.service.UsuarioServicio;
+import com.owo.TP_prg3.Clases.User.dto.CreateUsuarioDTO;
+import com.owo.TP_prg3.Clases.User.service.UsuarioServicio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

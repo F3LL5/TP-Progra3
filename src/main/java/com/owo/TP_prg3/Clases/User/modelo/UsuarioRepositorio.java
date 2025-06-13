@@ -1,4 +1,4 @@
-package com.owo.TP_prg3.VistaConsola.User.modelo;
+package com.owo.TP_prg3.Clases.User.modelo;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;

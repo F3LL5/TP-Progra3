@@ -1,6 +1,6 @@
-package com.owo.TP_prg3.VistaConsola.Menu;
+package com.owo.TP_prg3.Front.Menu;
 
-import com.owo.TP_prg3.VistaConsola.HttpService;
+import com.owo.TP_prg3.Front.HttpService;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -15,7 +15,7 @@ public class MenuEntidades {
         this.authHeader = authHeader;
     }
 
-    public void gestionar() throws IOException {
+    public void gestionar() throws IOException, InterruptedException {
         String opcion;
         do {
             mostrarMenu();
@@ -47,18 +47,18 @@ public class MenuEntidades {
 
     // --- Métodos de operaciones CRUD ---
 
-    private void obtenerTodas() throws IOException {
+    private void obtenerTodas() throws IOException, InterruptedException {
         System.out.println("\n--- Obteniendo todas las entidades... ---");
         HttpService.realizarPeticion("GET", API_URL, authHeader, null);
     }
 
-    private void buscarPorId() throws IOException {
+    private void buscarPorId() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID de la entidad: ");
         String id = scanner.nextLine();
         HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null);
     }
 
-    private void agregar() throws IOException {
+    private void agregar() throws IOException, InterruptedException {
         System.out.println("\n--- Agregar nueva entidad ---");
         System.out.print("Nombre: ");
         String nombre = scanner.nextLine();
@@ -84,13 +84,13 @@ public class MenuEntidades {
         HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
     }
 
-    private void eliminar() throws IOException {
+    private void eliminar() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID de la entidad a eliminar: ");
         String id = scanner.nextLine();
         HttpService.realizarPeticion("DELETE", API_URL + "/" + id, authHeader, null);
     }
 
-    private void modificar() throws IOException {
+    private void modificar() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID de la entidad a modificar: ");
         String id = scanner.nextLine();
         System.out.println("Ingrese los nuevos datos (deje en blanco para no modificar):");

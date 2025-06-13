@@ -1,3 +1,4 @@
+drop database comercio;
 create database if not exists comercio;
 use comercio;
 
@@ -39,16 +40,6 @@ create table if not exists inventario_puesto (
 	on update cascade
 );
 
-create table if not exists detalles_pedido (
-	detalle_pedido_id int auto_increment primary key,
-	item_id int,
-	cantidad int not null,
-	precio_total decimal(10,2) not null,
-	foreign key(item_id) references items(item_id)
-	on delete cascade
-	on update cascade
-);
-
 create table if not exists cuenta_bancaria(
 	cuenta_bancaria_id int auto_increment primary key,
 	entidad_id int,
@@ -70,7 +61,19 @@ create table if not exists transacciones(
 create table if not exists pedidos (
 	pedido_id int auto_increment primary key,
 	transaccion_id int,
-	detalle_pedido_id int,
-	foreign key(transaccion_id) references transacciones(transaccion_id),
-	foreign key(detalle_pedido_id) references detalles_pedido(detalle_pedido_id)
+	foreign key(transaccion_id) references transacciones(transaccion_id)
 );
+
+create table if not exists detalles_pedido (
+	detalle_pedido_id int auto_increment primary key,
+    pedido_id int not null,
+	item_id int not null,
+	cantidad int not null,
+	precio_total decimal(10,2) not null,
+	foreign key(pedido_id) references pedidos(pedido_id),
+	foreign key(item_id) references items(item_id)
+	on delete cascade
+	on update cascade
+);
+
+

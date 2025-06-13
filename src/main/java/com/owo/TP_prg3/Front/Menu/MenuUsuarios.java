@@ -1,6 +1,6 @@
-package com.owo.TP_prg3.VistaConsola.Menu;
+package com.owo.TP_prg3.Front.Menu;
 
-import com.owo.TP_prg3.VistaConsola.HttpService;
+import com.owo.TP_prg3.Front.HttpService;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -14,7 +14,7 @@ public class MenuUsuarios {
         this.authHeader = authHeader;
     }
 
-    public void gestionar() throws IOException {
+    public void gestionar() throws IOException, InterruptedException {
         String opcion;
         do {
             System.out.print("""
@@ -32,7 +32,7 @@ public class MenuUsuarios {
         } while (!opcion.equals("0"));
     }
 
-    private void crearUsuario() throws IOException {
+    private void crearUsuario() throws IOException, InterruptedException {
         System.out.println("\n--- Crear Nuevo Usuario ---");
         System.out.print("Ingrese el DNI de la entidad existente para la cual crear el usuario: ");
         int dni = Integer.parseInt(scanner.nextLine());

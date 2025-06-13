@@ -1,4 +1,4 @@
-package com.owo.TP_prg3.VistaConsola;
+package com.owo.TP_prg3.Front.Auntenticacion;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
+// Clase para obtener usuarios
+// Bibliografía: https://dev.to/abhi9720/a-comprehensive-guide-to-jwt-authentication-with-spring-boot-117p
 public class AuthController {
 
     @GetMapping("/profile")
