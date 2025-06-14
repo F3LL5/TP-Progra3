@@ -68,7 +68,7 @@ public class MenuItem {
 
     private void listado() throws IOException, InterruptedException {
         System.out.println("\n--- Obteniendo todas las entidades... ---");
-        HttpService.realizarPeticion("GET", API_URL + "/lista", authHeader, null);
+        HttpService.realizarPeticion("GET", API_URL + "/listado", authHeader, null);
     }
 
     //POST

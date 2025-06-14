@@ -21,12 +21,15 @@ public class MenuUsuarios {
             System.out.print("""
                 \n--- MENÚ DE GESTIÓN DE USUARIOS ---
                 1. Crear nuevo usuario para una entidad existente
+                2. Listar todos los usuarios.
+                
                 0. Volver al menú principal
-                Ingrese una opción: """);
-            opcion = scanner.nextLine();
+                Ingrese una opción:""");
+            opcion = Escaner.stringValido(scanner);
 
             switch (opcion) {
                 case "1" -> crearUsuario();
+                case "2" -> listado();
                 case "0" -> {}
                 default -> System.out.println("Opción no válida.");
             }
@@ -44,5 +47,10 @@ public class MenuUsuarios {
         String jsonBody = String.format("{\"dni\":%d, \"password\":\"%s\"}", dni, password);
 
         HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
+    }
+
+    private void listado() throws IOException, InterruptedException {
+        System.out.println("\n--- Obteniendo todas las entidades... ---");
+        HttpService.realizarPeticion("GET", API_URL + "/listado", authHeader, null);
     }
 }

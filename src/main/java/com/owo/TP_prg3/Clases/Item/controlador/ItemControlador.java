@@ -26,17 +26,9 @@ public class ItemControlador {
         return ResponseEntity.ok(items);
     }
 
-    @GetMapping("/lista")
+    @GetMapping("/listado")
     public String obtenerTodosString(){
-        StringBuilder s = new StringBuilder();
-        List<ItemDTO> items = itemServicio.getAllProducts();
-
-        items.forEach(t -> s
-                .append( t.getItem_id() + ". ")
-                .append(t)
-                .append(",\n"));
-
-        return s.toString();
+        return itemServicio.listado();
     }
 
     @GetMapping("/{id}")

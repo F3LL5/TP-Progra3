@@ -51,6 +51,16 @@ public class ItemServicioImpl implements ItemServicio{
     }
 
     @Override
+    public String listado(){
+        StringBuilder s = new StringBuilder();
+        getAllProducts().forEach(i -> s
+                .append( i.getItem_id() + ". ")
+                .append( i )
+                .append(",\n"));
+        return s.toString();
+    }
+
+    @Override
     public ItemDTO createProduct(CreateItemDTO createItemDTO) {
         Item item = convertirA_Item(createItemDTO);
         Item itemRegistrado = itemRepositorio.save(item);
