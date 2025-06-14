@@ -61,13 +61,18 @@ public class ItemServicioImpl implements ItemServicio{
     public Optional<ItemDTO> updateProduct(Long id, UpdateItemDTO updateItemDTO) {
         return itemRepositorio.findById(id)
                 .map(item -> {
-                    item.setNombre(updateItemDTO.getNombre());
-                    item.setCategoria(updateItemDTO.getCategoria());
-                    item.setCosto(updateItemDTO.getCosto());
+                    if (updateItemDTO.getNombre() != null) {
+                        item.setNombre(updateItemDTO.getNombre());
+                    }
+                    if (updateItemDTO.getCategoria() != null) {
+                        item.setCategoria(updateItemDTO.getCategoria());
+                    }
+                    if (updateItemDTO.getCosto() != null) {
+                        item.setCosto(updateItemDTO.getCosto());
+                    }
                     Item itemModificado = itemRepositorio.save(item);
                     return convertirA_DTO(itemModificado);
                 });
-
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.owo.TP_prg3.Clases.Item.controlador;
 import com.owo.TP_prg3.Clases.Item.dto.CreateItemDTO;
 import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import com.owo.TP_prg3.Clases.Item.dto.UpdateItemDTO;
+import com.owo.TP_prg3.Clases.Item.modelo.Item;
 import com.owo.TP_prg3.Clases.Item.service.ItemServicioImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,19 @@ public class ItemControlador {
     public ResponseEntity<List<ItemDTO>> getAllItems(){
         List<ItemDTO> items = itemServicio.getAllProducts();
         return ResponseEntity.ok(items);
+    }
+
+    @GetMapping("/lista")
+    public String obtenerTodosString(){
+        StringBuilder s = new StringBuilder();
+        List<ItemDTO> items = itemServicio.getAllProducts();
+
+        items.forEach(t -> s
+                .append( t.getItem_id() + ". ")
+                .append(t)
+                .append(",\n"));
+
+        return s.toString();
     }
 
     @GetMapping("/{id}")

@@ -44,7 +44,7 @@ public class HttpService {
             response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
             System.out.println( "Código de estado: " + response.statusCode() + " " + (response.body().isEmpty() ? "No Message" : "OK") );
-            System.out.println( "Cuerpo de la respuesta:" + response.body() );
+            System.out.println( "Cuerpo de la respuesta:\n" + response.body() );
 
         } catch (IOException | InterruptedException e) {
             System.err.println("Error durante la petición HTTP: " + e.getMessage());

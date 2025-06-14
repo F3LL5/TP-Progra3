@@ -25,6 +25,7 @@ public abstract class Escaner {
         while (true){
             try {
                 Double d = scanner.nextDouble();
+                scanner.nextLine();
                 return d;
             } catch (InputMismatchException e){
                 System.out.print("Formato no valido. Ej. 1,25: ");

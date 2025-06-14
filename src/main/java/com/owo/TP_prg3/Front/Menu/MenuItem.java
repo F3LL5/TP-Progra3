@@ -20,13 +20,16 @@ public class MenuItem {
         String opcion;
         do {
             mostrarMenu();
-            opcion = scanner.nextLine();
+            opcion = Escaner.stringValido(scanner);
             switch (opcion) {
                 case "1" -> obtenerTodas();
                 case "2" -> buscarPorId();
                 case "3" -> agregar();
                 case "4" -> eliminar();
                 case "5" -> modificar();
+
+                case "1.2" -> listado();
+
                 case "0" -> {} // Salir
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
@@ -43,11 +46,15 @@ public class MenuItem {
                 3. Agregar
                 4. Eliminar
                 5. Modificar
+                
+                1.2 Listado
+                
                 0. Salir
                 Ingrese la opción:""");
     }
 
     //Metodos
+    //GET
     private void obtenerTodas() throws IOException, InterruptedException {
         System.out.println("\n--- Obteniendo todas las entidades... ---");
         HttpService.realizarPeticion("GET", API_URL, authHeader, null);
@@ -58,6 +65,13 @@ public class MenuItem {
         Integer id = Escaner.enteroValido(scanner);
         HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null);
     }
+
+    private void listado() throws IOException, InterruptedException {
+        System.out.println("\n--- Obteniendo todas las entidades... ---");
+        HttpService.realizarPeticion("GET", API_URL + "/lista", authHeader, null);
+    }
+
+    //POST
     private void agregar() throws IOException, InterruptedException {
         System.out.println("\n--- Agregar nuevo item ---");
 
@@ -77,32 +91,51 @@ public class MenuItem {
         HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
     }
 
+    //DELETE
     private void eliminar() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID del item a eliminar: ");
         Integer id = Escaner.enteroValido(scanner);
         HttpService.realizarPeticion("DELETE", API_URL + "/" + id, authHeader, null);
     }
 
+    //PATCH
     private void modificar() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID del item a modificar: ");
         Integer id = Escaner.enteroValido(scanner);
+        System.out.println();
 
-        System.out.println("Ingrese los nuevos datos: ");
-        System.out.print("Nuevo Nombre (Deje en blanco para no modificar): ");
-        String nombre = Escaner.stringValido(scanner);
-        System.out.print("Nueva Categoria Deje en blanco para no modificar: ");
-        String categoria = Escaner.stringValido(scanner);
-        System.out.print("Nuevo Costo Deje en blanco para no modificar: ");
-        Double costo = Escaner.doubleValido(scanner);
+        System.out.print("""
+                ATRIBUTO A MODIFICAR:
+                1. Nombre
+                2. Categoria
+                3. Costo
+                0. Cancelar
+                Ingrese una opcion:""");
+        Integer opcion = Escaner.enteroValido(scanner);
+        if (opcion != 0 ) System.out.print("Ingrese el nuevo valor: ");
 
-        String jsonBody = "{" +
-                "\"nombre\":\"" + nombre + "\",\n" +
-                "\"categoria\":\"" + categoria + "\",\n" +
-                "\"costo\":" + costo + "\n" +
-                "}";
+        String jsonBody = "";
+        switch (opcion){
+            case 1 -> {
+                String nombre = Escaner.stringValido(scanner);
+                jsonBody = "{\"nombre\":\"" +  nombre + "\"}" ;
+            }
+            case 2 -> {
+                String categoria = Escaner.stringValido(scanner);
+                jsonBody = "{\"categoria\":\"" + categoria + "\"}";
+            }
+            case 3 -> {
+                Double costo = Escaner.doubleValido(scanner);
+                jsonBody = "{\"costo\":"  + costo + "\"}";
+            }
+            case 0 -> {}
+            default -> {
+                System.out.println("Opcion no valida.");
+                return;
+            }
+        }
 
         HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody);
     }
-
 
    }

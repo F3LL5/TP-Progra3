@@ -3,6 +3,7 @@ package com.owo.TP_prg3.Front.Menu;
 
 import com.owo.TP_prg3.Front.Auntenticacion.AuthService;
 import com.owo.TP_prg3.Front.Auntenticacion.UsuarioAutenticado;
+import com.owo.TP_prg3.Utilidades.Escaner;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -34,7 +35,7 @@ public class MenuPrincipal {
                 4. Gestionar Items
                 0. Salir
                 Ingrese una opción: """);
-            opcion = scanner.nextLine();
+            opcion = Escaner.stringValido(scanner);
 
             switch (opcion) {
                 case "1" -> {
