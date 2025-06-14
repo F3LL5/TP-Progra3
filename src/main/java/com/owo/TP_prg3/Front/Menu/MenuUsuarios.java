@@ -1,6 +1,7 @@
 package com.owo.TP_prg3.Front.Menu;
 
 import com.owo.TP_prg3.Front.HttpService;
+import com.owo.TP_prg3.Utilidades.Escaner;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -35,9 +36,9 @@ public class MenuUsuarios {
     private void crearUsuario() throws IOException, InterruptedException {
         System.out.println("\n--- Crear Nuevo Usuario ---");
         System.out.print("Ingrese el DNI de la entidad existente para la cual crear el usuario: ");
-        int dni = Integer.parseInt(scanner.nextLine());
+        int dni = Escaner.enteroValido(scanner);
         System.out.print("Ingrese la contraseña para el nuevo usuario: ");
-        String password = scanner.nextLine();
+        String password = Escaner.stringValido(scanner);
 
         // El backend se encargará de buscar la entidad, verificar su tipo y asignar el rol.
         String jsonBody = String.format("{\"dni\":%d, \"password\":\"%s\"}", dni, password);

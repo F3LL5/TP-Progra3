@@ -78,7 +78,7 @@ public class PuestoServicioImpl implements PuestoServicio {
                                         puesto::setDuenio,
                                         () -> { throw new EntityNotFoundException("Entidad (dueño) con ID " + updatePuestoDTO.getDuenioId() + " no encontrada."); }
                                 );
-                    } else if (puesto.getDuenio() != null) { // Handle explicit null to dissociate
+                    } else if (puesto.getDuenio() != null) { // Para desasociar el dueño del puesto
                         puesto.setDuenio(null);
                     }
                     Puesto updatedPuesto = puestoRepositorio.save(puesto);

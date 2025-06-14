@@ -19,11 +19,11 @@ public class Entidad {
     protected String nombre;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "tipo_entidad", nullable = false)
-    private TipoEntidad tipoEntidad;
+    @Column(name = "rol", nullable = false)
+    private RolEntidad rolEntidad;
 
-    @Column(nullable = false)
-    protected String rol;
+    @Column(name = "tipo_entidad", nullable = false)
+    protected String tipoEntidad;
 
     @Column(nullable = false)
     protected Integer edad;

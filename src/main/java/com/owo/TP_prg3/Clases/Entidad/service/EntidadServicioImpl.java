@@ -22,8 +22,8 @@ public class EntidadServicioImpl implements EntidadServicio {
         return new EntidadDTO(
                 entidad.getEntidad_id(),
                 entidad.getNombre(),
+                entidad.getRolEntidad(),
                 entidad.getTipoEntidad(),
-                entidad.getRol(),
                 entidad.getEdad(),
                 entidad.getDni()
         );
@@ -32,8 +32,8 @@ public class EntidadServicioImpl implements EntidadServicio {
     private Entidad convertirA_Entidad(CreateEntidadDTO entidadDTO) {
         Entidad entidad = new Entidad();
         entidad.setNombre(entidadDTO.getNombre());
+        entidad.setRolEntidad(entidadDTO.getRolEntidad());
         entidad.setTipoEntidad(entidadDTO.getTipoEntidad());
-        entidad.setRol(entidadDTO.getRol());
         entidad.setEdad(entidadDTO.getEdad());
         entidad.setDni(entidadDTO.getDni());
         return entidad;
@@ -67,11 +67,11 @@ public class EntidadServicioImpl implements EntidadServicio {
                     if (updateEntidadDTO.getNombre() != null) {
                         entidad.setNombre(updateEntidadDTO.getNombre());
                     }
+                    if (updateEntidadDTO.getRolEntidad() != null) {
+                        entidad.setRolEntidad(updateEntidadDTO.getRolEntidad());
+                    }
                     if (updateEntidadDTO.getTipoEntidad() != null) {
                         entidad.setTipoEntidad(updateEntidadDTO.getTipoEntidad());
-                    }
-                    if (updateEntidadDTO.getRol() != null) {
-                        entidad.setRol(updateEntidadDTO.getRol());
                     }
                     if (updateEntidadDTO.getEdad() != null) {
                         entidad.setEdad(updateEntidadDTO.getEdad());

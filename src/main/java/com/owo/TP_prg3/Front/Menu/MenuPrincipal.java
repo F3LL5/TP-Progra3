@@ -34,7 +34,7 @@ public class MenuPrincipal {
                 3. Gestionar Puestos
                 4. Gestionar Items
                 0. Salir
-                Ingrese una opción: """);
+                Ingrese una opción:""");
             opcion = Escaner.stringValido(scanner);
 
             switch (opcion) {

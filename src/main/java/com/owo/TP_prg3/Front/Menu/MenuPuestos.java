@@ -1,6 +1,7 @@
 package com.owo.TP_prg3.Front.Menu;
 
 import com.owo.TP_prg3.Front.HttpService;
+import com.owo.TP_prg3.Utilidades.Escaner;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -16,7 +17,7 @@ public class MenuPuestos {
         String opcion;
         do {
             mostrar_menu();
-            opcion = scanner.next();
+            opcion = Escaner.stringValido(scanner);
             switch (opcion) {
                 case "1" -> obtener_todos();
                 case "2" -> buscar_x_id();
@@ -39,7 +40,7 @@ public class MenuPuestos {
                 4. Eliminar puesto
                 5. Modificar puesto
                 0. Salir
-                INGRESE LA OPCIÓN QUE DESEE:\s""");
+                INGRESE LA OPCIÓN QUE DESEE:""");
     }
 
     private void obtener_todos() throws IOException, InterruptedException {
@@ -49,42 +50,61 @@ public class MenuPuestos {
 
     private void buscar_x_id() throws IOException, InterruptedException {
         System.out.println("INGRESE ID DEL PUESTO: ");
-        String id = scanner.next();
+        String id = Escaner.stringValido(scanner);
         HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null);
     }
 
     private void agregar() throws IOException, InterruptedException {
         System.out.println("AGREGAR NUEVO PUESTO");
-        System.out.println("Ingrese NOMBRE: "); String nombre = scanner.next();
-        System.out.println("Ingrese ID dueño: "); String duenioId = scanner.next();
+        System.out.print("Ingrese NOMBRE: "); String nombre = Escaner.stringValido(scanner);
+        System.out.print("Ingrese ID dueño: "); String duenioId = Escaner.stringValido(scanner);
 
-        String jsonBody = String.format(
-                "{\"nombre\":\"%s\", \"duenioId\": %s}",
-                nombre, duenioId
-        );
+        String jsonBody = "{" +
+                "\"nombre\":\"" + nombre + "\",\n" +
+                "\"duenioId\":" + duenioId +
+                "}";
         HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
     }
 
     private void eliminar() throws IOException, InterruptedException {
         System.out.println("Ingrese ID del puesto que desea eliminar: ");
-        String id = scanner.next();
+        String id = Escaner.stringValido(scanner);
         HttpService.realizarPeticion("DELETE", API_URL + "/" + id, authHeader, null);
     }
 
     private void modificar() throws IOException, InterruptedException {
         System.out.println("Ingrese ID del puesto que desea modificar: ");
-        String id = scanner.next();
-        System.out.println("Ingrese los nuevos datos: ");
-        System.out.println("Nuevo NOMBRE: "); String nombre = scanner.next();
+        String id = Escaner.stringValido(scanner);
+        System.out.println();
 
-        StringBuilder jsonBodyBuilder = new StringBuilder("{");
-        if (!nombre.isEmpty()) jsonBodyBuilder.append(String.format("\"nombre\":\"%s\",", nombre));
+        System.out.print("""
+                ATRIBUTO A MODIFICAR:
+                1. Nombre
+                2. Dueño (Desasociar/Cambiar)
+                0. Cancelar
+                Ingrese una opción:"""
+        );
+        Integer opcion = Escaner.enteroValido(scanner);
 
-        if (jsonBodyBuilder.length() > 1) {
-            jsonBodyBuilder.deleteCharAt(jsonBodyBuilder.length() - 1);
+        if (opcion != 0 ) System.out.print("Ingrese el nuevo valor: ");
+        String jsonBody = "";
+        switch (opcion){
+            case 1 -> {
+                String nombre = Escaner.stringValido(scanner);
+                jsonBody = "{\"nombre\":\"" +  nombre + "\"}" ;
+            }
+            case 2 -> {
+                System.out.print("(Vacío para desasociar): ");
+                String duenioId = Escaner.stringValido(scanner);
+                jsonBody = "{\"duenioId\":"  + duenioId + "}";
+            }
+            case 0 -> {}
+            default -> {
+                System.out.println("Opcion no válida.");
+                return;
+            }
         }
-        jsonBodyBuilder.append("}");
 
-        HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBodyBuilder.toString());
+        HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody.toString());
     }
 }

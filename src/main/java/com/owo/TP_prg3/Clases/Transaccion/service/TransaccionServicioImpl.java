@@ -103,10 +103,7 @@ public class TransaccionServicioImpl implements TransaccionServicio {
                                         transaccion::setCuentaOrigen,
                                         () -> { throw new EntityNotFoundException("Cuenta de origen con ID " + updateTransaccionDTO.getCuentaOrigenId() + " no encontrada."); }
                                 );
-                    } else if (updateTransaccionDTO.getCuentaOrigenId() == null && transaccion.getCuentaOrigen() != null) {
-                        transaccion.setCuentaOrigen(null);
                     }
-
 
                     if (updateTransaccionDTO.getCuentaDestinoId() != null) {
                         cuentaBancariaRepositorio.findById(updateTransaccionDTO.getCuentaDestinoId())
@@ -114,8 +111,6 @@ public class TransaccionServicioImpl implements TransaccionServicio {
                                         transaccion::setCuentaDestino,
                                         () -> { throw new EntityNotFoundException("Cuenta de destino con ID " + updateTransaccionDTO.getCuentaDestinoId() + " no encontrada."); }
                                 );
-                    } else if (updateTransaccionDTO.getCuentaDestinoId() == null && transaccion.getCuentaDestino() != null) {
-                        transaccion.setCuentaDestino(null);
                     }
 
                     Transaccion updatedTransaccion = transaccionRepositorio.save(transaccion);

@@ -1,6 +1,7 @@
 package com.owo.TP_prg3.Front.Menu;
 
 import com.owo.TP_prg3.Front.HttpService;
+import com.owo.TP_prg3.Utilidades.Escaner;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -19,7 +20,7 @@ public class MenuEntidades {
         String opcion;
         do {
             mostrarMenu();
-            opcion = scanner.nextLine();
+            opcion = Escaner.stringValido(scanner);
             switch (opcion) {
                 case "1" -> obtenerTodas();
                 case "2" -> buscarPorId();
@@ -54,95 +55,86 @@ public class MenuEntidades {
 
     private void buscarPorId() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID de la entidad: ");
-        String id = scanner.nextLine();
+        String id = Escaner.stringValido(scanner);
         HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null);
     }
 
     private void agregar() throws IOException, InterruptedException {
         System.out.println("\n--- Agregar nueva entidad ---");
         System.out.print("Nombre: ");
-        String nombre = scanner.nextLine();
-        System.out.print("Tipo de Entidad [DUENO_PUESTO, CLIENTE, PROVEEDOR, ADMIN]: ");
-        String tipoEntidad = scanner.nextLine();
-        System.out.print("Rol (ej: ADMIN, DUENO): ");
-        String rol = scanner.nextLine();
+        String nombre = Escaner.stringValido(scanner);
+        System.out.print("Tipo de Entidad: ");
+        String tipoEntidad = Escaner.stringValido(scanner);
+        System.out.print("Rol [DUENO_PUESTO, CLIENTE, PROVEEDOR, ADMIN]: ");
+        String rol = Escaner.stringValido(scanner);
         System.out.print("Edad: ");
-        int edad = Integer.parseInt(scanner.nextLine());
+        Integer edad = Escaner.enteroValido(scanner);
         System.out.print("DNI: ");
-        int dni = Integer.parseInt(scanner.nextLine());
-        System.out.print("Contraseña: ");
-        String password = scanner.nextLine();
+        Integer dni = Escaner.enteroValido(scanner);
 
         String jsonBody = "{" +
                 "\"nombre\":\"" + nombre + "\",\n" +
                 "\"tipoEntidad\":\"" + tipoEntidad + "\",\n" +
-                "\"rol\":\"" + rol + "\",\n" +
+                "\"rolEntidad\":\"" + rol + "\",\n" +
                 "\"edad\":" + edad + ",\n" +
-                "\"dni\":" + dni + ",\n" +
-                "\"password\":\"" + password + "\"\n" +
+                "\"dni\":" + dni +
                 "}";
         HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
     }
 
     private void eliminar() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID de la entidad a eliminar: ");
-        String id = scanner.nextLine();
+        String id = Escaner.stringValido(scanner);
         HttpService.realizarPeticion("DELETE", API_URL + "/" + id, authHeader, null);
     }
 
     private void modificar() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID de la entidad a modificar: ");
-        String id = scanner.nextLine();
-        System.out.println("Ingrese los nuevos datos (deje en blanco para no modificar):");
-        System.out.print("Nuevo Nombre: ");
-        String nombre = scanner.nextLine();
-        System.out.print("Nuevo Tipo de Entidad [DUENO_PUESTO, CLIENTE, PROVEEDOR, ADMIN] (deje en blanco para no modificar): ");
-        String tipoEntidad = scanner.nextLine();
-        System.out.print("Nuevo Rol (ej: ADMIN, DUENO) (deje en blanco para no modificar): ");
-        String rol = scanner.nextLine();
-        System.out.print("Nueva Edad (deje en blanco para no modificar): ");
-        String edadStr = scanner.nextLine();
+        String id = Escaner.stringValido(scanner);
+        System.out.println();
 
-        StringBuilder jsonBodyBuilder = new StringBuilder("{\n");
-        boolean firstField = true;
+        System.out.print("""
+                ATRIBUTO A MODIFICAR:
+                1. Nombre
+                2. Tipo de Entidad
+                3. Rol
+                4. Edad
+                5. DNI
+                0. Cancelar
+                Ingrese una opción:"""
+        );
+        Integer opcion = Escaner.enteroValido(scanner);
 
-        // Agrega el campo 'nombre' si no está vacío
-        if (!nombre.isEmpty()) {
-            jsonBodyBuilder.append("  \"nombre\":\"").append(nombre).append("\"");
-            firstField = false;
-        }
-
-        if (!tipoEntidad.isEmpty()) {
-            if (!firstField) {
-                jsonBodyBuilder.append(",\n");
+        if (opcion != 0 ) System.out.print("Ingrese el nuevo valor: ");
+        String jsonBody = "";
+        switch (opcion){
+            case 1 -> {
+                String nombre = Escaner.stringValido(scanner);
+                jsonBody = "{\"nombre\":\"" +  nombre + "\"}" ;
             }
-            jsonBodyBuilder.append("  \"tipoEntidad\":\"").append(tipoEntidad).append("\"");
-            firstField = false;
-        }
-
-        if (!rol.isEmpty()) {
-            if (!firstField) {
-                jsonBodyBuilder.append(",\n");
+            case 2 -> {
+                String tipoEntidad = Escaner.stringValido(scanner);
+                jsonBody = "{\"tipoEntidad\":\"" + tipoEntidad + "\"}";
             }
-            jsonBodyBuilder.append("  \"rol\":\"").append(rol).append("\"");
-            firstField = false;
-        }
-
-        if (!edadStr.isEmpty()) {
-            try {
-                int edad = Integer.parseInt(edadStr);
-                if (!firstField) {
-                    jsonBodyBuilder.append(",\n");
-                }
-                jsonBodyBuilder.append("  \"edad\":").append(edad);
-                firstField = false;
-            } catch (NumberFormatException e) {
-                System.err.println("Advertencia: Edad inválida. Este campo no será modificado.");
+            case 3 -> {
+                System.out.print(" [DUENO_PUESTO, CLIENTE, PROVEEDOR, ADMIN]: ");
+                String rol = Escaner.stringValido(scanner);
+                jsonBody = "{\"rol\":\"" + rol + "\"}";
+            }
+            case 4 -> {
+                Integer edad = Escaner.enteroValido(scanner);
+                jsonBody = "{\"edad\":"  + edad + "}";
+            }
+            case 5 -> {
+                Integer dni = Escaner.enteroValido(scanner);
+                jsonBody = "{\"dni\":"  + dni + "}";
+            }
+            default -> {
+                System.out.println("Opcion no válida.");
+                return;
             }
         }
 
-        jsonBodyBuilder.append("\n}");
-
-        HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBodyBuilder.toString());
+        HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody);
     }
 }

@@ -3,7 +3,7 @@ package com.owo.TP_prg3.Configuracion;
 
 import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
 import com.owo.TP_prg3.Clases.Entidad.modelo.EntidadRepositorio;
-import com.owo.TP_prg3.Clases.Entidad.modelo.TipoEntidad;
+import com.owo.TP_prg3.Clases.Entidad.modelo.RolEntidad;
 import com.owo.TP_prg3.Clases.User.dto.CreateUsuarioDTO;
 import com.owo.TP_prg3.Clases.User.modelo.UsuarioRepositorio;
 import com.owo.TP_prg3.Clases.User.service.UsuarioServicio;
@@ -41,10 +41,10 @@ public class DataLoader implements CommandLineRunner {
             if (entidadRepositorio.findByDni(adminDni).isEmpty()) {
                 Entidad adminEntidad = new Entidad();
                 adminEntidad.setDni(adminDni);
-                adminEntidad.setNombre("Administrador Inicial");
-                adminEntidad.setTipoEntidad(TipoEntidad.ADMIN);
+                adminEntidad.setNombre("1");
+                adminEntidad.setRolEntidad(RolEntidad.ADMIN);
                 adminEntidad.setEdad(0);
-                adminEntidad.setRol("ROLE_ADMIN");
+                adminEntidad.setTipoEntidad("ROLE_ADMIN");
                 entidadRepositorio.save(adminEntidad);
                 System.out.println("Entidad ADMINISTRADOR creada para DNI: " + adminDni);
             }

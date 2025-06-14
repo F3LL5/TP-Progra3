@@ -3,7 +3,7 @@ package com.owo.TP_prg3.Clases.User.service;
 
 import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
 import com.owo.TP_prg3.Clases.Entidad.modelo.EntidadRepositorio;
-import com.owo.TP_prg3.Clases.Entidad.modelo.TipoEntidad;
+import com.owo.TP_prg3.Clases.Entidad.modelo.RolEntidad;
 import com.owo.TP_prg3.Clases.User.dto.CreateUsuarioDTO;
 import com.owo.TP_prg3.Clases.User.modelo.RolUsuario;
 import com.owo.TP_prg3.Clases.User.modelo.Usuario;
@@ -30,8 +30,8 @@ public class UsuarioServicio {
                 .orElseThrow(() -> new RuntimeException("No existe una entidad con el DNI proporcionado."));
 
         // 2. Verificar que la entidad tenga un tipo válido para crear un usuario
-        TipoEntidad tipo = entidadAsociada.getTipoEntidad();
-        if (tipo != TipoEntidad.DUENO_PUESTO && tipo != TipoEntidad.ADMIN) {
+        RolEntidad tipo = entidadAsociada.getRolEntidad();
+        if (tipo != RolEntidad.DUENO_PUESTO && tipo != RolEntidad.ADMIN) {
             throw new RuntimeException("No se puede crear un usuario para una entidad de tipo " + tipo);
         }
 
@@ -45,8 +45,8 @@ public class UsuarioServicio {
         nuevoUsuario.setPassword(passwordEncoder.encode(dto.getPassword())); // Codificar contraseña
         nuevoUsuario.setEntidad(entidadAsociada);
 
-        // 4. Asignar rol basado en el tipo de entidad
-        if (tipo == TipoEntidad.ADMIN) {
+        // 4. Asignar rol basado en el rol de la entidad
+        if (tipo == RolEntidad.ADMIN) {
             nuevoUsuario.setRol(RolUsuario.ROLE_ADMIN);
         } else {
             nuevoUsuario.setRol(RolUsuario.ROLE_DUENO_PUESTO);
