@@ -7,6 +7,7 @@ import com.owo.TP_prg3.Clases.InventarioPuesto.modelo.InventarioPuesto;
 import com.owo.TP_prg3.Clases.InventarioPuesto.modelo.InventarioPuestoRepositorio;
 import com.owo.TP_prg3.Clases.Entidad.modelo.EntidadRepositorio;
 import com.owo.TP_prg3.Clases.Item.modelo.ItemRepositorio;
+import com.owo.TP_prg3.Clases.Puesto.modelo.PuestoRepositorio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityNotFoundException;
@@ -20,7 +21,7 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
     @Autowired
     private InventarioPuestoRepositorio inventarioPuestoRepositorio;
     @Autowired
-    private EntidadRepositorio entidadRepositorio;
+    private PuestoRepositorio puestoRepositorio;
     @Autowired
     private ItemRepositorio itemRepositorio;
 
@@ -28,7 +29,7 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
         return new InventarioPuestoDTO(
                 inventarioPuesto.getInventario_id(),
                 inventarioPuesto.getCantidad(),
-                inventarioPuesto.getPuesto() != null ? inventarioPuesto.getPuesto().getEntidad_id() : null,
+                inventarioPuesto.getPuesto() != null ? inventarioPuesto.getPuesto().getPuestoId() : null,
                 inventarioPuesto.getItem() != null ? inventarioPuesto.getItem().getItem_id() : null,
                 inventarioPuesto.getStockMin(),
                 inventarioPuesto.getPrecioVenta()
@@ -39,7 +40,7 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
         InventarioPuesto inventarioPuesto = new InventarioPuesto();
         inventarioPuesto.setCantidad(inventarioPuestoDTO.getCantidad());
 
-        entidadRepositorio.findById(inventarioPuestoDTO.getPuestoId())
+        puestoRepositorio.findById(inventarioPuestoDTO.getPuestoId())
                 .ifPresentOrElse(
                         inventarioPuesto::setPuesto,
                         () -> { throw new EntityNotFoundException("Puesto con ID " + inventarioPuestoDTO.getPuestoId() + " no encontrado."); }
@@ -84,7 +85,7 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
                         inventarioPuesto.setCantidad(updateInventarioPuestoDTO.getCantidad());
                     }
                     if (updateInventarioPuestoDTO.getPuestoId() != null) {
-                        entidadRepositorio.findById(updateInventarioPuestoDTO.getPuestoId())
+                        puestoRepositorio.findById(updateInventarioPuestoDTO.getPuestoId())
                                 .ifPresentOrElse(
                                         inventarioPuesto::setPuesto,
                                         () -> { throw new EntityNotFoundException("Puesto con ID " + updateInventarioPuestoDTO.getPuestoId() + " no encontrado."); }

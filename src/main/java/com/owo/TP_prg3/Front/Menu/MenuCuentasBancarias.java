@@ -83,7 +83,7 @@ public class MenuCuentasBancarias {
 
 
         String jsonBody = "{" +
-                "\"entidadId\":\"" + id + "\",\n" +
+                "\"entidadId\":" + id + ",\n" +
                 "\"saldo\":" + saldo +
                 "}";
 

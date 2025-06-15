@@ -34,7 +34,7 @@ create table if not exists inventario_puesto (
 	item_id bigint,
 	stock_min int not null,
 	precio_venta decimal(10,2) not null,
-	foreign key(puesto_id) references entidades(entidad_id),
+	foreign key(puesto_id) references puestos(puesto_id),
 	foreign key(item_id) references items(item_id)
 	on delete cascade
 	on update cascade
@@ -44,7 +44,7 @@ create table if not exists cuenta_bancaria(
 	cuenta_bancaria_id bigint auto_increment primary key,
 	entidad_id bigint,
 	saldo decimal (10,2) not null,
-	foreign key(entidad_id) references entidades(entidad_id) 
+	foreign key(entidad_id) references entidades(entidad_id)
 );
 
 create table if not exists transacciones(
@@ -55,7 +55,7 @@ create table if not exists transacciones(
 	cuenta_origen_id bigint,
 	cuenta_destino_id bigint,
 	foreign key(cuenta_origen_id) references cuenta_bancaria(cuenta_bancaria_id),
-	foreign key(cuenta_destino_id) references cuenta_bancaria(cuenta_bancaria_id) 
+	foreign key(cuenta_destino_id) references cuenta_bancaria(cuenta_bancaria_id)
 );
 
 create table if not exists pedidos (
@@ -75,5 +75,4 @@ create table if not exists detalles_pedido (
 	on delete cascade
 	on update cascade
 );
-
 
