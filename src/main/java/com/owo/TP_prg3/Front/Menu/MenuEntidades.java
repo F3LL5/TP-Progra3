@@ -1,7 +1,7 @@
 package com.owo.TP_prg3.Front.Menu;
 
 import com.owo.TP_prg3.Front.HttpService;
-import com.owo.TP_prg3.Utilidades.Escaner;
+import com.owo.TP_prg3.Front.Utilidades.Escaner;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -81,6 +81,7 @@ public class MenuEntidades {
                 "\"edad\":" + edad + ",\n" +
                 "\"dni\":" + dni +
                 "}";
+
         HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
     }
 
@@ -165,7 +166,6 @@ public class MenuEntidades {
             finalUrl = finalUrl.substring(0, finalUrl.length() - 1);
         }
 
-        System.out.println("\n→ Consultando: " + finalUrl);
         HttpService.realizarPeticion("GET", finalUrl, authHeader, null);
     }
 }

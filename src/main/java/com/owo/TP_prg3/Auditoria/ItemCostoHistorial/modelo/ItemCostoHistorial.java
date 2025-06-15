@@ -1,17 +1,17 @@
-package com.owo.TP_prg3.Clases.ItemPrecioHistorial.modelo;
+package com.owo.TP_prg3.Auditoria.ItemCostoHistorial.modelo;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 
 @Entity @Table(name="item_precio_historial")
 @Data @AllArgsConstructor @NoArgsConstructor
 
-
-public class ItemPrecioHistorial {
+public class ItemCostoHistorial {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column (name = "id",unique = true)
     protected Long id_historial_item;
@@ -20,11 +20,11 @@ public class ItemPrecioHistorial {
     protected Long item_id;
 
     @Column (nullable = false)
-    protected Double precio_anterior;
+    protected Double costo_anterior;
 
     @Column (nullable = false)
-    protected Double precio_nuevo;
+    protected Double costo_nuevo;
 
     @Column (nullable = false)
-    protected LocalDate fecha_cambio;
+    protected LocalDateTime fecha_cambio;
 }

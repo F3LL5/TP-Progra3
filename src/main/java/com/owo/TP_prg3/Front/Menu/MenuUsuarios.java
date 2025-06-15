@@ -1,7 +1,7 @@
 package com.owo.TP_prg3.Front.Menu;
 
 import com.owo.TP_prg3.Front.HttpService;
-import com.owo.TP_prg3.Utilidades.Escaner;
+import com.owo.TP_prg3.Front.Utilidades.Escaner;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -46,6 +46,7 @@ public class MenuUsuarios {
         // El backend se encargará de buscar la entidad, verificar su tipo y asignar el rol.
         String jsonBody = String.format("{\"dni\":%d, \"password\":\"%s\"}", dni, password);
 
+        System.out.println("\n→ Consultando(no se olviden de sacar esto por favor): " + jsonBody);
         HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
     }
 

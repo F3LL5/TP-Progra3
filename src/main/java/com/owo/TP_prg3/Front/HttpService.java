@@ -18,6 +18,7 @@ public class HttpService {
 
     //Metodos
     public static HttpResponse<String> realizarPeticion(String method, String urlString, String authHeader, String jsonBody) throws IOException, InterruptedException {
+        System.out.println("Peticion:\""+urlString+"\"");
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                 .uri(URI.create(urlString))
                 .timeout(Duration.ofSeconds(10));

@@ -76,12 +76,11 @@ create table if not exists detalles_pedido (
 	on update cascade
 );
 
-
-create table if not exists item_precio_historial (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    item_id INT,
-    precio_anterior DECIMAL(10,2),
-    precio_nuevo DECIMAL(10,2),
+create table if not exists item_costo_historial (
+    id bigint AUTO_INCREMENT PRIMARY KEY,
+    item_id bigint,
+    costo_anterior DECIMAL(10,2),
+    costo_nuevo DECIMAL(10,2),
     fecha_cambio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     foreign key(item_id) references items(item_id)
 );
@@ -92,11 +91,10 @@ BEFORE UPDATE ON items
 FOR EACH ROW
 BEGIN
     IF OLD.costo <> NEW.costo THEN
-        INSERT INTO item_precio_historial (item_id, costo_anterior, costo_nuevo)
-        VALUES (OLD.item_id, OLD.costo, NEW.costo);
+        INSERT INTO item_precio_historial (item_id, costo_anterior, costo_nuevo, fecha_cambio)
+        VALUES (OLD.item_id, OLD.costo, NEW.costo, now());
     END IF;
 END;
 //
 DELIMITER ;
-
 
