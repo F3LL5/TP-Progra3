@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 public class ItemServicioImpl implements ItemServicio{
@@ -98,15 +99,14 @@ public class ItemServicioImpl implements ItemServicio{
     public List<ItemDTO> filtrarYordenar(String categoria,String orden,String direccion){
 
         List<ItemDTO> itemsdto=getAllProducts();
+        Stream<ItemDTO> itemstream=itemsdto.stream();
 
         if(categoria!=null && !categoria.isEmpty()){
 
-                itemsdto.stream().filter(item -> item.getCategoria().equalsIgnoreCase(categoria))
-                    .toList();
+                itemstream=itemstream.filter(item -> item.getCategoria().equalsIgnoreCase(categoria));
+
         }
-
-
-        if(!orden.isEmpty())
+        if(orden!=null)
         {
             Comparator<ItemDTO> comparador=null;
             switch(orden.toLowerCase())
@@ -120,10 +120,10 @@ public class ItemServicioImpl implements ItemServicio{
             if("desc".equalsIgnoreCase(direccion)){
                 comparador=comparador.reversed();
             }
-            return itemsdto.stream().sorted(comparador).toList();
+            itemstream=itemstream.sorted(comparador);
             }
         }
-        return itemsdto;
+        return itemstream.toList();
     };
 
 
@@ -137,8 +137,7 @@ public class ItemServicioImpl implements ItemServicio{
 
 
 
-   // public List<ItemDTO> ordenarXprecioMayor(){};
-    //public List<ItemDTO> ordenarXprecioMenor(){};
+
 
 
 
