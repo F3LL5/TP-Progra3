@@ -1,7 +1,7 @@
 package com.owo.TP_prg3.Front.Menu;
 
 import com.owo.TP_prg3.Front.HttpService;
-import com.owo.TP_prg3.Utilidades.Escaner;
+import com.owo.TP_prg3.Front.Utilidades.Escaner;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -67,6 +67,7 @@ public class MenuPuestos {
                 "\"nombre\":\"" + nombre + "\",\n" +
                 "\"duenioId\":" + duenioId +
                 "}";
+
         HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
     }
 
@@ -109,7 +110,7 @@ public class MenuPuestos {
             }
         }
 
-        HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody.toString());
+        HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody);
     }
 
     private void buscar_x_nombre() throws IOException, InterruptedException {

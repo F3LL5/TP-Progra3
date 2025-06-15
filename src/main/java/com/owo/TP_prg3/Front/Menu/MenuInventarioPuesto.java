@@ -9,7 +9,7 @@ import java.util.Scanner;
 
 public class MenuInventarioPuesto {
 
-    private static final String API_URL = "http://localhost:8080/api/inventarioPuestos";
+    private static final String API_URL = "http://localhost:8080/api/inventario-puesto";
     private final String authHeader;
     private final Scanner scanner = new Scanner(System.in);
 
@@ -25,7 +25,7 @@ public class MenuInventarioPuesto {
                 case "2" -> buscar_x_id();
                 case "3" -> agregar();
                 case "4" -> eliminar();
-               // case "5" -> //modificar();
+                case "5" -> modificar();
                 case "0" -> {}
                 default -> System.out.println("OPCIÓN INVÁLIDA. VUELVA A INTENTAR");
             }
@@ -58,7 +58,7 @@ public class MenuInventarioPuesto {
 
     private void agregar() throws IOException, InterruptedException {
         System.out.println("AGREGAR NUEVO INVENTARIO");
-        System.out.print("Ingrese cantidad: "); String cantidad = Escaner.stringValido(scanner);
+        System.out.print("Ingrese cantidad: "); Integer cantidad = Escaner.enteroValido(scanner);
         System.out.println("Ingrese id del puesto"); Long puestoId=Long.valueOf(Escaner.enteroValido(scanner));
         System.out.print("Ingrese ID item: "); Long itemId = Long.valueOf(Escaner.enteroValido(scanner));
         System.out.println("Ingrese la cantidad de stock minimo que desea establecer: "); Integer stockMin=Escaner.enteroValido(scanner);
@@ -66,11 +66,11 @@ public class MenuInventarioPuesto {
 
 
         String jsonBody = "{" +
-                "\"cantidad\":" +cantidad + ",\n" +
-                "\"puestoId\":" + puestoId +",\n" +
-                "\"itemId\":" + itemId + ",\n"+
-                "\"stockMin\":" + stockMin + ",\n"+
-                "\"precioVenta\":" + precioVenta + ",\n"+
+                "\"cantidad\":" +cantidad + "," +
+                "\"puestoId\":" + puestoId +"," +
+                "\"itemId\":" + itemId + ","+
+                "\"stockMin\":" + stockMin + ","+
+                "\"precioVenta\":" + precioVenta +
         "}";
         HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
     }
@@ -85,10 +85,55 @@ public class MenuInventarioPuesto {
     }
 
 
+    private void modificar() throws IOException, InterruptedException {
+        System.out.print("Ingrese el ID del inventario a modificar: ");
+        Long id = Long.valueOf(Escaner.enteroValido(scanner));
+        System.out.println();
 
+        System.out.print("""
+                ATRIBUTO A MODIFICAR:
+                1. Cantidad
+                2. Puesto
+                3. Item
+                4. Stock Minimo
+                5. Precio de venta
+                0. Cancelar
+                Ingrese una opción:"""
+        );
+        Integer opcion = Escaner.enteroValido(scanner);
 
+        if (opcion != 0 ) System.out.print("Ingrese el nuevo valor: ");
+        String jsonBody = "";
+        switch (opcion){
+            case 1 -> {
+                Integer cantidad = Escaner.enteroValido(scanner);
+                jsonBody = "{\"cantidad\":" +  cantidad + "}" ;
+            }
+            case 2 -> {
+                Long puestoId = Long.valueOf(Escaner.enteroValido(scanner));
+                jsonBody = "{\"puesto_id\":" + puestoId + "}";
+            }
+            case 3 -> {
+                Long itemId = Long.valueOf(Escaner.enteroValido(scanner));
+                jsonBody = "{\"item_id\":" + itemId + "}";
+            }
+            case 4 -> {
+                Integer stockMin = Escaner.enteroValido(scanner);
+                jsonBody = "{\"stock_min\":"  + stockMin + "}";
+            }
+            case 5 -> {
+                BigDecimal precioVenta = BigDecimal.valueOf(Escaner.enteroValido(scanner));
+                jsonBody = "{\"precio_venta\":"  + precioVenta + "}";
+            }
+            default -> {
+                System.out.println("Opcion no válida.");
+                return;
+            }
+        }
 
+        HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody);
 
+    }
 
 
 

@@ -1,4 +1,4 @@
-package com.owo.TP_prg3.Utilidades;
+package com.owo.TP_prg3.Front.Utilidades;
 
 import java.util.ArrayList;
 import java.util.Arrays;

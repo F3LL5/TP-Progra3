@@ -1,10 +1,9 @@
 package com.owo.TP_prg3.Front.Menu;
 
 import com.owo.TP_prg3.Front.HttpService;
-import com.owo.TP_prg3.Utilidades.Escaner;
+import com.owo.TP_prg3.Front.Utilidades.Escaner;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Scanner;
 
@@ -94,6 +93,7 @@ public class MenuTransacciones {
                 "\"cuentaDestinoId\":" + CuentaDestinoId  +
                 "}";
 
+        System.out.println("\n→ Consultando: " + jsonBody);
         HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
     }
 
@@ -151,6 +151,7 @@ public class MenuTransacciones {
             }
         }
 
+        System.out.println("\n→ Consultando: " + jsonBody);
         HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody);
     }
 

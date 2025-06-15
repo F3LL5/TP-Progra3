@@ -1,13 +1,6 @@
 package com.owo.TP_prg3.Clases.Transaccion.modelo;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,8 +19,9 @@ public class Transaccion {
     @Column(name = "transaccion_id")
     protected Long transaccionId;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 100)
-    protected String tipo;
+    protected TipoTransaccion tipo;
 
     @Column(nullable = false)
     protected LocalDateTime fecha; // Mapeado a TIMESTAMP en DB, default current_timestamp
