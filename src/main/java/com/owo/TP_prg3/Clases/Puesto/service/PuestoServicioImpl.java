@@ -11,8 +11,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityNotFoundException;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 public class PuestoServicioImpl implements PuestoServicio {
@@ -93,5 +95,23 @@ public class PuestoServicioImpl implements PuestoServicio {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public Optional<PuestoDTO> getPuestoByNombre(String nombre) {
+        return getAllPuestos().stream().filter(puesto -> puesto.getNombre().equalsIgnoreCase(nombre)).findFirst();
+    }
+
+    @Override
+    public List<PuestoDTO> ordenarPorNombre(String sortDir) {
+        List<PuestoDTO> allPuestos = getAllPuestos();
+        Stream<PuestoDTO> puestoDTOStream = allPuestos.stream();
+
+        Comparator<PuestoDTO> comparator = Comparator.comparing(PuestoDTO::getNombre);
+        if ("desc".equalsIgnoreCase(sortDir)) {
+            comparator = comparator.reversed();
+        }
+
+        return puestoDTOStream.sorted(comparator).toList();
     }
 }

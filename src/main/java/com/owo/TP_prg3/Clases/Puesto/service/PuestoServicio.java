@@ -13,4 +13,6 @@ public interface PuestoServicio {
     PuestoDTO createPuesto(CreatePuestoDTO createPuestoDTO);
     Optional<PuestoDTO> updatePuesto(Long id, UpdatePuestoDTO updatePuestoDTO);
     boolean deletePuesto(Long id);
+    Optional<PuestoDTO> getPuestoByNombre(String nombre);
+    public List<PuestoDTO> ordenarPorNombre(String sortDir);
 }

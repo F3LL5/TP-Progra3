@@ -24,6 +24,8 @@ public class MenuPuestos {
                 case "3" -> agregar();
                 case "4" -> eliminar();
                 case "5" -> modificar();
+                case "6" -> buscar_x_nombre();
+                case "7" -> ordenar_x_nombre();
                 case "0" -> {}
                 default -> System.out.println("OPCIÓN INVÁLIDA. VUELVA A INTENTAR");
             }
@@ -39,6 +41,8 @@ public class MenuPuestos {
                 3. Agregar puesto
                 4. Eliminar puesto
                 5. Modificar puesto
+                6. Buscar por NOMBRE
+                7. Ordenar por NOMBRES
                 0. Salir
                 INGRESE LA OPCIÓN QUE DESEE:""");
     }
@@ -106,5 +110,21 @@ public class MenuPuestos {
         }
 
         HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody.toString());
+    }
+
+    private void buscar_x_nombre() throws IOException, InterruptedException {
+        System.out.print("--- Ingrese NOMBRE a buscar: ");
+        String nombre = Escaner.stringValido(scanner);
+
+        String url = API_URL + "/buscarPorNombre?nombre=" + nombre;
+        HttpService.realizarPeticion("GET", url, authHeader, null);
+    }
+
+    private void ordenar_x_nombre () throws IOException, InterruptedException {
+        System.out.print("Dirección de orden... (asc / desc): ");
+        String sortDir = Escaner.stringValido(scanner);
+
+        String url = API_URL + "/ordenarPorNombre?sortDir=" + sortDir;
+        HttpService.realizarPeticion("GET", url, authHeader, null);
     }
 }
