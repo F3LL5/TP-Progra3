@@ -8,6 +8,7 @@ import com.owo.TP_prg3.Clases.Item.modelo.ItemRepositorio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -93,4 +94,72 @@ public class ItemServicioImpl implements ItemServicio{
         }
         return false;
     }
+
+    public List<ItemDTO> filtrarYordenar(String categoria,String orden,String direccion){
+
+        List<ItemDTO> itemsdto=getAllProducts();
+
+        if(categoria!=null && !categoria.isEmpty()){
+
+                itemsdto.stream().filter(item -> item.getCategoria().equalsIgnoreCase(categoria))
+                    .toList();
+        }
+
+
+        if(!orden.isEmpty())
+        {
+            Comparator<ItemDTO> comparador=null;
+            switch(orden.toLowerCase())
+            {
+                case "nombre" -> comparador=Comparator.comparing(ItemDTO::getNombre);
+                case "costo" -> comparador=Comparator.comparing(ItemDTO::getCosto);
+                default->throw new RuntimeException("opcion incorrecta");
+            }
+
+            if(comparador !=null){
+            if("desc".equalsIgnoreCase(direccion)){
+                comparador=comparador.reversed();
+            }
+            return itemsdto.stream().sorted(comparador).toList();
+            }
+        }
+        return itemsdto;
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+   // public List<ItemDTO> ordenarXprecioMayor(){};
+    //public List<ItemDTO> ordenarXprecioMenor(){};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

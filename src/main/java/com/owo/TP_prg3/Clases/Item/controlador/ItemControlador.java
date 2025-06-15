@@ -50,4 +50,34 @@ public class ItemControlador {
     public Optional<ItemDTO> updateItem(@PathVariable Long id,@Valid @RequestBody UpdateItemDTO updateItemDTO){
         return itemServicio.updateProduct(id, updateItemDTO);
     }
+
+    @GetMapping("/filtrarYordenar")
+    public List<ItemDTO> filtrarYordenar(
+            @RequestParam(required = false)String categoria,
+            @RequestParam(required = false)String orden,
+            @RequestParam(required = false)String direccion
+    ){
+        return itemServicio.filtrarYordenar(categoria,orden,direccion);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
