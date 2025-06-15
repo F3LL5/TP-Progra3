@@ -5,11 +5,15 @@ import com.owo.TP_prg3.Clases.Entidad.dto.EntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.dto.UpdateEntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
 import com.owo.TP_prg3.Clases.Entidad.modelo.EntidadRepositorio;
+import org.hibernate.cache.spi.support.AbstractRegion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class EntidadServicioImpl implements EntidadServicio {
@@ -99,5 +103,30 @@ public class EntidadServicioImpl implements EntidadServicio {
                 .stream()
                 .filter(entidad -> entidad.getDni() == dni)
                 .findFirst();
+    }
+
+    @Override
+    public List<EntidadDTO> filtrarYOrdenar(String rol_entidad, String sortBy, String sortDir) {
+        List<EntidadDTO> allEntitys = getAllEntidades();
+        Stream<EntidadDTO> entidadDTOStream = allEntitys.stream();
+
+        if (rol_entidad != null && !rol_entidad.isEmpty()) {
+            entidadDTOStream = entidadDTOStream.filter(entidad -> entidad.getRolEntidad().name().equalsIgnoreCase(rol_entidad));
+        }
+
+        if(sortBy != null) {
+            Comparator<EntidadDTO> comparator = null;
+            switch (sortBy.toLowerCase()) {
+                case "nombre" -> comparator = Comparator.comparing(EntidadDTO::getNombre);
+                case "edad" -> comparator = Comparator.comparing(EntidadDTO::getEdad);
+                case "dni" -> comparator = Comparator.comparing(EntidadDTO::getDni);
+                default -> throw new RuntimeException("Dicho criterio NO existe.");
+            }
+            if(comparator != null) if ("desc".equalsIgnoreCase(sortDir)) comparator = comparator.reversed();
+
+            entidadDTOStream = entidadDTOStream.sorted(comparator);
+        }
+
+        return entidadDTOStream.toList();
     }
 }

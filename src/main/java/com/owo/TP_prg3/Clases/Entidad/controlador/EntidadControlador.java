@@ -44,4 +44,13 @@ public class EntidadControlador {
     public Optional<EntidadDTO> updateEntidad(@PathVariable Long id, @Valid @RequestBody UpdateEntidadDTO updateEntidadDTO){
         return entidadServicio.updateEntidad(id, updateEntidadDTO);
     }
+
+    @GetMapping("/filtrarYOrdenar")
+    public List<EntidadDTO> filtrarYOrdenar(
+            @RequestParam(required = false) String rol_entidad,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDir
+    ) {
+        return entidadServicio.filtrarYOrdenar(rol_entidad, sortBy, sortDir);
+    }
 }

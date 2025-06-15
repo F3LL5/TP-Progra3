@@ -27,6 +27,7 @@ public class MenuEntidades {
                 case "3" -> agregar();
                 case "4" -> eliminar();
                 case "5" -> modificar();
+                case "6" -> filtrarYOrdenar();
                 case "0" -> {} // Salir
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
@@ -42,6 +43,7 @@ public class MenuEntidades {
                 3. Agregar
                 4. Eliminar
                 5. Modificar
+                6. Ordenar y Filtrar
                 0. Salir
                 Ingrese la opción: """);
     }
@@ -136,5 +138,34 @@ public class MenuEntidades {
         }
 
         HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody);
+    }
+
+    private void filtrarYOrdenar() throws IOException, InterruptedException {
+        System.out.println("--- Filtrar y ordenar entidades ---");
+        System.out.print("Filtrar por ROL (DUENO_PUESTO, CLIENTE, PROVEEDOR) o dejar vacío: ");
+        String rol = scanner.nextLine().trim();
+        if (rol.isBlank()) rol = null;
+
+        System.out.print("Ordenar por... (nombre, edad, dni, tipoEntidad) o dejar vacío: ");
+        String sortBy = scanner.nextLine().trim();
+        if (sortBy.isBlank()) sortBy = null;
+
+        System.out.print("Dirección de orden... (asc / desc) o dejar vacío: ");
+        String sortDir = scanner.nextLine().trim();
+        if (sortDir.isBlank()) sortDir = null;
+
+        // 4. Construir la query string
+        StringBuilder urlBuilder = new StringBuilder(API_URL + "/filtrarYOrdenar?");
+        if (rol != null) urlBuilder.append("rol_entidad=").append(rol).append("&");
+        if (sortBy != null) urlBuilder.append("sortBy=").append(sortBy).append("&");
+        if (sortDir != null) urlBuilder.append("sortDir=").append(sortDir);
+
+        String finalUrl = urlBuilder.toString();
+        if (finalUrl.endsWith("&") || finalUrl.endsWith("?")) {
+            finalUrl = finalUrl.substring(0, finalUrl.length() - 1);
+        }
+
+        System.out.println("\n→ Consultando: " + finalUrl);
+        HttpService.realizarPeticion("GET", finalUrl, authHeader, null);
     }
 }
