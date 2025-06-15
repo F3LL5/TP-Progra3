@@ -33,6 +33,8 @@ public class MenuPrincipal {
                 2. Gestionar Usuarios
                 3. Gestionar Puestos
                 4. Gestionar Items
+                5. Gestionar Cuentas bancarias
+                6. Gestionar Transacciones
                 0. Salir
                 Ingrese una opción:""");
             opcion = Escaner.stringValido(scanner);
@@ -51,8 +53,16 @@ public class MenuPrincipal {
                     menuPuestos.gestionar();
                 }
                 case "4" ->{
-                    MenuItem menuItem=new MenuItem(authService.getAuthHeader());
+                    MenuItem menuItem = new MenuItem(authService.getAuthHeader());
                     menuItem.gestionar();
+                }
+                case "5" ->{
+                    MenuCuentasBancarias menuCuentasBancarias= new MenuCuentasBancarias(authService.getAuthHeader());
+                    menuCuentasBancarias.gestionar();
+                }
+                case "6" ->{
+                    MenuTransacciones menuTransacciones = new MenuTransacciones(authService.getAuthHeader());
+                    menuTransacciones.gestionar();
                 }
                 case "0" -> System.out.println("Saliendo del programa.");
                 default -> System.out.println("Opción no válida.");

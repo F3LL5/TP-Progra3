@@ -75,6 +75,16 @@ public class TransaccionServicioImpl implements TransaccionServicio {
     }
 
     @Override
+    public String listado(){
+        StringBuilder s = new StringBuilder();
+        getAllTransacciones().forEach(t-> s
+                .append( t.getTransaccionId() + ". " )
+                .append( t )
+                .append(",\n"));
+        return s.toString();
+    }
+
+    @Override
     @Transactional // Aplica la gestión transaccional
     public TransaccionDTO createTransaccion(CreateTransaccionDTO createTransaccionDTO) {
         Transaccion transaccion = convertirA_Transaccion(createTransaccionDTO);

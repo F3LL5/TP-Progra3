@@ -26,14 +26,14 @@ public class ItemControlador {
         return ResponseEntity.ok(items);
     }
 
-    @GetMapping("/listado")
-    public String obtenerTodosString(){
-        return itemServicio.listado();
-    }
-
     @GetMapping("/{id}")
     public ItemDTO getItemById(@PathVariable Long id){
         return itemServicio.getProductById(id).orElse(null);
+    }
+
+    @GetMapping("/listado")
+    public String obtenerTodosString(){
+        return itemServicio.listado();
     }
 
     @PostMapping

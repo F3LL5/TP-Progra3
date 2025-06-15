@@ -13,4 +13,5 @@ public interface CuentaBancariaServicio {
     CuentaBancariaDTO createCuentaBancaria(CreateCuentaBancariaDTO createCuentaBancariaDTO);
     Optional<CuentaBancariaDTO> updateCuentaBancaria(Long id, UpdateCuentaBancariaDTO updateCuentaBancariaDTO);
     boolean deleteCuentaBancaria(Long id);
+    String listado();
 }

@@ -30,6 +30,11 @@ public class TransaccionControlador {
         return transaccionServicio.getTransaccionById(id).orElse(null);
     }
 
+    @GetMapping("/listado")
+    public String obtenerTodosString(){
+        return transaccionServicio.listado();
+    }
+
     @PostMapping
     public TransaccionDTO createTransaccion(@Valid @RequestBody CreateTransaccionDTO createTransaccionDTO){
         return transaccionServicio.createTransaccion(createTransaccionDTO);

@@ -30,6 +30,11 @@ public class CuentaBancariaControlador {
         return cuentaBancariaServicio.getCuentaBancariaById(id).orElse(null);
     }
 
+    @GetMapping("/listado")
+    public String obtenerTodosString(){
+        return cuentaBancariaServicio.listado();
+    }
+
     @PostMapping
     public CuentaBancariaDTO createCuentaBancaria(@Valid @RequestBody CreateCuentaBancariaDTO createCuentaBancariaDTO){
         return cuentaBancariaServicio.createCuentaBancaria(createCuentaBancariaDTO);

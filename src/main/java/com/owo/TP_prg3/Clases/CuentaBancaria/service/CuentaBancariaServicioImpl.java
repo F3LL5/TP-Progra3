@@ -16,11 +16,13 @@ import java.util.Optional;
 @Service
 public class CuentaBancariaServicioImpl implements CuentaBancariaServicio {
 
+    //Atributos
     @Autowired
     private CuentaBancariaRepositorio cuentaBancariaRepositorio;
     @Autowired
     private EntidadRepositorio entidadRepositorio;
 
+    //Conversion
     private CuentaBancariaDTO convertirA_DTO(CuentaBancaria cuentaBancaria) {
         return new CuentaBancariaDTO(
                 cuentaBancaria.getCuentaBancariaId(),
@@ -42,6 +44,7 @@ public class CuentaBancariaServicioImpl implements CuentaBancariaServicio {
         return cuentaBancaria;
     }
 
+    //Metodos
     @Override
     public List<CuentaBancariaDTO> getAllCuentasBancarias() {
         return cuentaBancariaRepositorio.findAll()
@@ -53,6 +56,16 @@ public class CuentaBancariaServicioImpl implements CuentaBancariaServicio {
     @Override
     public Optional<CuentaBancariaDTO> getCuentaBancariaById(Long id) {
         return cuentaBancariaRepositorio.findById(id).map(this::convertirA_DTO);
+    }
+
+    @Override
+    public String listado(){
+        StringBuilder s = new StringBuilder();
+        getAllCuentasBancarias().forEach(c -> s
+                .append( c.getCuentaBancariaId() + ". ")
+                .append( c )
+                .append(",\n"));
+        return s.toString();
     }
 
     @Override

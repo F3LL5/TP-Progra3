@@ -1,19 +1,22 @@
 package com.owo.TP_prg3.Front.Menu;
 
-import com.owo.TP_prg3.Utilidades.Escaner;
 import com.owo.TP_prg3.Front.HttpService;
+import com.owo.TP_prg3.Utilidades.Escaner;
+
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Scanner;
 
-public class MenuItem {
+public class MenuTransacciones {
 
     //Atributos
-    private static final String API_URL = "http://localhost:8080/api/items";
+    private static final String API_URL = "http://localhost:8080/api/transacciones";
     private final String authHeader;
     private final Scanner scanner = new Scanner(System.in);
 
     //Constructor
-    public MenuItem(String authHeader) {this.authHeader = authHeader;}
+    public MenuTransacciones(String authHeader) {this.authHeader = authHeader;}
 
     //Menu
     public void gestionar() throws IOException, InterruptedException {
@@ -38,8 +41,8 @@ public class MenuItem {
 
 
     private void mostrarMenu() {
-    System.out.print("""
-                \n--- MENÚ DE GESTIÓN DE ITEMS ---
+        System.out.print("""
+                \n--- MENÚ DE GESTIÓN DE TRANSACCIONES ---
                 OPCIONES:
                 1. Obtener todos
                 2. Buscar por id
@@ -56,7 +59,7 @@ public class MenuItem {
     //Metodos
     //GET
     private void obtenerTodas() throws IOException, InterruptedException {
-        System.out.println("\n--- Obteniendo todas las items... ---");
+        System.out.println("\n--- Obteniendo todas las transacciones... ---");
         HttpService.realizarPeticion("GET", API_URL, authHeader, null);
     }
 
@@ -67,25 +70,28 @@ public class MenuItem {
     }
 
     private void listado() throws IOException, InterruptedException {
-        System.out.println("\n--- Obteniendo todas las items... ---");
+        System.out.println("\n--- Obteniendo todas las transacciones... ---");
         HttpService.realizarPeticion("GET", API_URL + "/listado", authHeader, null);
     }
 
     //POST
     private void agregar() throws IOException, InterruptedException {
-        System.out.println("\n--- Agregar nuevo item ---");
+        System.out.println("\n--- Registrar transaccion ---");
 
-        System.out.print("Nombre del item: ");
-        String nombre = Escaner.stringValido(scanner);
-        System.out.print("Categoria del item: ");
-        String categoria= Escaner.stringValido(scanner);
-        System.out.print("Costo del item: ");
-        Double costo = Escaner.doubleValido(scanner);
+        System.out.print("Tipo de transaccion: ");
+        String tipo = Escaner.stringValido(scanner);
+        System.out.print("Monto: ");
+        String monto = Escaner.stringValido(scanner);
+        System.out.print("id de la cuenta origen: ");
+        Double CuentaOrigenId = Escaner.doubleValido(scanner);
+        System.out.print("id de la cuenta destino : ");
+        Double CuentaDestinoId = Escaner.doubleValido(scanner);
 
         String jsonBody = "{" +
-                "\"nombre\":\"" + nombre + "\",\n" +
-                "\"categoria\":\"" + categoria + "\",\n" +
-                "\"costo\":" + costo + "\n" +
+                "\"tipo\":\"" + tipo + "\",\n" +
+                "\"monto\":" + monto + ",\n" +
+                "\"cuentaOrigenId\":" + CuentaOrigenId + ",\n" +
+                "\"cuentaDestinoId\":" + CuentaDestinoId  +
                 "}";
 
         HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
@@ -93,22 +99,24 @@ public class MenuItem {
 
     //DELETE
     private void eliminar() throws IOException, InterruptedException {
-        System.out.print("Ingrese el ID del item a eliminar: ");
+        System.out.print("Ingrese el ID de la transaccion a eliminar: ");
         Integer id = Escaner.enteroValido(scanner);
         HttpService.realizarPeticion("DELETE", API_URL + "/" + id, authHeader, null);
     }
 
     //PATCH
     private void modificar() throws IOException, InterruptedException {
-        System.out.print("Ingrese el ID del item a modificar: ");
+        System.out.print("Ingrese el ID del transaccion a modificar: ");
         Integer id = Escaner.enteroValido(scanner);
         System.out.println();
 
         System.out.print("""
                 ATRIBUTO A MODIFICAR:
-                1. Nombre
-                2. Categoria
-                3. Costo
+                1. Tipo
+                2. Monto
+                3. Fecha
+                4. ID de la cuenta origen
+                5. ID de la cuenta destino
                 0. Cancelar
                 Ingrese una opcion:""");
         Integer opcion = Escaner.enteroValido(scanner);
@@ -117,16 +125,24 @@ public class MenuItem {
         String jsonBody = "";
         switch (opcion){
             case 1 -> {
-                String nombre = Escaner.stringValido(scanner);
-                jsonBody = "{\"nombre\":\"" +  nombre + "\"}" ;
+                String tipo = Escaner.stringValido(scanner);
+                jsonBody = "{\"tipo\":\"" +  tipo + "\"}" ;
             }
             case 2 -> {
-                String categoria = Escaner.stringValido(scanner);
-                jsonBody = "{\"categoria\":\"" + categoria + "\"}";
+                Double monto = Escaner.doubleValido(scanner);
+                jsonBody = "{\"monto\":" + monto + "}";
             }
             case 3 -> {
-                Double costo = Escaner.doubleValido(scanner);
-                jsonBody = "{\"costo\":"  + costo + "\"}";
+                LocalDateTime fecha = Escaner.fechaYhora(scanner);
+                jsonBody = "{\"fecha\":\"" + fecha + "\"}";
+            }
+            case 4 -> {
+                String cuentaOrigenId = Escaner.stringValido(scanner);
+                jsonBody = "{\"cuentaOrigenId\":"  + cuentaOrigenId + "}";
+            }
+            case 5 -> {
+                String cuentaDestinoId = Escaner.stringValido(scanner);
+                jsonBody = "{\"cuentaDestinoId\":"  + cuentaDestinoId + "}";
             }
             case 0 -> {}
             default -> {
@@ -138,4 +154,4 @@ public class MenuItem {
         HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody);
     }
 
-   }
+}

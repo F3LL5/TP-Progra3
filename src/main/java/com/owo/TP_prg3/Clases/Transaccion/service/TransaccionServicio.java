@@ -13,4 +13,5 @@ public interface TransaccionServicio {
     TransaccionDTO createTransaccion(CreateTransaccionDTO createTransaccionDTO);
     Optional<TransaccionDTO> updateTransaccion(Long id, UpdateTransaccionDTO updateTransaccionDTO);
     boolean deleteTransaccion(Long id);
+    String listado();
 }
