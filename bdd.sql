@@ -1,4 +1,4 @@
-drop database comercio;
+-- drop database comercio;
 create database if not exists comercio;
 use comercio;
 
@@ -75,7 +75,6 @@ create table if not exists detalles_pedido (
 	on delete cascade
 	on update cascade
 );
-
 create table if not exists item_precio_historial (
     id bigInt AUTO_INCREMENT PRIMARY KEY,
     item_id bigInt,
@@ -83,6 +82,17 @@ create table if not exists item_precio_historial (
     precio_nuevo DECIMAL(10,2),
     fecha_cambio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     foreign key(item_id) references items(item_id)
+);
+
+create table historial_cambio_duenio (
+    id bigInt primary key auto_increment,
+    puesto_id bigInt not null,
+    duenio_anterior_id bigInt,
+    duenio_nuevo_id bigInt,
+    fecha_cambio timestamp default current_timestamp,
+    foreign key (puesto_id) references puestos(puesto_id),
+    foreign key (duenio_anterior_id) references entidades(entidad_id),
+    foreign key (duenio_nuevo_id) references entidades(entidad_id)
 );
 
 DELIMITER //
@@ -93,6 +103,26 @@ BEGIN
     IF OLD.costo <> NEW.costo THEN
         INSERT INTO item_precio_historial (item_id, costo_anterior, costo_nuevo)
         VALUES (OLD.item_id, OLD.costo, now);
+    END IF;
+END;
+//
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER trigger_cambio_duenio
+BEFORE UPDATE ON puestos
+FOR EACH ROW
+BEGIN
+    IF OLD.duenio_id <> NEW.duenio_id THEN
+        INSERT INTO historial_cambio_duenio (
+            puesto_id,
+            duenio_anterior_id,
+            duenio_nuevo_id
+        ) VALUES (
+            OLD.puesto_id,
+            OLD.duenio_id,
+            NEW.duenio_id
+        );
     END IF;
 END;
 //
