@@ -1,7 +1,7 @@
 package com.owo.TP_prg3.Front.Menu;
 
 import com.owo.TP_prg3.Front.HttpService;
-import com.owo.TP_prg3.Utilidades.Escaner;
+import com.owo.TP_prg3.Front.Utilidades.Escaner;
 
 import java.io.IOException;
 import java.math.BigDecimal;

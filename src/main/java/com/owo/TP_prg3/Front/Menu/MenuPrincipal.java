@@ -35,6 +35,7 @@ public class MenuPrincipal {
                 4. Gestionar Items
                 5. Gestionar Cuentas bancarias
                 6. Gestionar Transacciones
+                7. Gestionar Inventario de puestos
                 0. Salir
                 Ingrese una opción:""");
             opcion = Escaner.stringValido(scanner);
@@ -63,6 +64,11 @@ public class MenuPrincipal {
                 case "6" ->{
                     MenuTransacciones menuTransacciones = new MenuTransacciones(authService.getAuthHeader());
                     menuTransacciones.gestionar();
+                }
+                case "7" ->{
+                    MenuInventarioPuesto menuInventarioPuesto=new MenuInventarioPuesto(authService.getAuthHeader());
+                    menuInventarioPuesto.gestionar();
+
                 }
                 case "0" -> System.out.println("Saliendo del programa.");
                 default -> System.out.println("Opción no válida.");
