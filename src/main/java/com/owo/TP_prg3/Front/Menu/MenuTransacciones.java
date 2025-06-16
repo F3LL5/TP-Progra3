@@ -38,6 +38,7 @@ public class MenuTransacciones {
                 case "3" -> agregar();
                 case "4" -> eliminar();
                 case "5" -> modificar();
+                case "6" -> filtrarYOrdenar();
 
                 case "0" -> {} // Salir
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
@@ -55,6 +56,7 @@ public class MenuTransacciones {
                 3. Agregar
                 4. Eliminar
                 5. Modificar
+                6. Filtrar y Ordenar
                 
                 0. Salir
                 Ingrese la opción:""");
@@ -76,6 +78,33 @@ public class MenuTransacciones {
         System.out.print("Ingrese el ID de la entidad: ");
         Integer id = Escaner.enteroValido(scanner);
         HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null);
+    }
+
+    private void filtrarYOrdenar() throws IOException, InterruptedException {
+        System.out.println("--- Filtrar y ordenar transacciones ---");
+        System.out.println("Filtrar por TIPO de transacciones (COMPRA, VENTA, INGRESO, EGRESO) o dejar vacío: ");
+        String tipo_transaccion = scanner.nextLine().trim();
+        if(tipo_transaccion.isBlank()) tipo_transaccion = null;
+
+        System.out.println("Ordenar por... (fecha, monto, id_cuenta_origen, id_cuenta_destino) o dejar vacío: ");
+        String sortBy = scanner.nextLine().trim();
+        if(sortBy.isBlank()) sortBy = null;
+
+        System.out.println("Dirección de orden... (asc / desc) o dejar vacío: ");
+        String sortDir = scanner.nextLine().trim();
+        if(sortDir.isBlank()) sortDir = null;
+
+        StringBuilder urlBuilder = new StringBuilder(API_URL + "/filtrarYOrdenar?");
+        if (tipo_transaccion != null) urlBuilder.append("tipo_transaccion=").append(tipo_transaccion).append("&");
+        if (sortBy != null) urlBuilder.append("sortBy=").append(sortBy).append("&");
+        if (sortDir != null) urlBuilder.append("sortDir=").append(sortDir);
+
+        String finalUrl = urlBuilder.toString();
+        if (finalUrl.endsWith("&") || finalUrl.endsWith("?")) {
+            finalUrl = finalUrl.substring(0, finalUrl.length() - 1);
+        }
+
+        HttpService.realizarPeticion("GET", finalUrl, authHeader, null);
     }
 
     //POST

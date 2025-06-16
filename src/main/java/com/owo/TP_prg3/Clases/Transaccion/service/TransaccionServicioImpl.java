@@ -15,8 +15,10 @@ import jakarta.persistence.EntityNotFoundException; // Para manejar casos donde 
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime; // Para manejar el campo fecha
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 public class TransaccionServicioImpl implements TransaccionServicio {
@@ -177,5 +179,31 @@ public class TransaccionServicioImpl implements TransaccionServicio {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public List<TransaccionDTO> filtrarYOrdenar(String tipo_transaccion, String sortBy, String sortDir) {
+        List<TransaccionDTO> allTransacciones = getAllTransacciones();
+        Stream<TransaccionDTO> transaccionDTOStream = allTransacciones.stream();
+
+        if(tipo_transaccion != null && !tipo_transaccion.isEmpty()) {
+            transaccionDTOStream = transaccionDTOStream.filter(transaccion -> transaccion.getTipo().equalsIgnoreCase(tipo_transaccion));
+        }
+
+        if(sortBy != null) {
+            Comparator<TransaccionDTO> comparator = null;
+            switch (sortBy.toLowerCase()) {
+                case "fecha" -> comparator = Comparator.comparing(TransaccionDTO::getFecha);
+                case "monto" -> comparator = Comparator.comparing(TransaccionDTO::getMonto);
+                case "id_cuenta_origen" -> comparator = Comparator.comparing(TransaccionDTO::getCuentaOrigenId);
+                case "id_cuenta_destino" -> comparator = Comparator.comparing(TransaccionDTO::getCuentaDestinoId);
+                default -> throw new RuntimeException("Dicho criterio de búsqueda NO existe.");
+            }
+            if(comparator != null) if("desc".equalsIgnoreCase(sortDir)) comparator = comparator.reversed();
+
+            transaccionDTOStream = transaccionDTOStream.sorted(comparator);
+        }
+
+        return transaccionDTOStream.toList();
     }
 }

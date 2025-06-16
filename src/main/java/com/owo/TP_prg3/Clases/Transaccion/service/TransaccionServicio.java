@@ -14,4 +14,5 @@ public interface TransaccionServicio {
     Optional<TransaccionDTO> updateTransaccion(Long id, UpdateTransaccionDTO updateTransaccionDTO);
     boolean deleteTransaccion(Long id);
     String listado();
+    List<TransaccionDTO> filtrarYOrdenar(String tipo_transaccion, String sortBy, String sortDir);
 }

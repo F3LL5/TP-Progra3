@@ -49,4 +49,14 @@ public class TransaccionControlador {
     public Optional<TransaccionDTO> updateTransaccion(@PathVariable Long id, @Valid @RequestBody UpdateTransaccionDTO updateTransaccionDTO){
         return transaccionServicio.updateTransaccion(id, updateTransaccionDTO);
     }
+
+    @GetMapping("/filtrarYOrdenar")
+    public List<TransaccionDTO> filtrarYOrdenar(
+            @RequestParam(required = false) String tipo_transaccion,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDir
+
+    ) {
+        return transaccionServicio.filtrarYOrdenar(tipo_transaccion, sortBy, sortDir);
+    }
 }
