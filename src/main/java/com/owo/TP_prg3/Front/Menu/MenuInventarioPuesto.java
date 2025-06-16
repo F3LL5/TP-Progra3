@@ -1,10 +1,20 @@
 package com.owo.TP_prg3.Front.Menu;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jakewharton.fliptables.FlipTable;
+import com.jakewharton.fliptables.FlipTableConverters;
+import com.owo.TP_prg3.Clases.InventarioPuesto.dto.InventarioPuestoDTO;
+import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import com.owo.TP_prg3.Front.HttpService;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.http.HttpResponse;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class MenuInventarioPuesto {
@@ -51,13 +61,28 @@ public class MenuInventarioPuesto {
 
     private void obtener_todos() throws IOException, InterruptedException {
         System.out.println("OBTENIENDO inventarios...");
-        HttpService.realizarPeticion("GET", API_URL, authHeader, null);
+        HttpResponse<String> response =  HttpService.realizarPeticion("GET", API_URL, authHeader, null);
+        String respuestaJson = response.body();
+
+        // Convertir JSON a lista de ItemDTO
+        ObjectMapper mapper = new ObjectMapper();
+        List<InventarioPuestoDTO> stock = Arrays.asList(mapper.readValue(respuestaJson, InventarioPuestoDTO[].class));
+
+        // Imprimir en formato tabla
+        System.out.println(FlipTableConverters.fromIterable(stock, InventarioPuestoDTO.class));
     }
 
     private void buscar_x_id() throws IOException, InterruptedException {
         System.out.println("INGRESE ID DEL INVENTARIO: ");
         Integer id = Escaner.enteroValido(scanner);
-        HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null);
+        HttpResponse<String> response =   HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null);
+        String respuestaJson = response.body();
+
+        ObjectMapper mapper = new ObjectMapper();
+        InventarioPuestoDTO inventario= mapper.readValue(respuestaJson, InventarioPuestoDTO.class);
+
+        System.out.println(FlipTableConverters.fromIterable(List.of(inventario), InventarioPuestoDTO.class));
+
     }
 
     private void agregar() throws IOException, InterruptedException {
@@ -144,15 +169,67 @@ public class MenuInventarioPuesto {
     private void mostrarProductosEnStock() throws IOException, InterruptedException {
         System.out.println("Ingrese id de puesto");
         Integer id = Escaner.enteroValido(scanner);
-        HttpService.realizarPeticion("GET", API_URL + "/obtenerInvConStock/" + id, authHeader, null);
+
+        // Realizar la petición HTTP
+        HttpResponse<String> response = HttpService.realizarPeticion(
+                "GET",
+                API_URL + "/obtenerInvConStock/" + id,
+                authHeader,
+                null
+        );
+
+        String respuestaJson = response.body();
+
+        // Deserializar JSON a lista de Map<String, Object>
+        ObjectMapper mapper = new ObjectMapper();
+        List<Map<String, Object>> stock = mapper.readValue(
+                respuestaJson,
+                new TypeReference<List<Map<String, Object>>>() {}
+        );
+
+        // Verificar si hay resultados
+        if (stock.isEmpty()) {
+            System.out.println("No hay productos en stock.");
+            return;
+        }
+
+        // Obtener headers (nombres de columnas)
+        String[] headers = stock.get(0).keySet().toArray(new String[0]);
+
+        // Obtener los datos como matriz de strings
+        String[][] data = stock.stream()
+                .map(m -> m.values().stream()
+                        .map(v -> v == null ? "" : v.toString())
+                        .toArray(String[]::new))
+                .toArray(String[][]::new);
+
+        // Imprimir la tabla con FlipTable
+        System.out.println(FlipTable.of(headers, data));
     }
 
     private void mostrarProductosEnStockBajo() throws IOException, InterruptedException {
         System.out.println("Ingrese id de puesto");
-        Integer id=Escaner.enteroValido(scanner);
-        HttpService.realizarPeticion("GET", API_URL + "/obtenerInvConStockBajo/" + id, authHeader, null);
+        Integer id = Escaner.enteroValido(scanner);
 
+        HttpResponse<String> response = HttpService.realizarPeticion("GET", API_URL + "/obtenerInvConStockBajo/" + id, authHeader, null);
+        String respuestaJson = response.body();
+
+        ObjectMapper mapper = new ObjectMapper();
+        List<Map<String, Object>> stock = mapper.readValue(respuestaJson, new TypeReference<List<Map<String, Object>>>() {});
+
+        if (stock.isEmpty()) {
+            System.out.println("No hay productos con stock bajo.");
+            return;
+        }
+
+        String[] headers = stock.get(0).keySet().toArray(new String[0]);
+        String[][] data = stock.stream()
+                .map(m -> m.values().stream().map(String::valueOf).toArray(String[]::new))
+                .toArray(String[][]::new);
+
+        System.out.println(FlipTable.of(headers, data));
     }
+    
 
 
 

@@ -117,7 +117,7 @@ public class MenuItem {
 
         // Cada línea representa un item
         String[] lineas = respuesta.split("\\r?\\n");
-        
+
         for (String linea : lineas) {
             // Buscamos el patrón: ItemDTO(item_id=2, nombre=pochoclo, categoria=comida, costo=3084.0)
             if (linea.contains("ItemDTO(")) {
