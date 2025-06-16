@@ -1,11 +1,19 @@
 package com.owo.TP_prg3.Front.Menu;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jakewharton.fliptables.FlipTableConverters;
+import com.owo.TP_prg3.Clases.Puesto.dto.PuestoDTO;
+import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.TipoTransaccion;
+import com.owo.TP_prg3.Clases.Transaccion.modelo.Transaccion;
 import com.owo.TP_prg3.Front.HttpService;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 
 import java.io.IOException;
+import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class MenuTransacciones {
@@ -56,7 +64,12 @@ public class MenuTransacciones {
     //GET
     private void obtenerTodas() throws IOException, InterruptedException {
         System.out.println("\n--- Obteniendo todas las transacciones... ---");
-        HttpService.realizarPeticion("GET", API_URL, authHeader, null);
+        HttpResponse<String> response =  HttpService.realizarPeticion("GET", API_URL, authHeader, null);
+        String respuestaJson = response.body();
+        ObjectMapper mapper = new ObjectMapper();
+        List<TransaccionDTO> transacciones = Arrays.asList(mapper.readValue(respuestaJson, TransaccionDTO[].class));
+
+        System.out.println(FlipTableConverters.fromIterable(transacciones, TransaccionDTO.class));
     }
 
     private void buscarPorId() throws IOException, InterruptedException {

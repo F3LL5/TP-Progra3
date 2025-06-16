@@ -1,9 +1,16 @@
 package com.owo.TP_prg3.Front.Menu;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jakewharton.fliptables.FlipTableConverters;
+import com.owo.TP_prg3.Clases.Puesto.dto.PuestoDTO;
+import com.owo.TP_prg3.Clases.User.dto.UsuarioDTO;
 import com.owo.TP_prg3.Front.HttpService;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 
 import java.io.IOException;
+import java.net.http.HttpResponse;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class MenuUsuarios {
@@ -52,6 +59,11 @@ public class MenuUsuarios {
 
     private void listado() throws IOException, InterruptedException {
         System.out.println("\n--- Obteniendo todas las entidades... ---");
-        HttpService.realizarPeticion("GET", API_URL + "/listado", authHeader, null);
+        HttpResponse<String> response = HttpService.realizarPeticion("GET", API_URL + "/listado", authHeader, null);
+        String respuestaJson = response.body();
+        ObjectMapper mapper = new ObjectMapper();
+        List<UsuarioDTO> usuarios = Arrays.asList(mapper.readValue(respuestaJson, UsuarioDTO[].class));
+
+        System.out.println(FlipTableConverters.fromIterable(usuarios, UsuarioDTO.class));
     }
 }
