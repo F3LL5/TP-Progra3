@@ -96,7 +96,7 @@ public class TransaccionServicioImpl implements TransaccionServicio {
         CuentaBancaria cuentaOrigen = transaccion.getCuentaOrigen();
 
         switch (transaccion.getTipo()){
-            case TipoTransaccion.DEPOSITO -> {
+            case TipoTransaccion.VENTA -> {
                 if (cuentaDestino.getSaldo().compareTo(transaccion.getMonto())<0) throw new IllegalArgumentException("Saldo insuficiente en la cuenta de origen para esta transacción.");
 
                 // Sumo plata a mi cuenta
@@ -107,16 +107,26 @@ public class TransaccionServicioImpl implements TransaccionServicio {
                 cuentaBancariaRepositorio.save(cuentaDestino);
                 cuentaBancariaRepositorio.save(cuentaOrigen);
             }
-            case TipoTransaccion.RETIRO -> {
+            case TipoTransaccion.COMPRA -> {
                 if (cuentaOrigen.getSaldo().compareTo(transaccion.getMonto())<0) throw new IllegalArgumentException("Saldo insuficiente en la cuenta de origen para esta transacción.");
 
                 // Resto plata de mi cuenta
                 cuentaOrigen.setSaldo( cuentaOrigen.getSaldo().subtract(transaccion.getMonto()) );
-                // Sumo plata a la cuenta del proveedor/cliente
+                // Sumo plata a la cuenta del proveedor
                 cuentaDestino.setSaldo( cuentaDestino.getSaldo().add(transaccion.getMonto()) );
 
                 cuentaBancariaRepositorio.save(cuentaDestino);
                 cuentaBancariaRepositorio.save(cuentaOrigen);
+            }
+            case TipoTransaccion.INGRESO -> {
+                // Sumo plata a mi cuenta
+                cuentaDestino.setSaldo( cuentaDestino.getSaldo().add(transaccion.getMonto()) );
+                cuentaBancariaRepositorio.save(cuentaDestino);
+            }
+            case TipoTransaccion.EGRESO -> {
+                // Resto plata de mi cuenta
+                cuentaDestino.setSaldo( cuentaDestino.getSaldo().subtract(transaccion.getMonto()) );
+                cuentaBancariaRepositorio.save(cuentaDestino);
             }
         }
 

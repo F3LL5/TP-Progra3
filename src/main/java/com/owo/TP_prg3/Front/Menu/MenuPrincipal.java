@@ -36,6 +36,8 @@ public class MenuPrincipal {
                 5. Gestionar Cuentas bancarias
                 6. Gestionar Transacciones
                 7. Gestionar Inventario de puestos
+                8. Gestionar Pedidos
+                
                 0. Salir
                 Ingrese una opción:""");
             opcion = Escaner.stringValido(scanner);
@@ -68,6 +70,11 @@ public class MenuPrincipal {
                 case "7" ->{
                     MenuInventarioPuesto menuInventarioPuesto=new MenuInventarioPuesto(authService.getAuthHeader());
                     menuInventarioPuesto.gestionar();
+
+                }
+                case "8" ->{
+                    MenuPedidos menuPedidos=new MenuPedidos(authService.getAuthHeader());
+                    menuPedidos.gestionar();
 
                 }
                 case "0" -> System.out.println("Saliendo del programa.");

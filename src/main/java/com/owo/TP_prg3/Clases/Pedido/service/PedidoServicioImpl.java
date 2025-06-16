@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class PedidoServicioImpl implements PedidoServicio {
-
+    //ATRIBUTOS
     @Autowired
     private PedidoRepositorio pedidoRepositorio;
     @Autowired
@@ -29,20 +29,15 @@ public class PedidoServicioImpl implements PedidoServicio {
     @Autowired
     private DetallePedidoServicioImpl detallePedidoServicio;
 
-
+    //CONVERSION
     private PedidoDTO convertirA_DTO(Pedido pedido) {
-        List<DetallePedidoDTO> detalles = pedido.getDetallesPedido().stream()
-                        .map(detalle -> detallePedidoServicio.getDetallePedidoById(detalle.getDetallePedidoId()).orElse(null))
-                        .filter(java.util.Objects::nonNull)
-                        .collect(Collectors.toList());
-
         return new PedidoDTO(
                 pedido.getPedidoId(),
-                pedido.getTransaccion().getTransaccionId(),
-                detalles
+                pedido.getTransaccion().getTransaccionId()
         );
     }
 
+    //METODOS
     @Override
     public List<PedidoDTO> getAllPedidos() {
         return pedidoRepositorio.findAll().stream()

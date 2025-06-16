@@ -1,5 +1,6 @@
 package com.owo.TP_prg3.Front.Menu;
 
+import com.owo.TP_prg3.Clases.Transaccion.modelo.TipoTransaccion;
 import com.owo.TP_prg3.Front.HttpService;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 
@@ -30,8 +31,6 @@ public class MenuTransacciones {
                 case "4" -> eliminar();
                 case "5" -> modificar();
 
-                case "1.2" -> listado();
-
                 case "0" -> {} // Salir
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
@@ -48,8 +47,6 @@ public class MenuTransacciones {
                 3. Agregar
                 4. Eliminar
                 5. Modificar
-                
-                1.2 Listado
                 
                 0. Salir
                 Ingrese la opción:""");
@@ -68,33 +65,45 @@ public class MenuTransacciones {
         HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null);
     }
 
-    private void listado() throws IOException, InterruptedException {
-        System.out.println("\n--- Obteniendo todas las transacciones... ---");
-        HttpService.realizarPeticion("GET", API_URL + "/listado", authHeader, null);
-    }
-
     //POST
     private void agregar() throws IOException, InterruptedException {
         System.out.println("\n--- Registrar transaccion ---");
 
-        System.out.print("Tipo de transaccion: ");
+        System.out.print("Tipo de transaccion [COMPRA,VENTA,INGRESO,EGRESO]: ");
         String tipo = Escaner.stringValido(scanner);
         System.out.print("Monto: ");
         String monto = Escaner.stringValido(scanner);
-        System.out.print("id de la cuenta origen: ");
-        Double CuentaOrigenId = Escaner.doubleValido(scanner);
-        System.out.print("id de la cuenta destino : ");
-        Double CuentaDestinoId = Escaner.doubleValido(scanner);
 
-        String jsonBody = "{" +
-                "\"tipo\":\"" + tipo + "\",\n" +
-                "\"monto\":" + monto + ",\n" +
-                "\"cuentaOrigenId\":" + CuentaOrigenId + ",\n" +
-                "\"cuentaDestinoId\":" + CuentaDestinoId  +
-                "}";
+        String jsonBody = "";
+        if (tipo.equals("COMPRA") || tipo.equals("VENTA")){
+            System.out.print("id de la cuenta comprador: ");
+            Double CuentaOrigenId = Escaner.doubleValido(scanner);
+            System.out.print("id de la cuenta vendedor : ");
+            Double CuentaDestinoId = Escaner.doubleValido(scanner);
 
-        System.out.println("\n→ Consultando: " + jsonBody);
-        HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
+            jsonBody =
+                    "{" +
+                        "\"tipo\":\"" + tipo + "\"," +
+                        "\"monto\":" + monto + "," +
+                        "\"cuentaOrigenId\":" + CuentaOrigenId + "," +
+                        "\"cuentaDestinoId\":" + CuentaDestinoId  +
+                    "}";
+            HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
+
+        } else if (tipo.equals("INGRESO") || tipo.equals("EGRESO")){
+            System.out.print("id de la cuenta: ");
+            Double CuentaDestinoId = Escaner.doubleValido(scanner);
+
+            jsonBody =
+                    "{" +
+                        "\"tipo\":\"" + tipo + "\"," +
+                        "\"monto\":" + monto + "," +
+                        "\"cuentaDestinoId\":" + CuentaDestinoId  +
+                    "}";
+            HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
+        } else {
+            System.out.println("Tipo de transaccion incorrecta.");
+        }
     }
 
     //DELETE
@@ -112,7 +121,7 @@ public class MenuTransacciones {
 
         System.out.print("""
                 ATRIBUTO A MODIFICAR:
-                1. Tipo
+                1. Tipo [COMPRA,VENTA,INGRESO,EGRESO]
                 2. Monto
                 3. Fecha
                 4. ID de la cuenta origen
@@ -151,7 +160,6 @@ public class MenuTransacciones {
             }
         }
 
-        System.out.println("\n→ Consultando: " + jsonBody);
         HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody);
     }
 

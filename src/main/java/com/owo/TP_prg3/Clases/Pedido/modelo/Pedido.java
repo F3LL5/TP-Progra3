@@ -5,9 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.Transaccion;
-import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedido;
-
-import java.util.Set;
 
 @Entity
 @Table(name = "pedidos")
@@ -22,8 +19,4 @@ public class Pedido {
     @ManyToOne
     @JoinColumn(name = "transaccion_id", referencedColumnName = "transaccion_id")
     protected Transaccion transaccion;
-
-    // Un pedido tiene muchos detalles de pedido
-    @OneToMany(mappedBy = "pedido")
-    protected Set<DetallePedido> detallesPedido;
 }
