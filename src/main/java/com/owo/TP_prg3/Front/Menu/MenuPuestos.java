@@ -1,6 +1,7 @@
 package com.owo.TP_prg3.Front.Menu;
 
 import com.owo.TP_prg3.Front.HttpService;
+import com.owo.TP_prg3.Front.Menu.MenuAuditoria.MenuHistorial_Duenio;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 
 import java.io.IOException;
@@ -26,6 +27,10 @@ public class MenuPuestos {
                 case "5" -> modificar();
                 case "6" -> buscar_x_nombre();
                 case "7" -> ordenar_x_nombre();
+                case "8" -> {
+                    MenuHistorial_Duenio auditoria=new MenuHistorial_Duenio(authHeader);
+                    auditoria.gestionar();
+                }
                 case "0" -> {}
                 default -> System.out.println("OPCIÓN INVÁLIDA. VUELVA A INTENTAR");
             }
@@ -43,6 +48,7 @@ public class MenuPuestos {
                 5. Modificar puesto
                 6. Buscar por NOMBRE
                 7. Ordenar por NOMBRES
+                8. Historial de Duenios
                 0. Salir
                 INGRESE LA OPCIÓN QUE DESEE:""");
     }
