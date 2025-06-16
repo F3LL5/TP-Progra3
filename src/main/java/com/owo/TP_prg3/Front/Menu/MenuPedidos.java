@@ -2,6 +2,7 @@ package com.owo.TP_prg3.Front.Menu;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jakewharton.fliptables.FlipTableConverters;
+import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
 import com.owo.TP_prg3.Clases.Puesto.dto.PuestoDTO;
 import com.owo.TP_prg3.Front.HttpService;
@@ -73,7 +74,14 @@ public class MenuPedidos {
     private void buscarPorId() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID de la entidad: ");
         Integer id = Escaner.enteroValido(scanner);
-        HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null);
+        HttpResponse<String> response =   HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null);
+        String respuestaJson = response.body();
+
+        ObjectMapper mapper = new ObjectMapper();
+        PedidoDTO pedido= mapper.readValue(respuestaJson, PedidoDTO.class);
+
+        System.out.println(FlipTableConverters.fromIterable(List.of(pedido), PedidoDTO.class));
+
     }
 
     //POST
