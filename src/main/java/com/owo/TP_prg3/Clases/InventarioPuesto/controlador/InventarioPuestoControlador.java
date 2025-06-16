@@ -4,12 +4,14 @@ import com.owo.TP_prg3.Clases.InventarioPuesto.dto.CreateInventarioPuestoDTO;
 import com.owo.TP_prg3.Clases.InventarioPuesto.dto.InventarioPuestoDTO;
 import com.owo.TP_prg3.Clases.InventarioPuesto.dto.UpdateInventarioPuestoDTO;
 import com.owo.TP_prg3.Clases.InventarioPuesto.service.InventarioPuestoServicioImpl;
+import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -44,4 +46,22 @@ public class InventarioPuestoControlador {
     public Optional<InventarioPuestoDTO> updateInventarioPuesto(@PathVariable Long id, @Valid @RequestBody UpdateInventarioPuestoDTO updateInventarioPuestoDTO){
         return inventarioPuestoServicio.updateInventarioPuesto(id, updateInventarioPuestoDTO);
     }
+
+
+    @GetMapping("/obtenerInvConStock/{id}")
+    public List<Map<String,Object>> obtenerItemsEnStock(@PathVariable Long id)
+    {
+        List<Map<String,Object>> itemsEnStock=inventarioPuestoServicio.mostrarItemsEnStock(id);
+        return itemsEnStock;
+    }
+
+    @GetMapping("/obtenerInvConStockBajo/{id}")
+    public List<Map<String,Object>> obtenerItemsEnStockBajo(@PathVariable Long id)
+    {
+        List<Map<String,Object>> itemsEnStockBajo=inventarioPuestoServicio.mostrarItemsEnStockBajo(id);
+        return itemsEnStockBajo;
+    }
+
+
+
 }

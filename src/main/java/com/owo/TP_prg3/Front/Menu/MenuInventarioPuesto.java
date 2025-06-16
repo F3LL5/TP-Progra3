@@ -26,6 +26,8 @@ public class MenuInventarioPuesto {
                 case "3" -> agregar();
                 case "4" -> eliminar();
                 case "5" -> modificar();
+                case "6" -> mostrarProductosEnStock();
+                case "7" -> mostrarProductosEnStockBajo();
                 case "0" -> {}
                 default -> System.out.println("OPCIÓN INVÁLIDA. VUELVA A INTENTAR");
             }
@@ -41,6 +43,8 @@ public class MenuInventarioPuesto {
                 3. Agregar inventario
                 4. Eliminar inventario
                 5. Modificar inventario
+                6. Mostrar productos en stock
+                7. Mostrar productos en stock bajo
                 0. Salir
                 INGRESE LA OPCIÓN QUE DESEE:""");
     }
@@ -97,6 +101,8 @@ public class MenuInventarioPuesto {
                 3. Item
                 4. Stock Minimo
                 5. Precio de venta
+                6. Mostrar productos en stock
+                7. Mostrar productos en stock Bajo
                 0. Cancelar
                 Ingrese una opción:"""
         );
@@ -111,19 +117,19 @@ public class MenuInventarioPuesto {
             }
             case 2 -> {
                 Long puestoId = Long.valueOf(Escaner.enteroValido(scanner));
-                jsonBody = "{\"puesto_id\":" + puestoId + "}";
+                jsonBody = "{\"puestoId\":" + puestoId + "}";
             }
             case 3 -> {
                 Long itemId = Long.valueOf(Escaner.enteroValido(scanner));
-                jsonBody = "{\"item_id\":" + itemId + "}";
+                jsonBody = "{\"itemId\":" + itemId + "}";
             }
             case 4 -> {
                 Integer stockMin = Escaner.enteroValido(scanner);
-                jsonBody = "{\"stock_min\":"  + stockMin + "}";
+                jsonBody = "{\"stockMin\":"  + stockMin + "}";
             }
             case 5 -> {
                 BigDecimal precioVenta = BigDecimal.valueOf(Escaner.enteroValido(scanner));
-                jsonBody = "{\"precio_venta\":"  + precioVenta + "}";
+                jsonBody = "{\"precioVenta\":"  + precioVenta + "}";
             }
             default -> {
                 System.out.println("Opcion no válida.");
@@ -135,9 +141,18 @@ public class MenuInventarioPuesto {
 
     }
 
+    private void mostrarProductosEnStock() throws IOException, InterruptedException {
+        System.out.println("Ingrese id de puesto");
+        Integer id = Escaner.enteroValido(scanner);
+        HttpService.realizarPeticion("GET", API_URL + "/obtenerInvConStock/" + id, authHeader, null);
+    }
 
+    private void mostrarProductosEnStockBajo() throws IOException, InterruptedException {
+        System.out.println("Ingrese id de puesto");
+        Integer id=Escaner.enteroValido(scanner);
+        HttpService.realizarPeticion("GET", API_URL + "/obtenerInvConStockBajo/" + id, authHeader, null);
 
-
+    }
 
 
 

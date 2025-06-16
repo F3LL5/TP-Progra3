@@ -6,14 +6,18 @@ import com.owo.TP_prg3.Clases.InventarioPuesto.dto.UpdateInventarioPuestoDTO;
 import com.owo.TP_prg3.Clases.InventarioPuesto.modelo.InventarioPuesto;
 import com.owo.TP_prg3.Clases.InventarioPuesto.modelo.InventarioPuestoRepositorio;
 import com.owo.TP_prg3.Clases.Entidad.modelo.EntidadRepositorio;
+import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
+import com.owo.TP_prg3.Clases.Item.modelo.Item;
 import com.owo.TP_prg3.Clases.Item.modelo.ItemRepositorio;
+import com.owo.TP_prg3.Clases.Item.service.ItemServicioImpl;
 import com.owo.TP_prg3.Clases.Puesto.modelo.PuestoRepositorio;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityNotFoundException;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
@@ -24,6 +28,11 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
     private PuestoRepositorio puestoRepositorio;
     @Autowired
     private ItemRepositorio itemRepositorio;
+    @Autowired
+    private ItemServicioImpl itemServicio;
+
+
+
 
     private InventarioPuestoDTO convertirA_DTO(InventarioPuesto inventarioPuesto) {
         return new InventarioPuestoDTO(
@@ -117,4 +126,107 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
         }
         return false;
     }
+
+        //devuelve todos los inventarios del puesto con esa id
+    public List<InventarioPuestoDTO> obtenerInventariosDeUnPuesto(Long puestoId){
+        List<InventarioPuestoDTO> inventarioPuestoDTOS=getAllInventarioPuestos();
+        List<InventarioPuestoDTO> inventarioPuestosDTOSconStock;
+        inventarioPuestosDTOSconStock=inventarioPuestoDTOS.stream()
+                                    .filter(inventarioPuestoDTO ->inventarioPuestoDTO.getPuestoId()==puestoId)
+                                    .toList();
+
+        return  inventarioPuestosDTOSconStock;
+    }
+
+    public List<Map<String,Object>> mostrarItemsEnStock(Long puestoId)
+    {
+        List<ItemDTO> ListaItems=itemServicio.getAllProducts();
+        List<InventarioPuestoDTO> inventarioConStock=obtenerInventariosDeUnPuesto(puestoId);
+
+
+        List<ItemDTO> itemsConStock = ListaItems.stream()
+                .filter(item -> inventarioConStock.stream()
+                        .anyMatch(inv -> (inv.getItemId() == item.getItem_id()) && (inv.getCantidad() > 0)))
+                .toList();
+        System.out.println(itemsConStock);
+
+        List<Map<String, Object>> respuesta = new ArrayList<>();
+
+        for (ItemDTO item : itemsConStock) {
+            for (InventarioPuestoDTO inv : inventarioConStock) {
+                if (inv.getItemId() == item.getItem_id()) {
+                    Map<String, Object> fila = new HashMap<>();
+                    fila.put("id_Item", item.getItem_id());
+                    fila.put("nombre", item.getNombre());
+                    fila.put("costo", item.getCosto());
+                    fila.put("cantidad", inv.getCantidad()); // Agregás el stock
+
+                    respuesta.add(fila);
+                    break;
+                }
+            }
+        }
+        return respuesta;
+    }
+
+
+    public List<Map<String,Object>> mostrarItemsEnStockBajo(Long puestoId)
+    {
+        List<ItemDTO> ListaItems=itemServicio.getAllProducts();
+        List<InventarioPuestoDTO> inventarioConStock=obtenerInventariosDeUnPuesto(puestoId);
+
+
+        List<ItemDTO> itemsConStockBajo = ListaItems.stream()
+                .filter(item -> inventarioConStock.stream()
+                        .anyMatch(inv -> (inv.getItemId() == item.getItem_id()) && (inv.getCantidad() <= inv.getStockMin())))
+                .toList();
+        System.out.println(itemsConStockBajo);
+
+        List<Map<String, Object>> respuesta = new ArrayList<>();
+
+        for (ItemDTO item : itemsConStockBajo) {
+            for (InventarioPuestoDTO inv : inventarioConStock) {
+                if (inv.getItemId() == item.getItem_id()) {
+                    Map<String, Object> fila = new HashMap<>();
+                    fila.put("id_Item", item.getItem_id());
+                    fila.put("nombre", item.getNombre());
+                    fila.put("costo", item.getCosto());
+                    fila.put("cantidad", inv.getCantidad()); // Agregás el stock
+
+                    respuesta.add(fila);
+                    break;
+                }
+            }
+        }
+        return respuesta;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
