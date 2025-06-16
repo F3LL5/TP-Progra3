@@ -95,14 +95,19 @@ public class PuestoServicioImpl implements PuestoServicio {
                         puesto.setComision(updatePuestoDTO.getComision());
                     }
                     if (updatePuestoDTO.getDuenioId() != null) {
-                        entidadRepositorio.findById(updatePuestoDTO.getDuenioId())
-                                .ifPresentOrElse(
-                                        puesto::setDuenio,
-                                        () -> { throw new EntityNotFoundException("Entidad (dueño) con ID " + updatePuestoDTO.getDuenioId() + " no encontrada."); }
-                                );
-                    } else if (puesto.getDuenio() != null) { // Para desasociar el dueño del puesto
-                        puesto.setDuenio(null);
+                        if (updatePuestoDTO.getDuenioId() == 0){
+                            puesto.setDuenio(null);
+                        } else {
+                            entidadRepositorio.findById(updatePuestoDTO.getDuenioId())
+                                    .ifPresentOrElse(
+                                            puesto::setDuenio,
+                                            () -> {
+                                                throw new EntityNotFoundException("Entidad (dueño) con ID " + updatePuestoDTO.getDuenioId() + " no encontrada.");
+                                            }
+                                    );
+                        }
                     }
+
                     Puesto updatedPuesto = puestoRepositorio.save(puesto);
                     return convertirA_DTO(updatedPuesto);
                 });

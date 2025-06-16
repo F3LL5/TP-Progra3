@@ -1,4 +1,4 @@
--- drop database comercio;
+drop database comercio;
 create database if not exists comercio;
 use comercio;
 
@@ -21,9 +21,8 @@ create table entidades(
 create table if not exists puestos(
 	puesto_id bigint auto_increment primary key,
 	nombre varchar(100) not null,
-	duenio_id bigint not null,
+	duenio_id bigint null,
 	comision decimal(10,2) not null,
-
 	foreign key(duenio_id) references entidades(entidad_id)
 	on delete cascade
 	on update cascade
@@ -32,8 +31,8 @@ create table if not exists puestos(
 create table if not exists inventario_puesto (
 	inventario_id bigint auto_increment primary key,
 	cantidad int not null,
-	puesto_id bigint,
-	item_id bigint,
+	puesto_id bigint not null,
+	item_id bigint not null,
 	stock_min int not null,
 	precio_venta decimal(10,2) not null,
 	foreign key(puesto_id) references puestos(puesto_id),
@@ -105,8 +104,8 @@ BEFORE UPDATE ON items
 FOR EACH ROW
 BEGIN
     IF OLD.costo <> NEW.costo THEN
-        INSERT INTO item_precio_historial (item_id, costo_anterior, costo_nuevo)
-        VALUES (OLD.item_id, OLD.costo, now);
+        INSERT INTO item_precio_historial (item_id, costo_anterior, costo_nuevo, fecha_cambio)
+        VALUES (OLD.item_id, OLD.costo, now());
     END IF;
 END;
 //
@@ -121,11 +120,13 @@ BEGIN
         INSERT INTO historial_cambio_duenio (
             puesto_id,
             duenio_anterior_id,
-            duenio_nuevo_id
+            duenio_nuevo_id,
+            fecha_cambio
         ) VALUES (
             OLD.puesto_id,
             OLD.duenio_id,
-            NEW.duenio_id
+            NEW.duenio_id,
+            now()
         );
     END IF;
 END;

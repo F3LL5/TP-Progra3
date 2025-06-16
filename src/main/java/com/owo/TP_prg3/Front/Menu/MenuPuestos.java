@@ -45,7 +45,8 @@ public class MenuPuestos {
     }
 
     private void mostrar_menu() {
-        System.out.println("""
+        System.out.print("""
+                
                 --- MENÚ DE GESTIÓN DE PUESTOS ---
                 OPCIONES:
                 1. Obtener todos los puestos
@@ -109,7 +110,7 @@ public class MenuPuestos {
     }
 
     private void modificar() throws IOException, InterruptedException {
-        System.out.println("Ingrese ID del puesto que desea modificar: ");
+        System.out.print("Ingrese ID del puesto que desea modificar: ");
         String id = Escaner.stringValido(scanner);
         System.out.println();
 
@@ -137,15 +138,16 @@ public class MenuPuestos {
                 jsonBody = "{\"nombre\":\"" +  nombre + "\"}" ;
             }
             case 2 -> {
-                System.out.print("(Vacío para desasociar): ");
-                String duenioIdValue = Escaner.stringValido(scanner);
-                jsonBody = "{\"duenioId\":"  + duenioIdValue + "}";
+                System.out.print("(0 para desasociar): ");
+                Long idDuenio = Escaner.enteroValido(scanner).longValue();
+                jsonBody = "{\"duenioId\":"  + idDuenio + "}";
             }
             case 3 -> {
-                String comision = Escaner.stringValido(scanner);
+                double comision = Escaner.doubleValido(scanner);
                 jsonBody = "{\"comision\":" + comision + "}";
             }
         }
+        System.out.println(jsonBody);
         HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody);
     }
 

@@ -29,7 +29,7 @@ public class Puesto {
     protected String nombre;
 
     @ManyToOne
-    @JoinColumn(name = "duenio_id", referencedColumnName = "entidad_id", nullable = false)
+    @JoinColumn(name = "duenio_id", referencedColumnName = "entidad_id")
     protected Entidad duenio;
 
     @Column(nullable = false)
