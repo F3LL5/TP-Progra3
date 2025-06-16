@@ -1,5 +1,6 @@
 package com.owo.TP_prg3.Clases.Puesto.service;
 
+import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
 import com.owo.TP_prg3.Clases.Puesto.dto.CreatePuestoDTO;
 import com.owo.TP_prg3.Clases.Puesto.dto.PuestoDTO;
 import com.owo.TP_prg3.Clases.Puesto.dto.UpdatePuestoDTO;
@@ -23,6 +24,7 @@ public class PuestoServicioImpl implements PuestoServicio {
     private PuestoRepositorio puestoRepositorio;
     @Autowired
     private EntidadRepositorio entidadRepositorio; // Necesario para buscar la entidad dueña
+
 
     private PuestoDTO convertirA_DTO(Puesto puesto) {
         return new PuestoDTO(
@@ -112,5 +114,25 @@ public class PuestoServicioImpl implements PuestoServicio {
         }
 
         return puestoDTOStream.sorted(comparator).toList();
+    }
+
+    public Optional<PuestoDTO> getPuestoByDni(Long dni) {
+
+        List<PuestoDTO> puestos = getAllPuestos();
+        List<Entidad> entidades = entidadRepositorio.findAll();
+
+        // Buscamos el ID del dueño que tenga ese DNI
+        Optional<Long> duenioId = entidades.stream()
+                .filter(entidad -> entidad.getDni().equals(dni))
+                .map(Entidad::getEntidad_id)
+                .findFirst();
+
+        if (duenioId.isPresent()) {
+            return puestos.stream()
+                    .filter(puesto -> puesto.getDuenioId().equals(duenioId.get()))
+                    .findFirst();
+        } else {
+            return Optional.empty();
+        }
     }
 }
