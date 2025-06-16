@@ -13,6 +13,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "puestos")
 @Data @AllArgsConstructor @NoArgsConstructor
@@ -29,5 +31,8 @@ public class Puesto {
     @ManyToOne
     @JoinColumn(name = "duenio_id", referencedColumnName = "entidad_id", nullable = false)
     protected Entidad duenio;
+
+    @Column(nullable = false)
+    protected BigDecimal comision;
 
 }

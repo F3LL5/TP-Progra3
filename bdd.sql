@@ -22,6 +22,8 @@ create table if not exists puestos(
 	puesto_id bigint auto_increment primary key,
 	nombre varchar(100) not null,
 	duenio_id bigint not null,
+	comision decimal(10,2) not null,
+
 	foreign key(duenio_id) references entidades(entidad_id)
 	on delete cascade
 	on update cascade

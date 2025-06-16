@@ -29,15 +29,17 @@ public class PuestoServicioImpl implements PuestoServicio {
 
     private PuestoDTO convertirA_DTO(Puesto puesto) {
         return new PuestoDTO(
-                puesto.getPuestoId(),
-                puesto.getNombre(),
+                        puesto.getPuestoId(),
+                        puesto.getNombre(),
+                puesto.getComision(),
                 puesto.getDuenio() != null ? puesto.getDuenio().getEntidad_id() : null
-        );
+                );
     }
 
     private Puesto convertirA_Puesto(CreatePuestoDTO puestoDTO) {
         Puesto puesto = new Puesto();
         puesto.setNombre(puestoDTO.getNombre());
+        puesto.setComision(puestoDTO.getComision());
 
         entidadRepositorio.findById(puestoDTO.getDuenioId())
                 .ifPresentOrElse(
@@ -88,6 +90,9 @@ public class PuestoServicioImpl implements PuestoServicio {
                 .map(puesto -> {
                     if (updatePuestoDTO.getNombre() != null) {
                         puesto.setNombre(updatePuestoDTO.getNombre());
+                    }
+                    if (updatePuestoDTO.getComision() != null) {
+                        puesto.setComision(updatePuestoDTO.getComision());
                     }
                     if (updatePuestoDTO.getDuenioId() != null) {
                         entidadRepositorio.findById(updatePuestoDTO.getDuenioId())

@@ -84,12 +84,19 @@ public class MenuPuestos {
 
     private void agregar() throws IOException, InterruptedException {
         System.out.println("AGREGAR NUEVO PUESTO");
-        System.out.print("Ingrese NOMBRE: "); String nombre = Escaner.stringValido(scanner);
-        System.out.print("Ingrese ID dueño: "); String duenioId = Escaner.stringValido(scanner);
+        System.out.print("Ingrese NOMBRE: ");
+        String nombre = Escaner.stringValido(scanner);
+
+        System.out.print("Ingrese ID dueño: ");
+        int duenioId = Escaner.enteroValido(scanner);
+
+        System.out.print("Ingrese COMISIÓN (por ejemplo 0.15): ");
+        Double comision = Escaner.doubleValido(scanner);
 
         String jsonBody = "{" +
-                "\"nombre\":\"" + nombre + "\",\n" +
-                "\"duenioId\":" + duenioId +
+                "\"nombre\":\"" + nombre + "\"," +
+                "\"duenioId\":" + duenioId + "," +
+                "\"comision\":" + comision +
                 "}";
 
         HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
@@ -107,16 +114,23 @@ public class MenuPuestos {
         System.out.println();
 
         System.out.print("""
-                ATRIBUTO A MODIFICAR:
-                1. Nombre
-                2. Dueño (Desasociar/Cambiar)
-                0. Cancelar
-                Ingrese una opción:"""
-        );
-        Integer opcion = Escaner.enteroValido(scanner);
+            ATRIBUTO A MODIFICAR:
+            1. Nombre
+            2. Dueño (Desasociar/Cambiar)
+            3. Comisión
+            0. Cancelar
+            Ingrese una opción:""");
+        int opcion = Escaner.enteroValido(scanner);
 
-        if (opcion != 0 ) System.out.print("Ingrese el nuevo valor: ");
         String jsonBody = "";
+        if (opcion == 0) {
+            System.out.println("Modificación cancelada.");
+        } else if (opcion < 1 || opcion > 3) {
+            System.out.println("Opción no válida.");
+            return;
+        }
+
+        System.out.print("Ingrese el nuevo valor: ");
         switch (opcion){
             case 1 -> {
                 String nombre = Escaner.stringValido(scanner);
@@ -124,16 +138,14 @@ public class MenuPuestos {
             }
             case 2 -> {
                 System.out.print("(Vacío para desasociar): ");
-                String duenioId = Escaner.stringValido(scanner);
-                jsonBody = "{\"duenioId\":"  + duenioId + "}";
+                String duenioIdValue = Escaner.stringValido(scanner);
+                jsonBody = "{\"duenioId\":"  + duenioIdValue + "}";
             }
-            case 0 -> {}
-            default -> {
-                System.out.println("Opcion no válida.");
-                return;
+            case 3 -> {
+                String comision = Escaner.stringValido(scanner);
+                jsonBody = "{\"comision\":" + comision + "}";
             }
         }
-
         HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody);
     }
 

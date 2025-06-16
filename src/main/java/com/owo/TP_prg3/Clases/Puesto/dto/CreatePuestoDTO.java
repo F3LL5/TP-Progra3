@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,4 +21,8 @@ public class CreatePuestoDTO {
     @NotNull(message = "El ID del dueño es obligatorio.")
     @Positive(message = "El ID del dueño debe ser un número positivo.")
     protected Long duenioId;
+
+    @NotNull(message = "La comisión es obligatoria.")
+    @Positive(message = "La comisión debe ser un número positivo.")
+    protected BigDecimal comision;
 }

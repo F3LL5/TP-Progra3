@@ -1,7 +1,6 @@
 package com.owo.TP_prg3.Clases.Puesto.dto;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
+import io.micrometer.common.lang.Nullable;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -19,4 +18,7 @@ public class UpdatePuestoDTO {
 
     @Positive(message = "El ID del dueño debe ser un número positivo.")
     protected Long duenioId;
+
+    @Positive(message = "La comisión debe ser un número positivo.")
+    protected BigDecimal comision;
 }
