@@ -98,14 +98,13 @@ public class PuestoServicioImpl implements PuestoServicio {
     }
 
     @Override
-    public Optional<PuestoDTO> getPuestoByNombre(String nombre) {
-        return getAllPuestos().stream().filter(puesto -> puesto.getNombre().equalsIgnoreCase(nombre)).findFirst();
-    }
-
-    @Override
-    public List<PuestoDTO> ordenarPorNombre(String sortDir) {
+    public List<PuestoDTO> filtrarYOrdenarPorNombre(String nombre, String sortDir) {
         List<PuestoDTO> allPuestos = getAllPuestos();
         Stream<PuestoDTO> puestoDTOStream = allPuestos.stream();
+
+        if(nombre != null && !nombre.isEmpty()) {
+            puestoDTOStream = puestoDTOStream.filter(puesto -> puesto.getNombre().equalsIgnoreCase(nombre));
+        }
 
         Comparator<PuestoDTO> comparator = Comparator.comparing(PuestoDTO::getNombre);
         if ("desc".equalsIgnoreCase(sortDir)) {

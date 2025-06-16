@@ -45,17 +45,11 @@ public class PuestoControlador {
         return puestoServicio.updatePuesto(id, updatePuestoDTO);
     }
 
-    @GetMapping("/buscarPorNombre")
-    public PuestoDTO findPuestoByNombre(
-            @RequestParam (required = false) String nombre
-    ) {
-        return puestoServicio.getPuestoByNombre(nombre).orElse(null);
-    }
-
-    @GetMapping("/ordenarPorNombre")
+    @GetMapping("/filtrarYOrdenarPorNombre")
     public List<PuestoDTO> ordenarPorNombre(
+            @RequestParam(required = false) String nombre,
             @RequestParam(required = false) String sortDir
     ) {
-        return puestoServicio.ordenarPorNombre(sortDir);
+        return puestoServicio.filtrarYOrdenarPorNombre(nombre, sortDir);
     }
 }

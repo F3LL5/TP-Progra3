@@ -33,9 +33,8 @@ public class MenuPuestos {
                 case "3" -> agregar();
                 case "4" -> eliminar();
                 case "5" -> modificar();
-                case "6" -> buscar_x_nombre();
-                case "7" -> ordenar_x_nombre();
-                case "8" -> {
+                case "6" -> filtrarYOrdenar();
+                case "7" -> {
                     MenuHistorial_Duenio auditoria=new MenuHistorial_Duenio(authHeader);
                     auditoria.gestionar();
                 }
@@ -54,9 +53,8 @@ public class MenuPuestos {
                 3. Agregar puesto
                 4. Eliminar puesto
                 5. Modificar puesto
-                6. Buscar por NOMBRE
-                7. Ordenar por NOMBRES
-                8. Historial de Duenios
+                6. Filtrar y Ordenar por NOMBRE de puesto
+                7. Historial de Duenios
                 0. Salir
                 INGRESE LA OPCIÓN QUE DESEE:""");
     }
@@ -139,19 +137,25 @@ public class MenuPuestos {
         HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody);
     }
 
-    private void buscar_x_nombre() throws IOException, InterruptedException {
-        System.out.print("--- Ingrese NOMBRE a buscar: ");
-        String nombre = Escaner.stringValido(scanner);
+    private void filtrarYOrdenar () throws IOException, InterruptedException {
+        System.out.println("--- Fitrar y ordenar por nombre ---");
+        System.out.println("Filtrar por NOMBRE de puesto o dejar vacío: ");
+        String nombre = scanner.nextLine().trim();
+        if (nombre.isBlank()) nombre = null;
 
-        String url = API_URL + "/buscarPorNombre?nombre=" + nombre;
-        HttpService.realizarPeticion("GET", url, authHeader, null);
-    }
+        System.out.println("Ordenar de forma... (asc / desc) o dejar vacío: ");
+        String sortDir = scanner.nextLine().trim();
+        if (sortDir.isBlank()) sortDir = null;
 
-    private void ordenar_x_nombre () throws IOException, InterruptedException {
-        System.out.print("Dirección de orden... (asc / desc): ");
-        String sortDir = Escaner.stringValido(scanner);
+        StringBuilder urlBuilder = new StringBuilder(API_URL + "/filtrarYOrdenarPorNombre?");
+        if (nombre != null) urlBuilder.append("nombre=").append(nombre).append("&");
+        if (sortDir != null) urlBuilder.append("sortDir=").append(sortDir);
 
-        String url = API_URL + "/ordenarPorNombre?sortDir=" + sortDir;
-        HttpService.realizarPeticion("GET", url, authHeader, null);
+        String finalUrl = urlBuilder.toString();
+        if (finalUrl.endsWith("&") || finalUrl.endsWith("?")) {
+            finalUrl = finalUrl.substring(0, finalUrl.length() - 1);
+        }
+
+        HttpService.realizarPeticion("GET", finalUrl, authHeader, null);
     }
 }
