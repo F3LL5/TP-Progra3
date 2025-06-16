@@ -3,6 +3,7 @@ package com.owo.TP_prg3.Front.Menu;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jakewharton.fliptables.FlipTableConverters;
 import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CuentaBancariaDTO;
+import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
 import com.owo.TP_prg3.Clases.Puesto.dto.PuestoDTO;
 import com.owo.TP_prg3.Front.HttpService;
 import com.owo.TP_prg3.Front.Menu.MenuAuditoria.MenuHistorial_Duenio;
@@ -74,7 +75,13 @@ public class MenuPuestos {
     private void buscar_x_id() throws IOException, InterruptedException {
         System.out.println("INGRESE ID DEL PUESTO: ");
         String id = Escaner.stringValido(scanner);
-        HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null);
+        HttpResponse<String> response = HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null);
+        String respuestaJson = response.body();
+
+        ObjectMapper mapper = new ObjectMapper();
+        PuestoDTO puesto= mapper.readValue(respuestaJson, PuestoDTO.class);
+
+        System.out.println(FlipTableConverters.fromIterable(List.of(puesto), PuestoDTO.class));
     }
 
     private void agregar() throws IOException, InterruptedException {
