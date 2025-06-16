@@ -1,10 +1,17 @@
 package com.owo.TP_prg3.Front.Menu;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jakewharton.fliptables.FlipTableConverters;
+import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CuentaBancariaDTO;
+import com.owo.TP_prg3.Clases.Puesto.dto.PuestoDTO;
 import com.owo.TP_prg3.Front.HttpService;
 import com.owo.TP_prg3.Front.Menu.MenuAuditoria.MenuHistorial_Duenio;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 
 import java.io.IOException;
+import java.net.http.HttpResponse;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class MenuPuestos {
@@ -55,8 +62,14 @@ public class MenuPuestos {
 
     private void obtener_todos() throws IOException, InterruptedException {
         System.out.println("OBTENIENDO PUESTOS...");
-        HttpService.realizarPeticion("GET", API_URL, authHeader, null);
-    }
+        HttpResponse<String> response = HttpService.realizarPeticion("GET", API_URL, authHeader, null);
+        String respuestaJson = response.body();
+
+        ObjectMapper mapper = new ObjectMapper();
+        List<PuestoDTO> puestos = Arrays.asList(mapper.readValue(respuestaJson, PuestoDTO[].class));
+
+        System.out.println(FlipTableConverters.fromIterable(puestos, PuestoDTO.class));
+   }
 
     private void buscar_x_id() throws IOException, InterruptedException {
         System.out.println("INGRESE ID DEL PUESTO: ");
