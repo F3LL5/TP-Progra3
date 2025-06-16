@@ -67,14 +67,23 @@ public class MenuTransacciones {
     //GET
     private void obtenerTodas() throws IOException, InterruptedException {
         System.out.println("\n--- Obteniendo todas las transacciones... ---");
+
         HttpResponse<String> response = HttpService.realizarPeticion("GET", API_URL, authHeader, null);
         String respuestaJson = response.body();
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule()); // Habilita el soporte para LocalDateTime
 
-        List<TransaccionDTO> transacciones = Arrays.asList(mapper.readValue(respuestaJson, TransaccionDTO[].class));
+        List<TransaccionDTO> transacciones = Arrays.asList(
+                mapper.readValue(respuestaJson, TransaccionDTO[].class)
+        );
 
+        if (transacciones.isEmpty()) {
+            System.out.println("No se encontraron transacciones.");
+            return;
+        }
+
+        // Simplemente pasa la lista de TransaccionDTO y la clase al conversor
         System.out.println(FlipTableConverters.fromIterable(transacciones, TransaccionDTO.class));
     }
 
