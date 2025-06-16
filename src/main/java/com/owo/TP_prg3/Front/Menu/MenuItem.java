@@ -1,9 +1,15 @@
 package com.owo.TP_prg3.Front.Menu;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jakewharton.fliptables.FlipTableConverters;
+import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import com.owo.TP_prg3.Front.Menu.MenuAuditoria.MenuHistorial_Item;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 import com.owo.TP_prg3.Front.HttpService;
 import java.io.IOException;
+import java.net.http.HttpResponse;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class MenuItem {
@@ -66,8 +72,18 @@ public class MenuItem {
     //Metodos
     //GET
     private void obtenerTodas() throws IOException, InterruptedException {
-        System.out.println("\n--- Obteniendo todas las items... ---");
-        HttpService.realizarPeticion("GET", API_URL, authHeader, null);
+        System.out.println("\n--- Obteniendo todos los items... ---");
+
+        // Realizar la petición HTTP
+        HttpResponse<String> response = HttpService.realizarPeticion("GET", API_URL, authHeader, null);
+        String respuestaJson = response.body();
+
+        // Convertir JSON a lista de ItemDTO
+        ObjectMapper mapper = new ObjectMapper();
+        List<ItemDTO> items = Arrays.asList(mapper.readValue(respuestaJson, ItemDTO[].class));
+
+        // Imprimir en formato tabla
+        System.out.println(FlipTableConverters.fromIterable(items, ItemDTO.class));
     }
 
     private void buscarPorId() throws IOException, InterruptedException {

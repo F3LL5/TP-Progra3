@@ -4,10 +4,11 @@ import com.owo.TP_prg3.Auditoria.DuenioHistorial.dto.DuenioHistorialDTO;
 import com.owo.TP_prg3.Auditoria.DuenioHistorial.modelo.DuenioHistorial;
 import com.owo.TP_prg3.Auditoria.DuenioHistorial.modelo.DuenioHistorialRepositorio;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-
+@Service
 public class DuenioHistorialServiciolmpl implements DuenioHistorialServicio{
     /// ATRIBUTOS
     @Autowired
@@ -45,7 +46,7 @@ public class DuenioHistorialServiciolmpl implements DuenioHistorialServicio{
                 .append( i.getId_historial_nuevo() + ". ")
                 .append( i )
                 .append(",\n"));
-        return s.toString();;
+        return s.toString();
     }
 
 
