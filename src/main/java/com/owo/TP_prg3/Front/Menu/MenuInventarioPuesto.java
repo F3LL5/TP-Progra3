@@ -38,6 +38,7 @@ public class MenuInventarioPuesto {
                 case "5" -> modificar();
                 case "6" -> mostrarProductosEnStock();
                 case "7" -> mostrarProductosEnStockBajo();
+                case "8" -> filtrarYordenarItemsInventario();
                 case "0" -> {}
                 default -> System.out.println("OPCIÓN INVÁLIDA. VUELVA A INTENTAR");
             }
@@ -55,6 +56,8 @@ public class MenuInventarioPuesto {
                 5. Modificar inventario
                 6. Mostrar productos en stock
                 7. Mostrar productos en stock bajo
+                8. Filtrar y ordenar inventario de puesto
+                //agregar mostrar todos los inv del puesto
                 0. Salir
                 INGRESE LA OPCIÓN QUE DESEE:""");
     }
@@ -126,8 +129,6 @@ public class MenuInventarioPuesto {
                 3. Item
                 4. Stock Minimo
                 5. Precio de venta
-                6. Mostrar productos en stock
-                7. Mostrar productos en stock Bajo
                 0. Cancelar
                 Ingrese una opción:"""
         );
@@ -230,8 +231,48 @@ public class MenuInventarioPuesto {
         System.out.println(FlipTable.of(headers, data));
     }
     
+    private void filtrarYordenarItemsInventario() throws IOException, InterruptedException {
+        System.out.println("--- Filtrar y ordenar items del inventario ---");
+        System.out.println("Ingrese id del puesto");
+        Long puestoId=Long.valueOf(Escaner.enteroValido(scanner));
+        System.out.print("Filtrar por categoría (dejar vacío si no aplica): ");
+        String categoria = scanner.nextLine();
+        if (categoria.isBlank()) categoria = null;
+
+        System.out.print("Ordenar por 'nombre' , 'costo','cantidad', (dejar vacío si no aplica): ");
+        String orden = scanner.nextLine();
+        String direccion = null;
+        if (orden.isBlank()) {
+            orden = null;
+        } else {
+            System.out.print("Ordenar 'asc' o 'desc' (dejar vacío si no aplica): ");
+            direccion = scanner.nextLine();
+            if (direccion.isBlank()) direccion = null;
+        }
+
+        StringBuilder urlBuilder = new StringBuilder(API_URL + "/filtrarYordenarItemsInventario?");
+        urlBuilder.append("id=").append(puestoId).append("&");
+        if (categoria != null) urlBuilder.append("categoria=").append(categoria).append("&");
+        if (orden != null) urlBuilder.append("orden=").append(orden).append("&");
+        if (direccion != null) urlBuilder.append("direccion=").append(direccion);
+
+        String finalUrl = urlBuilder.toString();
+        if (finalUrl.endsWith("&") || finalUrl.endsWith("?")) {
+            finalUrl = finalUrl.substring(0, finalUrl.length() - 1);
+        }
+
+        System.out.println("\n-> Consultando " + finalUrl);
+
+        HttpResponse<String> response = HttpService.realizarPeticion("GET", finalUrl, authHeader, null);
 
 
+
+
+
+
+
+
+    }
 
 
 

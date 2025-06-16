@@ -62,6 +62,21 @@ public class InventarioPuestoControlador {
         return itemsEnStockBajo;
     }
 
+    @GetMapping("/filtrarYordenarItemsInventario")
+    public List<Map<String,Object>> filtrarYordenarItemsInventario(
+            @RequestParam Long id,
+            @RequestParam(required = false)String categoria,
+            @RequestParam(required = false)String orden,
+            @RequestParam(required = false)String direccion
+    ){
+        return inventarioPuestoServicio.filtrarYordenar(id,categoria,orden,direccion);
+    }
 
 
+
+
+
+
+
+    //final
 }

@@ -18,6 +18,7 @@ import jakarta.persistence.EntityNotFoundException;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
@@ -141,12 +142,17 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
     public List<Map<String,Object>> mostrarItemsEnStock(Long puestoId)
     {
         List<ItemDTO> ListaItems=itemServicio.getAllProducts();
-        List<InventarioPuestoDTO> inventarioConStock=obtenerInventariosDeUnPuesto(puestoId);
+        List<InventarioPuestoDTO> inventariosPuesto=obtenerInventariosDeUnPuesto(puestoId);
+
+        List<InventarioPuestoDTO> inventarioConStock=inventariosPuesto.stream()
+                                                    .filter(inventariopuestodto->inventariopuestodto.getCantidad()>0)
+                                                    .toList();
+
 
 
         List<ItemDTO> itemsConStock = ListaItems.stream()
                 .filter(item -> inventarioConStock.stream()
-                        .anyMatch(inv -> (inv.getItemId() == item.getItem_id()) && (inv.getCantidad() > 0)))
+                        .anyMatch(inv -> (inv.getItemId() == item.getItem_id())))
                 .toList();
         System.out.println(itemsConStock);
 
@@ -159,7 +165,8 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
                     fila.put("id_Item", item.getItem_id());
                     fila.put("nombre", item.getNombre());
                     fila.put("costo", item.getCosto());
-                    fila.put("cantidad", inv.getCantidad()); // Agregás el stock
+                    fila.put("categoria",item.getCategoria());
+                    fila.put("cantidad", inv.getCantidad()); // se agrega stock
 
                     respuesta.add(fila);
                     break;
@@ -169,7 +176,38 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
         return respuesta;
     }
 
+    public List<Map<String,Object>> obtenerItemsEnInventario(Long puestoId)
+    {
+        List<ItemDTO> ListaItems=itemServicio.getAllProducts();
+        List<InventarioPuestoDTO> inventarioPuesto=obtenerInventariosDeUnPuesto(puestoId);
 
+
+        List<ItemDTO> itemsEnInventario = ListaItems.stream()
+                .filter(item -> inventarioPuesto.stream()
+                        .anyMatch(inv -> (inv.getItemId() == item.getItem_id())))
+                .toList();
+        System.out.println(itemsEnInventario);
+
+        List<Map<String, Object>> respuesta = new ArrayList<>();
+
+        for (ItemDTO item : itemsEnInventario) {
+            for (InventarioPuestoDTO inv : inventarioPuesto) {
+                if (inv.getItemId() == item.getItem_id()) {
+                    Map<String, Object> fila = new HashMap<>();
+                    fila.put("id_Item", item.getItem_id());
+                    fila.put("nombre", item.getNombre());
+                    fila.put("costo", item.getCosto());
+                    fila.put("categoria",item.getCategoria());
+                    fila.put("cantidad", inv.getCantidad()); // Agregás el stock
+
+
+                    respuesta.add(fila);
+                    break;
+                }
+            }
+        }
+        return respuesta;
+    }
     public List<Map<String,Object>> mostrarItemsEnStockBajo(Long puestoId)
     {
         List<ItemDTO> ListaItems=itemServicio.getAllProducts();
@@ -191,6 +229,7 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
                     fila.put("id_Item", item.getItem_id());
                     fila.put("nombre", item.getNombre());
                     fila.put("costo", item.getCosto());
+                    fila.put("categoria",item.getCategoria());
                     fila.put("cantidad", inv.getCantidad()); // Agregás el stock
 
                     respuesta.add(fila);
@@ -201,7 +240,39 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
         return respuesta;
     }
 
+    public List<Map<String,Object>> filtrarYordenar(Long puestoId,String categoria,String orden,String direccion)
+    {
 
+        List<Map<String,Object>> itemsMap=obtenerItemsEnInventario(puestoId);
+
+        if (categoria != null && !categoria.isEmpty()) {
+            itemsMap = itemsMap.stream()
+                    .filter(item -> categoria.equalsIgnoreCase((String) item.get("categoria")))
+                    .collect(Collectors.toList());
+        }
+
+        String campoOrden = (orden == null || orden.isEmpty()) ? "nombre" : orden;
+        String campoDireccion = (direccion == null || direccion.isEmpty()) ? "asc" : direccion;
+
+
+
+        itemsMap.sort((a, b) -> {
+
+            Comparable valorA = (Comparable) a.get(campoOrden);
+            Comparable valorB = (Comparable) b.get(campoOrden);
+
+
+            int comparacion = valorA.compareTo(valorB);
+
+
+            if ("desc".equalsIgnoreCase(campoDireccion)) {
+                return -comparacion;
+            } else {
+                return comparacion;
+            }
+        });
+        return itemsMap;
+    }
 
 
 
