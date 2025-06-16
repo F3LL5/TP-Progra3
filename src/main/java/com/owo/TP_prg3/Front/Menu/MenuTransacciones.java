@@ -1,6 +1,7 @@
 package com.owo.TP_prg3.Front.Menu;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jakewharton.fliptables.FlipTableConverters;
 import com.owo.TP_prg3.Clases.Puesto.dto.PuestoDTO;
 import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
@@ -66,34 +67,51 @@ public class MenuTransacciones {
     //GET
     private void obtenerTodas() throws IOException, InterruptedException {
         System.out.println("\n--- Obteniendo todas las transacciones... ---");
-        HttpResponse<String> response =  HttpService.realizarPeticion("GET", API_URL, authHeader, null);
+        HttpResponse<String> response = HttpService.realizarPeticion("GET", API_URL, authHeader, null);
         String respuestaJson = response.body();
+
         ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule()); // Habilita el soporte para LocalDateTime
+
         List<TransaccionDTO> transacciones = Arrays.asList(mapper.readValue(respuestaJson, TransaccionDTO[].class));
 
         System.out.println(FlipTableConverters.fromIterable(transacciones, TransaccionDTO.class));
     }
 
+
     private void buscarPorId() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID de la entidad: ");
         Integer id = Escaner.enteroValido(scanner);
-        HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null);
+
+        HttpResponse<String> response = HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null);
+        String respuestaJson = response.body();
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule()); // Soporte para LocalDateTime
+
+        TransaccionDTO transaccion = mapper.readValue(respuestaJson, TransaccionDTO.class);
+        System.out.println(FlipTableConverters.fromIterable(List.of(transaccion), TransaccionDTO.class));
     }
 
     private void filtrarYOrdenar() throws IOException, InterruptedException {
         System.out.println("--- Filtrar y ordenar transacciones ---");
-        System.out.println("Filtrar por TIPO de transacciones (COMPRA, VENTA, INGRESO, EGRESO) o dejar vacío: ");
+
+        System.out.print("Filtrar por TIPO (COMPRA, VENTA, INGRESO, EGRESO) o dejar vacío: ");
         String tipo_transaccion = scanner.nextLine().trim();
-        if(tipo_transaccion.isBlank()) tipo_transaccion = null;
+        if (tipo_transaccion.isBlank()) tipo_transaccion = null;
 
-        System.out.println("Ordenar por... (fecha, monto, id_cuenta_origen, id_cuenta_destino) o dejar vacío: ");
+        System.out.print("Ordenar por 'fecha', 'monto', 'id_cuenta_origen', 'id_cuenta_destino' o dejar vacío: ");
         String sortBy = scanner.nextLine().trim();
-        if(sortBy.isBlank()) sortBy = null;
+        String sortDir = null;
+        if (!sortBy.isBlank()) {
+            System.out.print("Dirección de orden: 'asc' o 'desc' (dejar vacío si no aplica): ");
+            sortDir = scanner.nextLine().trim();
+            if (sortDir.isBlank()) sortDir = null;
+        } else {
+            sortBy = null;
+        }
 
-        System.out.println("Dirección de orden... (asc / desc) o dejar vacío: ");
-        String sortDir = scanner.nextLine().trim();
-        if(sortDir.isBlank()) sortDir = null;
-
+        // Construcción de la URL
         StringBuilder urlBuilder = new StringBuilder(API_URL + "/filtrarYOrdenar?");
         if (tipo_transaccion != null) urlBuilder.append("tipo_transaccion=").append(tipo_transaccion).append("&");
         if (sortBy != null) urlBuilder.append("sortBy=").append(sortBy).append("&");
@@ -104,8 +122,25 @@ public class MenuTransacciones {
             finalUrl = finalUrl.substring(0, finalUrl.length() - 1);
         }
 
-        HttpService.realizarPeticion("GET", finalUrl, authHeader, null);
+        System.out.println("\n-> Consultando " + finalUrl);
+
+        HttpResponse<String> response = HttpService.realizarPeticion("GET", finalUrl, authHeader, null);
+        String respuestaJson = response.body();
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule()); // Soporte para LocalDateTime
+
+        List<TransaccionDTO> transacciones = Arrays.asList(mapper.readValue(respuestaJson, TransaccionDTO[].class));
+
+        if (transacciones.isEmpty()) {
+            System.out.println("No se encontraron transacciones con esos filtros.");
+            return;
+        }
+
+        System.out.println(FlipTableConverters.fromIterable(transacciones, TransaccionDTO.class));
     }
+
+
 
     //POST
     private void agregar() throws IOException, InterruptedException {
