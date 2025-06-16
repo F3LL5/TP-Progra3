@@ -1,10 +1,7 @@
 package com.owo.TP_prg3.Clases.Entidad.dto;
 
 import com.owo.TP_prg3.Clases.Entidad.modelo.RolEntidad;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,10 +23,10 @@ public class CreateEntidadDTO {
     protected String tipoEntidad;
 
     @NotNull(message = "La edad es obligatoria.")
-    @Min(value = 0, message = "La edad no puede ser negativa.")
+    @Positive(message = "La edad de entidad debe ser un número positivo.")
     protected Integer edad;
 
     @NotNull(message = "El DNI es obligatorio.")
-    @Min(value = 1, message = "El DNI debe ser un número positivo.")
+    @Positive(message = "El DNI debe ser un número positivo.")
     protected Integer dni;
 }

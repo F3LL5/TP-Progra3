@@ -1,6 +1,7 @@
 package com.owo.TP_prg3.Clases.InventarioPuesto.dto;
 
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,16 +12,18 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateInventarioPuestoDTO {
-    @Min(value = 0)
+    @Positive(message = "La cantidad debe ser un número positivo")
     protected Integer cantidad;
 
+    @Positive(message = "El ID del puesto debe ser un número positivo")
     protected Long puestoId;
 
+    @Positive(message = "El ID del item debe ser un número positivo")
     protected Long itemId;
 
-    @Min(value = 0)
+    @Positive(message = "El stock mínimo debe ser un número positivo")
     protected Integer stockMin;
 
-    @Min(value = 0)
+    @Positive(message = "El precio de venta debe ser un número positivo")
     protected BigDecimal precioVenta;
 }

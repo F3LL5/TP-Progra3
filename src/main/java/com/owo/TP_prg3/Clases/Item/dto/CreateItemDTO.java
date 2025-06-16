@@ -3,6 +3,7 @@ package com.owo.TP_prg3.Clases.Item.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,6 +22,6 @@ public class CreateItemDTO {
     protected String categoria;
 
     @NotBlank(message = "El costo es obligatorio.")
-    @Min(value = 0, message = "El costo no puede ser negativo.")
+    @Positive(message = "El costo debe ser un número positivo.")
     protected Double costo;
 }

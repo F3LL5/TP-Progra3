@@ -2,6 +2,7 @@ package com.owo.TP_prg3.Clases.CuentaBancaria.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,9 +14,10 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class CreateCuentaBancariaDTO {
     @NotNull
+    @Positive(message = "El ID de entidad debe ser un número positivo.")
     protected Long entidadId;
 
     @NotNull
-    @Min(value = 0)
+    @Positive(message = "El costo debe ser un número positivo.")
     protected BigDecimal saldo;
 }

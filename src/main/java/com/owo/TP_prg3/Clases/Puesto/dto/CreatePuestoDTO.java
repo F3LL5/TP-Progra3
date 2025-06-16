@@ -2,6 +2,7 @@ package com.owo.TP_prg3.Clases.Puesto.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,5 +17,6 @@ public class CreatePuestoDTO {
     protected String nombre;
 
     @NotNull(message = "El ID del dueño es obligatorio.")
+    @Positive(message = "El ID del dueño debe ser un número positivo.")
     protected Long duenioId;
 }
