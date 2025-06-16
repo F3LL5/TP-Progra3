@@ -16,10 +16,8 @@ public class UpdateDetallePedidoDTO {
 
     protected Long itemId;
 
-    @Min(value = 1)
+    @Min(value = 0)
     protected Integer cantidad;
 
-    @Min(value = 0)
     protected BigDecimal precioTotal;
-
 }

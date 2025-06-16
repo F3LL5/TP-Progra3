@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class PedidoDTO {
     protected Long pedidoId;
     protected Long transaccionId;
+    protected Long puestoId;
 }

@@ -33,8 +33,23 @@ public class PedidoServicioImpl implements PedidoServicio {
     private PedidoDTO convertirA_DTO(Pedido pedido) {
         return new PedidoDTO(
                 pedido.getPedidoId(),
-                pedido.getTransaccion().getTransaccionId()
+                pedido.getTransaccion().getTransaccionId(),
+                pedido.getPuestoId()
         );
+    }
+
+    private Pedido convertirA_Pedido(CreatePedidoDTO createPedidoDTO){
+        Pedido pedido = new Pedido();
+
+        transaccionRepositorio.findById(createPedidoDTO.getTransaccionId())
+                .ifPresentOrElse(
+                        pedido::setTransaccion,
+                        () -> { throw new EntityNotFoundException("Transaccion con ID " + createPedidoDTO.getTransaccionId() + " no encontrada."); }
+                );
+
+        pedido.setPuestoId(createPedidoDTO.getPuestoId());
+
+        return pedido;
     }
 
     //METODOS
@@ -54,15 +69,8 @@ public class PedidoServicioImpl implements PedidoServicio {
     @Override
     @Transactional
     public PedidoDTO createPedido(CreatePedidoDTO createPedidoDTO) {
-        Pedido nuevoPedido = new Pedido();
-
-        transaccionRepositorio.findById(createPedidoDTO.getTransaccionId())
-                .ifPresentOrElse(
-                        nuevoPedido::setTransaccion,
-                        () -> { throw new EntityNotFoundException("Transaccion con ID " + createPedidoDTO.getTransaccionId() + " no encontrada."); }
-                );
-
-        Pedido savedPedido = pedidoRepositorio.save(nuevoPedido);
+        Pedido pedido = convertirA_Pedido(createPedidoDTO);
+        Pedido savedPedido = pedidoRepositorio.save(pedido);
         return convertirA_DTO(savedPedido);
     }
 
@@ -72,10 +80,14 @@ public class PedidoServicioImpl implements PedidoServicio {
         return pedidoRepositorio.findById(id)
                 .map(pedido -> {
                     if (updatePedidoDTO.getTransaccionId() != null) {
-                        transaccionRepositorio.findById(updatePedidoDTO.getTransaccionId())
-                                .ifPresentOrElse( pedido::setTransaccion, () -> { throw new EntityNotFoundException("Transaccion con ID " + updatePedidoDTO.getTransaccionId() + " no encontrada."); });
-                    } else if (pedido.getTransaccion() != null) {
-                        pedido.setTransaccion(null);
+                        transaccionRepositorio
+                                .findById(updatePedidoDTO.getTransaccionId())
+                                .ifPresentOrElse( pedido::setTransaccion, () -> {
+                                    throw new EntityNotFoundException("Transaccion con ID " + updatePedidoDTO.getTransaccionId() + " no encontrada.");
+                                });
+                    }
+                    if (updatePedidoDTO.getPuestoId() != null) {
+                        pedido.setPuestoId(updatePedidoDTO.getPuestoId());
                     }
 
                     Pedido updatedPedido = pedidoRepositorio.save(pedido);

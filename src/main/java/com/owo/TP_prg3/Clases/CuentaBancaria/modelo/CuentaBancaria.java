@@ -13,6 +13,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "cuenta_bancaria")
 @Data @AllArgsConstructor @NoArgsConstructor
@@ -28,5 +30,5 @@ public class CuentaBancaria {
     protected Entidad entidad;
 
     @Column(nullable = false, precision = 10, scale = 2)
-    protected java.math.BigDecimal saldo;
+    protected BigDecimal saldo;
 }

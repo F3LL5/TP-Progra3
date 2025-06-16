@@ -61,7 +61,9 @@ create table if not exists transacciones(
 create table if not exists pedidos (
 	pedido_id bigint auto_increment primary key,
 	transaccion_id bigint,
-	foreign key(transaccion_id) references transacciones(transaccion_id)
+	puesto_id bigint,
+	foreign key(transaccion_id) references transacciones(transaccion_id),
+	foreign key(puesto_id) references puestos(puesto_id)
 );
 
 create table if not exists detalles_pedido (

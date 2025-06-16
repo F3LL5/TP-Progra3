@@ -10,7 +10,6 @@ import com.owo.TP_prg3.Clases.Transaccion.modelo.Transaccion;
 @Table(name = "pedidos")
 @Data @AllArgsConstructor @NoArgsConstructor
 public class Pedido {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "pedido_id")
@@ -19,4 +18,7 @@ public class Pedido {
     @ManyToOne
     @JoinColumn(name = "transaccion_id", referencedColumnName = "transaccion_id")
     protected Transaccion transaccion;
+
+    @Column(name = "puesto_id")
+    protected Long puestoId;
 }

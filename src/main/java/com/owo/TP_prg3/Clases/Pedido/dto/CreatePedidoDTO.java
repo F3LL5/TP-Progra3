@@ -11,4 +11,6 @@ import lombok.NoArgsConstructor;
 public class CreatePedidoDTO {
     @NotNull(message = "El ID de la transacción es obligatorio.")
     protected Long transaccionId;
+    @NotNull(message = "El ID del puesto es obligatorio.")
+    protected Long puestoId;
 }

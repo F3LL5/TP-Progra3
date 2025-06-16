@@ -29,4 +29,5 @@ public class Puesto {
     @ManyToOne
     @JoinColumn(name = "duenio_id", referencedColumnName = "entidad_id", nullable = false)
     protected Entidad duenio;
+
 }

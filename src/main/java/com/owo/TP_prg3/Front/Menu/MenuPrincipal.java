@@ -37,6 +37,7 @@ public class MenuPrincipal {
                 6. Gestionar Transacciones
                 7. Gestionar Inventario de puestos
                 8. Gestionar Pedidos
+                9. Gestionar Detalles de pedido
                 
                 0. Salir
                 Ingrese una opción:""");
@@ -75,7 +76,10 @@ public class MenuPrincipal {
                 case "8" ->{
                     MenuPedidos menuPedidos=new MenuPedidos(authService.getAuthHeader());
                     menuPedidos.gestionar();
-
+                }
+                case "9" ->{
+                    MenuDetallePedido menuDetallePedido = new MenuDetallePedido(authService.getAuthHeader());
+                    menuDetallePedido.gestionar();
                 }
                 case "0" -> System.out.println("Saliendo del programa.");
                 default -> System.out.println("Opción no válida.");
