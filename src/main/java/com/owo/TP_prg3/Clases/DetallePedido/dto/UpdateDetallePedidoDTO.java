@@ -1,5 +1,6 @@
 package com.owo.TP_prg3.Clases.DetallePedido.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
@@ -11,6 +12,7 @@ import java.math.BigDecimal;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UpdateDetallePedidoDTO {
     @Positive(message = "El ID del pedido debe ser un número positivo.")
     protected Long pedidoId;

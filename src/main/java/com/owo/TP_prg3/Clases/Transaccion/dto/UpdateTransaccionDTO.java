@@ -1,5 +1,6 @@
 package com.owo.TP_prg3.Clases.Transaccion.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Positive;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UpdateTransaccionDTO {
     @Size(max = 100, message = "El tipo no debe pasar los 100 caracteres.")
     protected String tipo;
