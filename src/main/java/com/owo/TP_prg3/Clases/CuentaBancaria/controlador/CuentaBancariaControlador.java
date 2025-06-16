@@ -36,8 +36,13 @@ public class CuentaBancariaControlador {
     }
 
     @PostMapping
-    public CuentaBancariaDTO createCuentaBancaria(@Valid @RequestBody CreateCuentaBancariaDTO createCuentaBancariaDTO){
-        return cuentaBancariaServicio.createCuentaBancaria(createCuentaBancariaDTO);
+    public ResponseEntity<String> createCuentaBancaria(@Valid @RequestBody CreateCuentaBancariaDTO createCuentaBancariaDTO){
+        try {
+            cuentaBancariaServicio.createCuentaBancaria(createCuentaBancariaDTO);
+            return ResponseEntity.ok("Cuenta bancaria creada exitosamente.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")

@@ -5,7 +5,9 @@ import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CuentaBancariaDTO;
 import com.owo.TP_prg3.Clases.CuentaBancaria.dto.UpdateCuentaBancariaDTO;
 import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancaria;
 import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancariaRepositorio;
+import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
 import com.owo.TP_prg3.Clases.Entidad.modelo.EntidadRepositorio;
+import com.owo.TP_prg3.Clases.Entidad.modelo.RolEntidad;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityNotFoundException;
@@ -70,6 +72,19 @@ public class CuentaBancariaServicioImpl implements CuentaBancariaServicio {
 
     @Override
     public CuentaBancariaDTO createCuentaBancaria(CreateCuentaBancariaDTO createCuentaBancariaDTO) {
+        Entidad entidadAsociada = entidadRepositorio.findById(createCuentaBancariaDTO.getEntidadId())
+                .orElseThrow(() -> new RuntimeException("No existe entidad con ID proporcionado."));
+
+        int edad = entidadAsociada.getEdad();
+        if (edad < 18) {
+            throw new RuntimeException("La entidades menores de edad NO pueden tener cuentas bancarias");
+        }
+
+        Optional<CuentaBancariaDTO> existe = getAllCuentasBancarias().stream().filter(cuenta -> cuenta.getEntidadId() == createCuentaBancariaDTO.getEntidadId()).findFirst();
+        if (existe.isPresent()) {
+            throw new RuntimeException("Entidad de dicho ID ya posee una cuenta bancaria.");
+        }
+
         CuentaBancaria cuentaBancaria = convertirA_CuentaBancaria(createCuentaBancariaDTO);
         CuentaBancaria savedCuentaBancaria = cuentaBancariaRepositorio.save(cuentaBancaria);
         return convertirA_DTO(savedCuentaBancaria);

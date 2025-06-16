@@ -31,8 +31,13 @@ public class PuestoControlador {
     }
 
     @PostMapping
-    public PuestoDTO createPuesto(@Valid @RequestBody CreatePuestoDTO createPuestoDTO){
-        return puestoServicio.createPuesto(createPuestoDTO);
+    public ResponseEntity<String> createPuesto(@Valid @RequestBody CreatePuestoDTO createPuestoDTO){
+        try {
+            puestoServicio.createPuesto(createPuestoDTO);
+            return ResponseEntity.ok("Puesto creado exitosamente.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")

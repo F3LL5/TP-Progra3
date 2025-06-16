@@ -1,5 +1,6 @@
 package com.owo.TP_prg3.Clases.Puesto.service;
 
+import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CuentaBancariaDTO;
 import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
 import com.owo.TP_prg3.Clases.Puesto.dto.CreatePuestoDTO;
 import com.owo.TP_prg3.Clases.Puesto.dto.PuestoDTO;
@@ -63,6 +64,18 @@ public class PuestoServicioImpl implements PuestoServicio {
     @Override
     @Transactional
     public PuestoDTO createPuesto(CreatePuestoDTO createPuestoDTO) {
+        Entidad entidadAsociada = entidadRepositorio.findById(createPuestoDTO.getDuenioId())
+                .orElseThrow(() -> new RuntimeException("No existe entidad con ID proporcionado."));
+
+        int edad = entidadAsociada.getEdad();
+        if (edad < 18) {
+            throw new RuntimeException("La entidades menores de edad NO pueden tener puestos");
+        }
+
+        Optional<PuestoDTO> existe = getAllPuestos().stream().filter(puesto -> puesto.getDuenioId() == createPuestoDTO.getDuenioId()).findFirst();
+        if (existe.isPresent()) {
+            throw new RuntimeException("Entidad de dicho ID ya posee un puesto");
+        }
         Puesto puesto = convertirA_Puesto(createPuestoDTO);
         Puesto savedPuesto = puestoRepositorio.save(puesto);
         return convertirA_DTO(savedPuesto);
