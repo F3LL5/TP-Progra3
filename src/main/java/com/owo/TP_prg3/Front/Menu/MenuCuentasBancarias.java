@@ -76,7 +76,14 @@ public class MenuCuentasBancarias {
     private void buscarPorId() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID de la cuenta bancaria: ");
         Integer id = Escaner.enteroValido(scanner);
-        HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null);
+
+        HttpResponse<String> response = HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null);
+        String respuestaJson = response.body();
+
+        ObjectMapper mapper = new ObjectMapper();
+        CuentaBancariaDTO cuenta = mapper.readValue(respuestaJson, CuentaBancariaDTO.class);
+
+        System.out.println(FlipTableConverters.fromIterable(List.of(cuenta), CuentaBancariaDTO.class));
     }
 
     private void listado() throws IOException, InterruptedException {
