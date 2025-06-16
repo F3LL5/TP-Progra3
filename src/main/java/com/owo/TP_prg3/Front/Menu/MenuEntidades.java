@@ -2,6 +2,7 @@ package com.owo.TP_prg3.Front.Menu;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jakewharton.fliptables.FlipTableConverters;
+import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CuentaBancariaDTO;
 import com.owo.TP_prg3.Clases.Entidad.dto.EntidadDTO;
 import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import com.owo.TP_prg3.Front.HttpService;
@@ -72,7 +73,13 @@ public class MenuEntidades {
     private void buscarPorId() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID de la entidad: ");
         String id = Escaner.stringValido(scanner);
-        HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null);
+        HttpResponse<String> response =  HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null);
+        String respuestaJson = response.body();
+
+        ObjectMapper mapper = new ObjectMapper();
+        EntidadDTO entidadDTO = mapper.readValue(respuestaJson, EntidadDTO.class);
+
+        System.out.println(FlipTableConverters.fromIterable(List.of(entidadDTO), EntidadDTO.class));
     }
 
     private void agregar() throws IOException, InterruptedException {
@@ -156,30 +163,50 @@ public class MenuEntidades {
     }
 
     private void filtrarYOrdenar() throws IOException, InterruptedException {
-        System.out.println("--- Filtrar y ordenar entidades ---");
-        System.out.print("Filtrar por ROL (DUENO_PUESTO, CLIENTE, PROVEEDOR) o dejar vacío: ");
-        String rol = scanner.nextLine().trim();
-        if (rol.isBlank()) rol = null;
+            System.out.println("--- Filtrar y ordenar entidades ---");
 
-        System.out.print("Ordenar por... (nombre, edad, dni, tipoEntidad) o dejar vacío: ");
-        String sortBy = scanner.nextLine().trim();
-        if (sortBy.isBlank()) sortBy = null;
+            System.out.print("Filtrar por ROL (DUENO_PUESTO, CLIENTE, PROVEEDOR) o dejar vacío: ");
+            String rol = scanner.nextLine().trim();
+            if (rol.isBlank()) rol = null;
 
-        System.out.print("Dirección de orden... (asc / desc) o dejar vacío: ");
-        String sortDir = scanner.nextLine().trim();
-        if (sortDir.isBlank()) sortDir = null;
+            System.out.print("Ordenar por 'nombre', 'edad', 'dni' o 'tipoEntidad' (dejar vacío si no aplica): ");
+            String orden = scanner.nextLine().trim();
+            String direccion = null;
+            if (orden.isBlank()) {
+                orden = null;
+            } else {
+                System.out.print("Dirección de orden: 'asc' o 'desc' (dejar vacío si no aplica): ");
+                direccion = scanner.nextLine().trim();
+                if (direccion.isBlank()) direccion = null;
+            }
 
-        // 4. Construir la query string
-        StringBuilder urlBuilder = new StringBuilder(API_URL + "/filtrarYOrdenar?");
-        if (rol != null) urlBuilder.append("rol_entidad=").append(rol).append("&");
-        if (sortBy != null) urlBuilder.append("sortBy=").append(sortBy).append("&");
-        if (sortDir != null) urlBuilder.append("sortDir=").append(sortDir);
+            // Construcción de la URL
+            StringBuilder urlBuilder = new StringBuilder(API_URL + "/filtrarYOrdenar?");
+            if (rol != null) urlBuilder.append("rol_entidad=").append(rol).append("&");
+            if (orden != null) urlBuilder.append("sortBy=").append(orden).append("&");
+            if (direccion != null) urlBuilder.append("sortDir=").append(direccion);
 
-        String finalUrl = urlBuilder.toString();
-        if (finalUrl.endsWith("&") || finalUrl.endsWith("?")) {
-            finalUrl = finalUrl.substring(0, finalUrl.length() - 1);
+            String finalUrl = urlBuilder.toString();
+            if (finalUrl.endsWith("&") || finalUrl.endsWith("?")) {
+                finalUrl = finalUrl.substring(0, finalUrl.length() - 1);
+            }
+
+            System.out.println("\n-> Consultando " + finalUrl);
+
+            // Hacer la petición
+            HttpResponse<String> response = HttpService.realizarPeticion("GET", finalUrl, authHeader, null);
+            String respuestaJson = response.body();
+
+            // Deserializar la respuesta y mostrar en tabla
+            ObjectMapper mapper = new ObjectMapper();
+            List<EntidadDTO> entidades = Arrays.asList(mapper.readValue(respuestaJson, EntidadDTO[].class));
+
+            if (entidades.isEmpty()) {
+                System.out.println("No se encontraron entidades con esos filtros.");
+                return;
+            }
+
+            System.out.println(FlipTableConverters.fromIterable(entidades, EntidadDTO.class));
         }
 
-        HttpService.realizarPeticion("GET", finalUrl, authHeader, null);
-    }
 }
