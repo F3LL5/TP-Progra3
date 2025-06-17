@@ -6,11 +6,11 @@ import com.owo.TP_prg3.Clases.Entidad.dto.UpdateEntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.service.EntidadServicioImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/entidades")
@@ -26,36 +26,45 @@ public class EntidadControlador {
     }
 
     @GetMapping("/{id}")
-    public EntidadDTO getEntidadById(@PathVariable Long id){
-        return entidadServicio.getEntidadById(id).orElse(null);
+    public ResponseEntity<EntidadDTO> getEntidadById(@PathVariable Long id) {
+        EntidadDTO entidadDTO = entidadServicio.getEntidadById(id)
+                .orElse(null);
+        return ResponseEntity.ok(entidadDTO);
     }
+
     @GetMapping("/dni/{dni}")
-    public EntidadDTO getEntidadById(@PathVariable int dni){
-        return entidadServicio.findByDni(dni).orElse(null);
+    public ResponseEntity<EntidadDTO> getEntidadById(@PathVariable int dni) {
+        EntidadDTO entidadDTO = entidadServicio.findByDni(dni)
+                .orElse(null);
+        return ResponseEntity.ok(entidadDTO);
     }
 
     @PostMapping
-    public EntidadDTO createEntidad(@Valid @RequestBody CreateEntidadDTO createEntidadDTO){
-        return entidadServicio.createEntidad(createEntidadDTO);
+    public ResponseEntity<EntidadDTO> createEntidad(@Valid @RequestBody CreateEntidadDTO createEntidadDTO){
+        EntidadDTO newEntidad = entidadServicio.createEntidad(createEntidadDTO);
+        return new ResponseEntity<>(newEntidad, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")
-    public boolean deleteEntidad(@PathVariable Long id){
-        return entidadServicio.deleteEntidad(id);
+    public ResponseEntity<Void> deleteItem(@PathVariable Long id) {
+        entidadServicio.deleteEntidad(id);
+        return ResponseEntity.noContent().build();
     }
 
-
     @PatchMapping("/{id}")
-    public Optional<EntidadDTO> updateEntidad(@PathVariable Long id, @Valid @RequestBody UpdateEntidadDTO updateEntidadDTO){
-        return entidadServicio.updateEntidad(id, updateEntidadDTO);
+    public ResponseEntity<UpdateEntidadDTO> updateEntidad(@PathVariable Long id, @Valid @RequestBody UpdateEntidadDTO updateEntidadDTO){
+        EntidadDTO entidadDTO = entidadServicio.updateEntidad(id, updateEntidadDTO)
+                .orElse(null);
+        return ResponseEntity.ok(updateEntidadDTO);
     }
 
     @GetMapping("/filtrarYOrdenar")
-    public List<EntidadDTO> filtrarYOrdenar(
+    public ResponseEntity<List<EntidadDTO>> filtrarYOrdenar(
             @RequestParam(required = false) String rol_entidad,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDir
     ) {
-        return entidadServicio.filtrarYOrdenar(rol_entidad, sortBy, sortDir);
+        List<EntidadDTO> entidades = entidadServicio.filtrarYOrdenar(rol_entidad, sortBy, sortDir);
+        return ResponseEntity.ok(entidades);
     }
 }

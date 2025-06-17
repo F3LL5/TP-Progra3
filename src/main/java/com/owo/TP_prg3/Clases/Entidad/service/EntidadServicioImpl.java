@@ -5,6 +5,13 @@ import com.owo.TP_prg3.Clases.Entidad.dto.EntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.dto.UpdateEntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
 import com.owo.TP_prg3.Clases.Entidad.modelo.EntidadRepositorio;
+import com.owo.TP_prg3.Clases.Entidad.modelo.RolEntidad;
+import com.owo.TP_prg3.Clases.Excepciones.ConflictoDeDatosException;
+import com.owo.TP_prg3.Clases.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Clases.Excepciones.RecursoNoEncontradoException;
+import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
+import com.owo.TP_prg3.Clases.Item.dto.UpdateItemDTO;
+import com.owo.TP_prg3.Clases.Item.modelo.Item;
 import org.hibernate.cache.spi.support.AbstractRegion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,7 +61,8 @@ public class EntidadServicioImpl implements EntidadServicio {
 
     @Override
     public Optional<EntidadDTO> getEntidadById(Long id) {
-        return entidadRepositorio.findById(id).map(this::convertirA_DTO);
+        return Optional.of(entidadRepositorio.findById(id).map(this::convertirA_DTO)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Entidad con ID " + id + " no encontrada.")));
     }
 
     @Override
@@ -68,23 +76,26 @@ public class EntidadServicioImpl implements EntidadServicio {
     public Optional<EntidadDTO> updateEntidad(Long id, UpdateEntidadDTO updateEntidadDTO) {
         return entidadRepositorio.findById(id)
                 .map(entidad -> {
-                    if (updateEntidadDTO.getNombre() != null) {
-                        entidad.setNombre(updateEntidadDTO.getNombre());
+                    if (entidad == null) {
+                        throw new RecursoNoEncontradoException("Item con ID " + id + " no encontrado para actualizar.");
                     }
-                    if (updateEntidadDTO.getRolEntidad() != null) {
-                        entidad.setRolEntidad(updateEntidadDTO.getRolEntidad());
-                    }
-                    if (updateEntidadDTO.getTipoEntidad() != null) {
-                        entidad.setTipoEntidad(updateEntidadDTO.getTipoEntidad());
-                    }
-                    if (updateEntidadDTO.getEdad() != null) {
-                        entidad.setEdad(updateEntidadDTO.getEdad());
-                    }
+                    if (updateEntidadDTO.getNombre() != null) entidad.setNombre(updateEntidadDTO.getNombre());
+                    if (updateEntidadDTO.getRolEntidad() != null) entidad.setRolEntidad(updateEntidadDTO.getRolEntidad());
+                    if (updateEntidadDTO.getTipoEntidad() != null) entidad.setTipoEntidad(updateEntidadDTO.getTipoEntidad());
+                    if (updateEntidadDTO.getEdad() != null) entidad.setEdad(updateEntidadDTO.getEdad());
+
                     if (updateEntidadDTO.getDni() != null) {
-                        entidad.setDni(updateEntidadDTO.getDni());
+                        Integer nuevoDni = updateEntidadDTO.getDni();
+                        Optional<Entidad> dniYaExiste = entidadRepositorio.findByDni(nuevoDni);
+                        if (dniYaExiste.isPresent()) throw new ConflictoDeDatosException("Ya existe otra entidad registrada con ese DNI.");
+                        entidad.setDni(nuevoDni);
                     }
+
                     Entidad entidadModificada = entidadRepositorio.save(entidad);
                     return convertirA_DTO(entidadModificada);
+                })
+                .or(() -> {
+                    throw new RecursoNoEncontradoException("Item con ID " + id + " no encontrado para actualizar.");
                 });
     }
 
@@ -94,7 +105,7 @@ public class EntidadServicioImpl implements EntidadServicio {
             entidadRepositorio.deleteById(id);
             return true;
         }
-        return false;
+        throw new RecursoNoEncontradoException("La entidad de ID " + id + " no ha sido encontrada.");
     }
 
     @Override
@@ -111,6 +122,18 @@ public class EntidadServicioImpl implements EntidadServicio {
     public List<EntidadDTO> filtrarYOrdenar(String rol_entidad, String sortBy, String sortDir) {
         List<EntidadDTO> allEntitys = getAllEntidades();
         Stream<EntidadDTO> entidadDTOStream = allEntitys.stream();
+
+        if (rol_entidad != null && !rol_entidad.isBlank()) {
+            try {
+                RolEntidad.valueOf(rol_entidad.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new IngresoInvalidoException("El rol de entidad '" + rol_entidad + "' no es válido. Valores permitidos: CLIENTE, PROVEEDOR, DUENO_PUESTO, ADMIN.");
+            }
+        }
+
+        if (sortDir != null && !sortDir.equalsIgnoreCase("asc") && !sortDir.equalsIgnoreCase("desc")) {
+            throw new IngresoInvalidoException("La dirección de ordenamiento debe ser 'asc' o 'desc'.");
+        }
 
         if (rol_entidad != null && !rol_entidad.isEmpty()) {
             entidadDTOStream = entidadDTOStream.filter(entidad -> entidad.getRolEntidad().name().equalsIgnoreCase(rol_entidad));
