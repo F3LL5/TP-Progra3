@@ -1,5 +1,7 @@
 package com.owo.TP_prg3.Clases.Item.service;
 
+import com.owo.TP_prg3.Clases.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Clases.Excepciones.RecursoNoEncontradoException;
 import com.owo.TP_prg3.Clases.Item.dto.CreateItemDTO;
 import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import com.owo.TP_prg3.Clases.Item.dto.UpdateItemDTO;
@@ -14,7 +16,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 @Service
-public class ItemServicioImpl implements ItemServicio{
+public class ItemServicioImpl implements ItemServicio {
     //Atributos
     @Autowired
     private ItemRepositorio itemRepositorio;
@@ -49,17 +51,9 @@ public class ItemServicioImpl implements ItemServicio{
 
     @Override
     public Optional<ItemDTO> getProductById(Long id) {
-        return itemRepositorio.findById(id).map(this::convertirA_DTO);
-    }
-
-    @Override
-    public String listado(){
-        StringBuilder s = new StringBuilder();
-        getAllProducts().forEach(i -> s
-                .append( i.getItem_id() + ". ")
-                .append( i )
-                .append(",\n"));
-        return s.toString();
+        return Optional.of(itemRepositorio.findById(id)
+                .map(this::convertirA_DTO)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Item con ID " + id + " no encontrado.")));
     }
 
     @Override
@@ -70,9 +64,23 @@ public class ItemServicioImpl implements ItemServicio{
     }
 
     @Override
+    public String listado() {
+        StringBuilder s = new StringBuilder();
+        getAllProducts().forEach(i -> s
+                .append(i.getItem_id() + ". ")
+                .append(i)
+                .append(",\n"));
+        return s.toString();
+    }
+
+    @Override
     public Optional<ItemDTO> updateProduct(Long id, UpdateItemDTO updateItemDTO) {
         return itemRepositorio.findById(id)
                 .map(item -> {
+                    if (item == null) {
+                        throw new RecursoNoEncontradoException("Item con ID " + id + " no encontrado para actualizar.");
+                    }
+
                     if (updateItemDTO.getNombre() != null) {
                         item.setNombre(updateItemDTO.getNombre());
                     }
@@ -84,6 +92,9 @@ public class ItemServicioImpl implements ItemServicio{
                     }
                     Item itemModificado = itemRepositorio.save(item);
                     return convertirA_DTO(itemModificado);
+                })
+                .or(() -> {
+                    throw new RecursoNoEncontradoException("Item con ID " + id + " no encontrado para actualizar.");
                 });
     }
 
@@ -93,72 +104,32 @@ public class ItemServicioImpl implements ItemServicio{
             itemRepositorio.deleteById(id);
             return true;
         }
-        return false;
+        throw new RecursoNoEncontradoException("Item con ID " + id + " no encontrado para eliminar.");
     }
 
-    public List<ItemDTO> filtrarYordenar(String categoria,String orden,String direccion){
+    public List<ItemDTO> filtrarYordenar(String categoria, String orden, String direccion) {
+        List<ItemDTO> itemsdto = getAllProducts();
+        Stream<ItemDTO> itemstream = itemsdto.stream();
 
-        List<ItemDTO> itemsdto=getAllProducts();
-        Stream<ItemDTO> itemstream=itemsdto.stream();
-
-        if(categoria!=null && !categoria.isEmpty()){
-
-                itemstream=itemstream.filter(item -> item.getCategoria().equalsIgnoreCase(categoria));
-
+        if (categoria != null && !categoria.isEmpty()) {
+            itemstream = itemstream.filter(item -> item.getCategoria().equalsIgnoreCase(categoria));
         }
-        if(orden!=null)
-        {
-            Comparator<ItemDTO> comparador=null;
-            switch(orden.toLowerCase())
-            {
-                case "nombre" -> comparador=Comparator.comparing(ItemDTO::getNombre);
-                case "costo" -> comparador=Comparator.comparing(ItemDTO::getCosto);
-                default->throw new RuntimeException("opcion incorrecta");
+        if (orden != null) {
+            Comparator<ItemDTO> comparador = null;
+            switch (orden.toLowerCase()) {
+                case "nombre" -> comparador = Comparator.comparing(ItemDTO::getNombre);
+                case "costo" -> comparador = Comparator.comparing(ItemDTO::getCosto);
+                default -> throw new IngresoInvalidoException("Opción de ordenación incorrecta: " + orden + ". Use 'nombre' o 'costo'.");
             }
 
-            if(comparador !=null){
-            if("desc".equalsIgnoreCase(direccion)){
-                comparador=comparador.reversed();
-            }
-            itemstream=itemstream.sorted(comparador);
+            if (comparador != null) {
+                if ("desc".equalsIgnoreCase(direccion)) {
+                    comparador = comparador.reversed();
+                }
+                itemstream = itemstream.sorted(comparador);
             }
         }
         return itemstream.toList();
-    };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    }
 
 }

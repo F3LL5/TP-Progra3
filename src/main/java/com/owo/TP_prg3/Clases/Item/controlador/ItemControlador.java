@@ -7,11 +7,11 @@ import com.owo.TP_prg3.Clases.Item.modelo.Item;
 import com.owo.TP_prg3.Clases.Item.service.ItemServicioImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/items")
@@ -27,57 +27,46 @@ public class ItemControlador {
     }
 
     @GetMapping("/{id}")
-    public ItemDTO getItemById(@PathVariable Long id){
-        return itemServicio.getProductById(id).orElse(null);
+    public ResponseEntity<ItemDTO> getItemById(@PathVariable Long id) {
+        ItemDTO item = itemServicio.getProductById(id)
+                .orElse(null);
+        return ResponseEntity.ok(item);
     }
 
+
     @GetMapping("/listado")
-    public String obtenerTodosString(){
-        return itemServicio.listado();
+    public ResponseEntity<String> obtenerTodosString() {
+        return ResponseEntity.ok(itemServicio.listado());
     }
 
     @PostMapping
-    public ItemDTO createItem(@Valid @RequestBody CreateItemDTO createItemDTO){
-        return itemServicio.createProduct(createItemDTO);
+    public ResponseEntity<ItemDTO> createItem(@Valid @RequestBody CreateItemDTO createItemDTO) {
+        ItemDTO newItem = itemServicio.createProduct(createItemDTO);
+        return new ResponseEntity<>(newItem, HttpStatus.CREATED); // 201 Created
     }
 
     @DeleteMapping("/{id}")
-    public boolean deleteItem(@PathVariable Long id){
-        return itemServicio.deleteProduct(id);
+    public ResponseEntity<Void> deleteItem(@PathVariable Long id) {
+        itemServicio.deleteProduct(id); // Service will throw if not found
+        return ResponseEntity.noContent().build(); // 204 No Content
     }
 
     @PatchMapping("/{id}")
-    public Optional<ItemDTO> updateItem(@PathVariable Long id,@Valid @RequestBody UpdateItemDTO updateItemDTO){
-        return itemServicio.updateProduct(id, updateItemDTO);
+    public ResponseEntity<ItemDTO> updateItem(@PathVariable Long id, @Valid @RequestBody UpdateItemDTO updateItemDTO) {
+        ItemDTO updatedItem = itemServicio.updateProduct(id, updateItemDTO)
+                .orElse(null); // Service will throw if not found
+        return ResponseEntity.ok(updatedItem);
     }
 
     @GetMapping("/filtrarYordenar")
-    public List<ItemDTO> filtrarYordenar(
-            @RequestParam(required = false)String categoria,
-            @RequestParam(required = false)String orden,
-            @RequestParam(required = false)String direccion
-    ){
-        return itemServicio.filtrarYordenar(categoria,orden,direccion);
+    public ResponseEntity<List<ItemDTO>> filtrarYordenar(
+            @RequestParam(required = false) String categoria,
+            @RequestParam(required = false) String orden,
+            @RequestParam(required = false) String direccion
+    ) {
+        List<ItemDTO> items = itemServicio.filtrarYordenar(categoria, orden, direccion);
+        return ResponseEntity.ok(items);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 }

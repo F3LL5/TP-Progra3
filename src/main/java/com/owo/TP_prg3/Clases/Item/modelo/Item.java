@@ -4,12 +4,13 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 
 //JPA
 @Entity @Table(name = "items")
 //Lombok
 @Data @AllArgsConstructor @NoArgsConstructor
-
+@DynamicUpdate
 public class Item {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "item_id", unique = true)
