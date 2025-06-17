@@ -27,29 +27,34 @@ public class MenuPrincipal {
             Map<String, Object> datosUsuario = authService.iniciarSesion();
             usuario = (UsuarioAutenticado) datosUsuario.get("usuario");
 
-            //Se asigna el puesto si tiene
-            if (datosUsuario.get("puesto") != null) {
-                puestoUsuario = (Puesto) datosUsuario.get("puesto");
-                System.out.println("Puesto encontrado.");
-            }
-            //Se asigna la entidad si tiene
-            if (datosUsuario.get("entidad") != null) {
-                entidadUsuario = (Entidad) datosUsuario.get("entidad");
-                System.out.println("Entidad encontrada.");
+            if(datosUsuario!=null){
+
+
+                //Se asigna el puesto si tiene
+                if (datosUsuario.get("puesto") != null) {
+                    puestoUsuario = (Puesto) datosUsuario.get("puesto");
+                    System.out.println("Puesto encontrado.");
+                }
+                //Se asigna la entidad si tiene
+                if (datosUsuario.get("entidad") != null) {
+                    entidadUsuario = (Entidad) datosUsuario.get("entidad");
+                    System.out.println("Entidad encontrada.");
+                }
+
+                if (usuario == null) {
+                    System.out.println("Login fallido. Por favor, intente de nuevo.");
+                }
+
+
             }
 
-            if (usuario == null) {
-                System.out.println("Login fallido. Por favor, intente de nuevo.");
-            }
+
         }
 
         if (entidadUsuario != null) System.out.println("\nBienvenido! "+ entidadUsuario.getNombre() + ", permisos: " + usuario.getRol());
         else System.out.println("\nBienvenido! permisos: " + usuario.getRol());
 
-        if ("ADMIN".equalsIgnoreCase(usuario.getRol())) { // Si el rol es ADMIN
-            MenuAdmin menuAdmin = new MenuAdmin(authService.getAuthHeader(), puestoUsuario, entidadUsuario);
-            menuAdmin.iniciar();
-        } else if ("DUENO_PUESTO".equalsIgnoreCase(usuario.getRol())) { // Si el rol es DUENO_PUESTO
+        if ("DUENO_PUESTO".equalsIgnoreCase(usuario.getRol())) { // Si el rol es DUENO_PUESTO
             MenuDuenoPuesto menuDuenoPuesto = new MenuDuenoPuesto(authService.getAuthHeader(), puestoUsuario);
             menuDuenoPuesto.gestionar();
         }

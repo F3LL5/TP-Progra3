@@ -124,7 +124,7 @@ public class AuthService {
         Long duenioId = json.getLong("duenioId");
 
         Entidad duenio = null;
-        HttpResponse<String> entidadResponse = HttpService.realizarPeticion("GET", ENTIDAD_URL + "/" + duenioId, this.authHeader, null);
+        HttpResponse<String> entidadResponse = HttpService.realizarPeticion("GET", ENTIDAD_URL + "/" + duenioId,this.authHeader, null);
 
         if (entidadResponse.statusCode() == 200) {
             duenio = parsearEntidad(entidadResponse.body());

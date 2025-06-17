@@ -25,77 +25,73 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
-                .authorizeHttpRequests(
-                        authorize -> authorize
-                                // Permite el acceso al endpoint de perfil para cualquier usuario autenticado
-                                .requestMatchers("/api/auth/profile").authenticated()
+                .authorizeHttpRequests(authorize -> authorize
 
-                                // Acceso para el Rol DUENO_PUESTO
+                        // Permite el acceso al endpoint de perfil para cualquier usuario autenticado
+                        .requestMatchers("/api/auth/profile").authenticated()
 
-                                // Puestos: Solo puede modificar su propio puesto (PATCH).
-                                .requestMatchers(HttpMethod.PATCH, "/api/puestos/*").hasRole("DUENO_PUESTO")
+                        // Puestos: Solo puede modificar su propio puesto (PATCH).
+                        .requestMatchers(HttpMethod.PATCH, "/api/puestos/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/puestos/dni/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
 
-                                // Entidades: Gestión de entidades (clientes y proveedores) de SU puesto.
-                                .requestMatchers("/api/entidades/puesto/*").hasRole("DUENO_PUESTO")
-                                .requestMatchers("/api/entidades/*/puesto/*").hasRole("DUENO_PUESTO")
-                                .requestMatchers("/api/entidades/clientesConPedidosPuesto/*").hasRole("DUENO_PUESTO")
-                                .requestMatchers(HttpMethod.POST, "/api/entidades/puesto/*").hasRole("DUENO_PUESTO")
-                                .requestMatchers(HttpMethod.DELETE, "/api/entidades/*/puesto/*").hasRole("DUENO_PUESTO")
-                                .requestMatchers(HttpMethod.PATCH, "/api/entidades/*/puesto/*").hasRole("DUENO_PUESTO")
+                        // Entidades
+                        .requestMatchers("/api/entidades/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers("/api/entidades/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers("/api/entidades/clientesConPedidosPuesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/entidades/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/entidades/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/entidades/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/entidades/dni/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/entidades/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
 
+                        // Inventario
+                        .requestMatchers("/api/inventario-puesto/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers("/api/inventario-puesto/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/inventario-puesto").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/inventario-puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/inventario-puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers("/api/inventario-puesto/obtenerInvConStock/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers("/api/inventario-puesto/obtenerInvConStockBajo/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers("/api/inventario-puesto/filtrarYordenarItemsInventario*").hasAnyRole("DUENO_PUESTO", "ADMIN")
 
-                                // Inventario de Puesto (Ítems): Acceso total para los ítems de SU inventario/puesto.
-                                .requestMatchers("/api/inventario-puesto/puesto/*").hasRole("DUENO_PUESTO")
-                                .requestMatchers("/api/inventario-puesto/*/puesto/*").hasRole("DUENO_PUESTO")
-                                .requestMatchers(HttpMethod.POST, "/api/inventario-puesto").hasRole("DUENO_PUESTO")
-                                .requestMatchers(HttpMethod.DELETE, "/api/inventario-puesto/*").hasRole("DUENO_PUESTO")
-                                .requestMatchers(HttpMethod.PATCH, "/api/inventario-puesto/*").hasRole("DUENO_PUESTO")
-                                .requestMatchers("/api/inventario-puesto/obtenerInvConStock/*").hasRole("DUENO_PUESTO")
-                                .requestMatchers("/api/inventario-puesto/obtenerInvConStockBajo/*").hasRole("DUENO_PUESTO")
-                                .requestMatchers("/api/inventario-puesto/filtrarYordenarItemsInventario*").hasRole("DUENO_PUESTO")
+                        // Cuentas bancarias
+                        .requestMatchers("/api/cuentas-bancarias/entidad/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers("/api/cuentas-bancarias/*/entidad/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/cuentas-bancarias").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/cuentas-bancarias/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
 
-                                // Cuentas Bancarias: Solo ver y gestionar SU propia cuenta (asociada a su entidad).
-                                .requestMatchers("/api/cuentas-bancarias/entidad/*").hasRole("DUENO_PUESTO")
-                                .requestMatchers("/api/cuentas-bancarias/*/entidad/*").hasRole("DUENO_PUESTO")
-                                .requestMatchers(HttpMethod.POST, "/api/cuentas-bancarias").hasRole("DUENO_PUESTO")
-                                .requestMatchers(HttpMethod.DELETE, "/api/cuentas-bancarias/*").hasRole("DUENO_PUESTO")
+                        // Transacciones
+                        .requestMatchers(HttpMethod.GET, "/api/transacciones/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/transacciones/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/transacciones/filtrarYOrdenar*").hasAnyRole("DUENO_PUESTO", "ADMIN")
 
+                        // Pedidos
+                        .requestMatchers("/api/pedidos/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers("/api/pedidos/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/pedidos").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/pedidos/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/pedidos/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/pedidos/filtrarYOrdenar*").hasAnyRole("DUENO_PUESTO", "ADMIN")
 
-                                // Transacciones: Solo GET para las transacciones de SU puesto. No puede agregar/eliminar/modificar.
-                                .requestMatchers(HttpMethod.GET, "/api/transacciones/puesto/*").hasRole("DUENO_PUESTO")
-                                .requestMatchers(HttpMethod.GET, "/api/transacciones/*/puesto/*").hasRole("DUENO_PUESTO")
-                                .requestMatchers(HttpMethod.GET, "/api/transacciones/filtrarYOrdenar*").hasRole("DUENO_PUESTO")
+                        // Detalles de Pedido
+                        .requestMatchers("/api/detalles-pedido/pedido/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers("/api/detalles-pedido/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/detalles-pedido/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/detalles-pedido/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/detalles-pedido/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
 
+                        // ADMIN: acceso total a cualquier otro endpoint bajo /api/**
+                        .requestMatchers("/api/**").hasRole("ADMIN")
 
-                                // Pedidos: Acceso total para los pedidos de SU puesto.
-                                .requestMatchers("/api/pedidos/puesto/*").hasRole("DUENO_PUESTO")
-                                .requestMatchers("/api/pedidos/*/puesto/*").hasRole("DUENO_PUESTO")
-                                .requestMatchers(HttpMethod.POST, "/api/pedidos").hasRole("DUENO_PUESTO")
-                                .requestMatchers(HttpMethod.DELETE, "/api/pedidos/*").hasRole("DUENO_PUESTO")
-                                .requestMatchers(HttpMethod.PATCH, "/api/pedidos/*").hasRole("DUENO_PUESTO")
-                                .requestMatchers(HttpMethod.GET, "/api/pedidos/filtrarYOrdenar*").hasRole("DUENO_PUESTO")
-
-
-                                // Detalles de Pedido: Acceso total para los detalles de pedido de SU puesto.
-                                .requestMatchers("/api/detalles-pedido/pedido/*/puesto/*").hasRole("DUENO_PUESTO")
-                                .requestMatchers("/api/detalles-pedido/*/puesto/*").hasRole("DUENO_PUESTO")
-                                .requestMatchers(HttpMethod.POST, "/api/detalles-pedido/puesto/*").hasRole("DUENO_PUESTO")
-                                .requestMatchers(HttpMethod.DELETE, "/api/detalles-pedido/*").hasRole("DUENO_PUESTO")
-                                .requestMatchers(HttpMethod.PATCH, "/api/detalles-pedido/*").hasRole("DUENO_PUESTO")
-
-
-                                // Acceso para el Rol ADMIN
-                                // El rol ADMIN tiene acceso total a CUALQUIER endpoint
-                                .requestMatchers("/api/**").hasRole("ADMIN")
-
-                                // Denegar cualquier otra solicitud que no haya sido permitida explícitamente
-                                .anyRequest().denyAll()
+                        // Denegar cualquier otra solicitud que no haya sido permitida explícitamente
+                        .anyRequest().denyAll()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(Customizer.withDefaults())
                 .build();
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder passwordEncoder) throws Exception {
