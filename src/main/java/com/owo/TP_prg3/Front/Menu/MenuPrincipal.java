@@ -1,11 +1,14 @@
 package com.owo.TP_prg3.Front.Menu;
 
 
+import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
+import com.owo.TP_prg3.Clases.Puesto.modelo.Puesto;
 import com.owo.TP_prg3.Front.Auntenticacion.AuthService;
 import com.owo.TP_prg3.Front.Auntenticacion.UsuarioAutenticado;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Scanner;
 
 public class MenuPrincipal {
@@ -14,15 +17,32 @@ public class MenuPrincipal {
         System.out.println("--- Cliente de Consola para API ---");
         AuthService authService = new AuthService();
         UsuarioAutenticado usuario = null;
+        Puesto puestoUsuario = null;
+        Entidad entidadUsuario = null;
 
+        //Te obliga a inicair sesion para poder salir del bucle
         while (usuario == null) {
-            usuario = authService.iniciarSesion();
+            Map<String, Object> datosUsuario = authService.iniciarSesion();
+            usuario = (UsuarioAutenticado) datosUsuario.get("usuario");
+
+            //Se asigna el puesto si tiene
+            if (datosUsuario.get("puesto") != null) {
+                puestoUsuario = (Puesto) datosUsuario.get("puesto");
+                System.out.println("Puesto encontrado.");
+            }
+            //Se asigna la entidad si tiene
+            if (datosUsuario.get("entidad") != null) {
+                entidadUsuario = (Entidad) datosUsuario.get("entidad");
+                System.out.println("Entidad encontrada.");
+            }
+
             if (usuario == null) {
                 System.out.println("Login fallido. Por favor, intente de nuevo.");
             }
         }
 
-        System.out.println("\nBienvenido! Rol de usuario: " + usuario.getRol());
+        if (entidadUsuario != null) System.out.println("\nBienvenido! "+ entidadUsuario.getNombre() + ", permisos: " + usuario.getRol());
+        else System.out.println("\nBienvenido! permisos: " + usuario.getRol());
 
         Scanner scanner = new Scanner(System.in);
         String opcion;
@@ -38,6 +58,8 @@ public class MenuPrincipal {
                 7. Gestionar Inventario de puestos
                 8. Gestionar Pedidos
                 9. Gestionar Detalles de pedido
+                
+                10. asd
                 
                 0. Salir
                 Ingrese una opción:""");
@@ -80,6 +102,10 @@ public class MenuPrincipal {
                 case "9" ->{
                     MenuDetallePedido menuDetallePedido = new MenuDetallePedido(authService.getAuthHeader());
                     menuDetallePedido.gestionar();
+                }
+                case "10" ->{
+                    System.out.println(puestoUsuario);
+                    System.out.println(entidadUsuario);
                 }
                 case "0" -> System.out.println("Saliendo del programa.");
                 default -> System.out.println("Opción no válida.");

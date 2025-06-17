@@ -139,16 +139,17 @@ public class PuestoServicioImpl implements PuestoServicio {
         return puestoDTOStream.sorted(comparator).toList();
     }
 
-    public Optional<PuestoDTO> getPuestoByDni(Long dni) {
+    public Optional<PuestoDTO> getPuestoByDni(int dni) {
 
         List<PuestoDTO> puestos = getAllPuestos();
         List<Entidad> entidades = entidadRepositorio.findAll();
 
         // Buscamos el ID del dueño que tenga ese DNI
-        Optional<Long> duenioId = entidades.stream()
-                .filter(entidad -> entidad.getDni().equals(dni))
-                .map(Entidad::getEntidad_id)
-                .findFirst();
+        Optional<Long> duenioId =
+            entidades.stream()
+                    .filter(entidad -> entidad.getDni().equals(dni))
+                    .map(Entidad::getEntidad_id)
+                    .findFirst();
 
         if (duenioId.isPresent()) {
             return puestos.stream()

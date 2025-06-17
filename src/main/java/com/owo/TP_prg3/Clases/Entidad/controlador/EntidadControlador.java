@@ -29,6 +29,10 @@ public class EntidadControlador {
     public EntidadDTO getEntidadById(@PathVariable Long id){
         return entidadServicio.getEntidadById(id).orElse(null);
     }
+    @GetMapping("/dni/{dni}")
+    public EntidadDTO getEntidadById(@PathVariable int dni){
+        return entidadServicio.findByDni(dni).orElse(null);
+    }
 
     @PostMapping
     public EntidadDTO createEntidad(@Valid @RequestBody CreateEntidadDTO createEntidadDTO){
@@ -39,6 +43,7 @@ public class EntidadControlador {
     public boolean deleteEntidad(@PathVariable Long id){
         return entidadServicio.deleteEntidad(id);
     }
+
 
     @PatchMapping("/{id}")
     public Optional<EntidadDTO> updateEntidad(@PathVariable Long id, @Valid @RequestBody UpdateEntidadDTO updateEntidadDTO){

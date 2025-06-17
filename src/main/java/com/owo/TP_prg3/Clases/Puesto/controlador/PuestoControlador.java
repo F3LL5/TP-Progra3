@@ -57,4 +57,9 @@ public class PuestoControlador {
     ) {
         return puestoServicio.filtrarYOrdenarPorNombre(nombre, sortDir);
     }
+
+    @GetMapping("/dni/{dni}")
+    public Optional<PuestoDTO> getPuestoByDni(@PathVariable int dni) {
+        return puestoServicio.getPuestoByDni(dni);
+    }
 }

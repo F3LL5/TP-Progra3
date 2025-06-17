@@ -14,6 +14,6 @@ public interface EntidadServicio {
     EntidadDTO createEntidad(CreateEntidadDTO createEntidadDTO);
     Optional<EntidadDTO> updateEntidad(Long id, UpdateEntidadDTO updateEntidadDTO);
     boolean deleteEntidad(Long id);
-    Optional<Entidad> findByDni(int dni);
+    Optional<EntidadDTO> findByDni(int dni);
     List<EntidadDTO> filtrarYOrdenar(String rol_entidad, String sortBy, String sortDir);
 }

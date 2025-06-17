@@ -98,11 +98,13 @@ public class EntidadServicioImpl implements EntidadServicio {
     }
 
     @Override
-    public Optional<Entidad> findByDni(int dni) {
-        return entidadRepositorio.findAll()
+    public Optional<EntidadDTO> findByDni(int dni) {
+        Optional<Entidad> optional =
+                entidadRepositorio.findAll()
                 .stream()
                 .filter(entidad -> entidad.getDni() == dni)
                 .findFirst();
+        return optional.map(this::convertirA_DTO);
     }
 
     @Override

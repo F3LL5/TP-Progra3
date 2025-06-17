@@ -1,13 +1,19 @@
 package com.owo.TP_prg3.Front.Auntenticacion;
 
+import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
+import com.owo.TP_prg3.Clases.Entidad.modelo.RolEntidad;
+import com.owo.TP_prg3.Clases.Puesto.modelo.Puesto;
 import com.owo.TP_prg3.Front.HttpService;
 import lombok.Getter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.http.HttpResponse;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 //Clase para realizar auntenticaciones
@@ -15,15 +21,18 @@ import java.util.Scanner;
 public class AuthService {
 
     private static final String PROFILE_URL = "http://localhost:8080/api/auth/profile";
+    private static final String PUESTO_URL = "http://localhost:8080/api/puestos";
+    private static final String ENTIDAD_URL = "http://localhost:8080/api/entidades";
     private final Scanner scanner = new Scanner(System.in);
     @Getter
     private String authHeader = null;
 
     /**
      * Solicita DNI y contraseña, intenta autenticar contra el endpoint de perfil.
-     * @return Un objeto UsuarioAutenticado si es exitoso, de lo contrario null.
+     * Si la autenticación es exitosa, también intenta obtener el puesto asociado al DNI.
+     * @return Un objeto UsuarioPuesto si es exitoso (puede contener un Puesto nulo si no se encuentra), de lo contrario null.
      */
-    public UsuarioAutenticado iniciarSesion() throws IOException, InterruptedException {
+    public Map<String, Object> iniciarSesion() throws IOException, InterruptedException {
         System.out.println("\n--- INICIO DE SESIÓN ---");
         System.out.print("DNI: ");
         String dni = scanner.nextLine();
@@ -41,7 +50,39 @@ public class AuthService {
             if (responseCode == 200) {
                 String respuesta = response.body();
                 System.out.println("¡Inicio de sesión exitoso!");
-                return parsearUsuario(respuesta);
+
+                UsuarioAutenticado usuarioAutenticado = parsearUsuario(respuesta);
+                Puesto puesto = null;
+                Entidad entidad = null;
+
+                //Busca en los puestos si el usuario tiene un puesto
+                HttpResponse<String> puestoResponse = HttpService.realizarPeticion("GET", PUESTO_URL + "/dni/" + dni, this.authHeader, null);
+                if (puestoResponse.statusCode() == 200 && !puestoResponse.body().equals("null")) {
+                    puesto = parsearPuesto(puestoResponse.body());
+                    if (puesto != null){
+                        entidad = puesto.getDuenio();
+                    }
+                } else {
+                    System.out.println("El DNI: " + dni + " no tiene puestos asociados.");
+                }
+
+                // Si no tiene puesto, se busca si el usuario tiene una entidad asociada
+                if (entidad == null){
+                    HttpResponse<String> entidadResponse = HttpService.realizarPeticion("GET", ENTIDAD_URL + "/dni/" + dni, this.authHeader, null);
+                    if (entidadResponse.statusCode() == 200 && !entidadResponse.body().isEmpty() && !entidadResponse.body().isBlank()) {
+                        entidad = parsearEntidad(entidadResponse.body());
+                    } else {
+                        System.out.println("No se encontró una entidad para el DNI: " + dni + " (Código de estado: " + entidadResponse.statusCode() + ")");
+                    }
+                }
+
+                //Se retornan todos los objetos.
+                Map<String, Object> resultado = new HashMap<>();
+                resultado.put("usuario", usuarioAutenticado);
+                resultado.put("puesto", puesto);
+                resultado.put("entidad", entidad);
+
+                return resultado;
             } else {
                 System.err.println("Error de autenticación: " + responseCode + " " + response.body());
                 this.authHeader = null; // Resetea el header si falla
@@ -72,6 +113,40 @@ public class AuthService {
         }
 
         return new UsuarioAutenticado(dni, rol);
+    }
+
+    private Puesto parsearPuesto(String jsonResponse) throws IOException, InterruptedException {
+        JSONObject json = new JSONObject(jsonResponse);
+
+        Long puestoId = json.getLong("puestoId");
+        String nombre = json.getString("nombre");
+        BigDecimal comision = json.getBigDecimal("comision");
+        Long duenioId = json.getLong("duenioId");
+
+        Entidad duenio = null;
+        HttpResponse<String> entidadResponse = HttpService.realizarPeticion("GET", ENTIDAD_URL + "/" + duenioId, this.authHeader, null);
+
+        if (entidadResponse.statusCode() == 200) {
+            duenio = parsearEntidad(entidadResponse.body());
+        } else {
+            System.err.println("Error al obtener detalles de la Entidad con ID " + duenioId + ": " + entidadResponse.statusCode() + " " + entidadResponse.body());
+        }
+
+        return new Puesto(puestoId, nombre, duenio, comision);
+    }
+
+    private Entidad parsearEntidad(String jsonResponse) {
+        JSONObject json = new JSONObject(jsonResponse);
+
+        Long entidadId = json.getLong("entidad_id");
+        String nombre = json.getString("nombre");
+        String rolEntidadString = json.getString("rolEntidad");
+        RolEntidad rolEntidad = RolEntidad.valueOf(rolEntidadString);
+        String tipoEntidad = json.getString("tipoEntidad");
+        Integer edad = json.getInt("edad");
+        Integer dni = json.getInt("dni");
+
+        return new Entidad(entidadId, nombre, rolEntidad, tipoEntidad, edad, dni);
     }
 
 }
