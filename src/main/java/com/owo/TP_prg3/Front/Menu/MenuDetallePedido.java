@@ -139,7 +139,7 @@ public class MenuDetallePedido {
         System.out.print("""
                 ATRIBUTO A MODIFICAR:
                 1. ID del pedido
-                2. ID del item
+                2. ID del itemId
                 3. Cantidad
                 
                 0. Cancelar

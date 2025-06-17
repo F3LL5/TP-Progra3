@@ -14,8 +14,8 @@ public class CreateDetallePedidoDTO {
     @Positive(message = "El ID del pedido debe ser un número positivo.")
     protected Long pedidoId;
 
-    @NotNull(message = "El ID del item es obligatorio.")
-    @Positive(message = "El ID del item debe ser un número positivo.")
+    @NotNull(message = "El ID del itemId es obligatorio.")
+    @Positive(message = "El ID del itemId debe ser un número positivo.")
     protected Long itemId;
 
     @NotNull(message = "La cantidad es obligatoria.")

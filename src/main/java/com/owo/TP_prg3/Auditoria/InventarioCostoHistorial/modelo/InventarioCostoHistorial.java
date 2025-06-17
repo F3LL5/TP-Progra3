@@ -1,17 +1,16 @@
-package com.owo.TP_prg3.Auditoria.ItemCostoHistorial.modelo;
+package com.owo.TP_prg3.Auditoria.InventarioCostoHistorial.modelo;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 
-@Entity @Table(name="item_precio_historial")
+@Entity @Table(name="inventario_costo_historial")
 @Data @AllArgsConstructor @NoArgsConstructor
 
-public class ItemCostoHistorial {
+public class InventarioCostoHistorial {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column (name = "id",unique = true)
     protected Long id_historial_item;

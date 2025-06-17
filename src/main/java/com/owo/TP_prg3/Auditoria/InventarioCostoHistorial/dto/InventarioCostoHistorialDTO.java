@@ -1,4 +1,4 @@
-package com.owo.TP_prg3.Auditoria.ItemCostoHistorial.dto;
+package com.owo.TP_prg3.Auditoria.InventarioCostoHistorial.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ItemCostoHistorialDTO {
+public class InventarioCostoHistorialDTO {
     protected Long id;
     protected Long item_id;
     protected Double costo_anterior;

@@ -33,9 +33,4 @@ public class UsuarioController {
         List<UsuarioDTO> items = usuarioServicio.getAllUsers();
         return ResponseEntity.ok(items);
     }
-
-    @GetMapping("/listado")
-    public String obtenerTodosString(){
-        return usuarioServicio.listado();
-    }
 }

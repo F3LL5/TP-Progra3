@@ -10,15 +10,10 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class UsuarioDTO {
-    @Positive(message = "El ID debe ser un número positivo.")
+
     private Long id;
-
-    @Positive(message = "El DNI debe ser un número positivo.")
     private Integer dni;
-
-    @Size(max = 100, message = "El ROL no debe pasar de los 100 caracteres.")
     private RolUsuario rol;
+    private Long entidadId;
 
-    @Size(max = 100, message = "La ENTIDAD no debe pasar de los 100 caracteres.")
-    private Entidad entidad;
 }

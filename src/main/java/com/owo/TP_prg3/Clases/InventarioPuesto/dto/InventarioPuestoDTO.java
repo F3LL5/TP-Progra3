@@ -16,4 +16,5 @@ public class InventarioPuestoDTO {
     protected Long itemId;
     protected Integer stockMin;
     protected BigDecimal precioVenta;
+    protected BigDecimal costoAdquisicion;
 }

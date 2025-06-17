@@ -10,8 +10,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.*;
-import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
-import com.owo.TP_prg3.Clases.Item.modelo.Item;
+
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "inventario_puesto")
@@ -30,23 +30,16 @@ public class InventarioPuesto {
     @JoinColumn(name = "puesto_id", referencedColumnName = "puesto_id")
     protected Puesto puesto;
 
-    @ManyToOne
-    @JoinColumn(name = "item_id", referencedColumnName = "item_id")
-    protected Item item;
+    @Column(name = "item_id", nullable = false)
+    protected Long itemId;
 
     @Column(name = "stock_min", nullable = false)
     protected Integer stockMin;
 
     @Column(name = "precio_venta", nullable = false, precision = 10, scale = 2)
-    protected java.math.BigDecimal precioVenta;
+    protected BigDecimal precioVenta;
 
-    public Puesto getPuesto() {
-        return puesto;
-    }
-
-    public void setPuesto(Puesto puesto) {
-        this.puesto = puesto;
-    }
-
+    @Column(name = "costo_adquisicion", nullable = false, precision = 10, scale = 2)
+    protected BigDecimal costoAdquisicion;
 
 }

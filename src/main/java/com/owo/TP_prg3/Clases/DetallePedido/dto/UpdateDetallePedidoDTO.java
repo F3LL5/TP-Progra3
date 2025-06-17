@@ -17,7 +17,7 @@ public class UpdateDetallePedidoDTO {
     @Positive(message = "El ID del pedido debe ser un número positivo.")
     protected Long pedidoId;
 
-    @Positive(message = "El ID del item debe ser un número positivo.")
+    @Positive(message = "El ID del itemId debe ser un número positivo.")
     protected Long itemId;
 
     @Positive(message = "La cantidad debe ser un número positivo")

@@ -11,7 +11,6 @@ import com.owo.TP_prg3.Clases.Item.modelo.Item;
 import com.owo.TP_prg3.Clases.Item.modelo.ItemRepositorio;
 import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
 import com.owo.TP_prg3.Clases.Pedido.modelo.PedidoRepositorio;
-import com.owo.TP_prg3.Clases.Puesto.modelo.Puesto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityNotFoundException;
@@ -53,12 +52,12 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
         detallePedido.setPedido(optionalPedido.get());
         detallePedido.setItem(optionalItem.get());
 
-        //Me fijo si el item que está en el DP está en el puesto y obtengo la info del inventario de ese item.
+        //Me fijo si el itemId que está en el DP está en el puesto y obtengo la info del inventario de ese itemId.
         Optional<InventarioPuesto> inventarioItem = inventarioPuestoRepositorio.findAll()
                 .stream()
                 .filter(inv ->
-                        inv.getPuesto().getPuestoId() == optionalPedido.get().getPuestoId() &&
-                        inv.getItem().getItem_id() == optionalItem.get().getItem_id())
+                        inv.getPuesto().getPuestoId().equals(optionalPedido.get().getPuestoId()) &&
+                                inv.getItemId().equals(optionalItem.get().getItem_id()))
                 .findFirst();
 
         if (inventarioItem.isEmpty()) throw new EntityNotFoundException("InventarioPuesto no encontrado para el Item ID: " + detallePedidoDTO.getItemId() + " y Puesto ID: " + detallePedido.getPedido().getPuestoId());
@@ -136,7 +135,7 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
 
                         Optional<InventarioPuesto> inventarioItem = inventarioPuestoRepositorio.findAll()
                                 .stream()
-                                .filter(inv -> inv.getPuesto().getPuestoId().equals(puestoId) && inv.getItem().getItem_id().equals(itemId))
+                                .filter(inv -> inv.getPuesto().getPuestoId().equals(puestoId) && inv.getItemId().equals(itemId))
                                 .findFirst();
 
                         if (inventarioItem.isEmpty()) {

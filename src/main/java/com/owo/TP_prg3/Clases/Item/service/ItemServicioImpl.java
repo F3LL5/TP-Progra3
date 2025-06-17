@@ -26,8 +26,7 @@ public class ItemServicioImpl implements ItemServicio {
         return new ItemDTO(
                 item.getItem_id(),
                 item.getNombre(),
-                item.getCategoria(),
-                item.getCosto()
+                item.getCategoria()
         );
     }
 
@@ -35,7 +34,6 @@ public class ItemServicioImpl implements ItemServicio {
         Item item = new Item();
         item.setNombre(itemDTO.getNombre());
         item.setCategoria(itemDTO.getCategoria());
-        item.setCosto(itemDTO.getCosto());
 
         return item;
     }
@@ -87,9 +85,6 @@ public class ItemServicioImpl implements ItemServicio {
                     if (updateItemDTO.getCategoria() != null) {
                         item.setCategoria(updateItemDTO.getCategoria());
                     }
-                    if (updateItemDTO.getCosto() != null) {
-                        item.setCosto(updateItemDTO.getCosto());
-                    }
                     Item itemModificado = itemRepositorio.save(item);
                     return convertirA_DTO(itemModificado);
                 })
@@ -118,8 +113,7 @@ public class ItemServicioImpl implements ItemServicio {
             Comparator<ItemDTO> comparador = null;
             switch (orden.toLowerCase()) {
                 case "nombre" -> comparador = Comparator.comparing(ItemDTO::getNombre);
-                case "costo" -> comparador = Comparator.comparing(ItemDTO::getCosto);
-                default -> throw new IngresoInvalidoException("Opción de ordenación incorrecta: " + orden + ". Use 'nombre' o 'costo'.");
+                default -> throw new IngresoInvalidoException("Opción de ordenación incorrecta: " + orden + ". Use 'nombre'.");
             }
 
             if (comparador != null) {

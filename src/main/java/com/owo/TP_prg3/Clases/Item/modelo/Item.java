@@ -22,6 +22,4 @@ public class Item {
     @Column(nullable = false)
     protected String categoria;
 
-    @Column(nullable = false)
-    protected Double costo;
 }

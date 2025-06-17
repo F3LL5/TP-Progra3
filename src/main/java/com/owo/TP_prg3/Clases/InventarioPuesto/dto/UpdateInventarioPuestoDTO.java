@@ -20,7 +20,7 @@ public class UpdateInventarioPuestoDTO {
     @Positive(message = "El ID del puesto debe ser un número positivo")
     protected Long puestoId;
 
-    @Positive(message = "El ID del item debe ser un número positivo")
+    @Positive(message = "El ID del itemId debe ser un número positivo")
     protected Long itemId;
 
     @Positive(message = "El stock mínimo debe ser un número positivo")
@@ -28,4 +28,7 @@ public class UpdateInventarioPuestoDTO {
 
     @Positive(message = "El precio de venta debe ser un número positivo")
     protected BigDecimal precioVenta;
+
+    @Positive(message = "El costo de adquision debe ser un número positivo")
+    protected BigDecimal costoAdquisicion;
 }

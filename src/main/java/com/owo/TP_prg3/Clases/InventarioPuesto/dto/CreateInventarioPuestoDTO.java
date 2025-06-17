@@ -22,7 +22,7 @@ public class CreateInventarioPuestoDTO {
     protected Long puestoId;
 
     @NotNull
-    @Positive(message = "El ID del item debe ser un número positivo")
+    @Positive(message = "El ID del itemId debe ser un número positivo")
     protected Long itemId;
 
     @NotNull
@@ -32,4 +32,8 @@ public class CreateInventarioPuestoDTO {
     @NotNull
     @Positive(message = "El precio de venta debe ser un número positivo")
     protected BigDecimal precioVenta;
+
+    @NotNull
+    @Positive(message = "El costo de adquisicion debe ser un número positivo")
+    protected BigDecimal costoAdquisicion;
 }

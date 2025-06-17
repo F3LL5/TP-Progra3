@@ -5,8 +5,7 @@ use comercio;
 create table if not exists items (
 	item_id bigint auto_increment primary key,
 	nombre varchar(100) not null,
-	categoria varchar(100) not null,
-	costo decimal(10,2) not null
+	categoria varchar(100) not null
 );
 
 create table entidades(
@@ -35,6 +34,7 @@ create table if not exists inventario_puesto (
 	item_id bigint not null,
 	stock_min int not null,
 	precio_venta decimal(10,2) not null,
+	costo_adquisicion decimal(10,2) not null,
 	foreign key(puesto_id) references puestos(puesto_id),
 	foreign key(item_id) references items(item_id)
 	on delete cascade
@@ -78,13 +78,14 @@ create table if not exists detalles_pedido (
 	on delete cascade
 	on update cascade
 );
-create table if not exists item_precio_historial (
+
+create table if not exists inventario_costo_historial (
     id bigInt AUTO_INCREMENT PRIMARY KEY,
-    item_id bigInt,
-    precio_anterior DECIMAL(10,2),
-    precio_nuevo DECIMAL(10,2),
+    inventario_id bigInt,
+    costo_anterior DECIMAL(10,2),
+    costo_nuevo DECIMAL(10,2),
     fecha_cambio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    foreign key(item_id) references items(item_id)
+    foreign key(inventario_id) references inventario_puesto(inventario_id)
 );
 
 create table historial_cambio_duenio (
@@ -99,13 +100,13 @@ create table historial_cambio_duenio (
 );
 
 DELIMITER //
-CREATE TRIGGER trg_item_costo_update
-BEFORE UPDATE ON items
+CREATE TRIGGER trg_inventario_costo_adquisicion_update
+BEFORE UPDATE ON inventario_puesto
 FOR EACH ROW
 BEGIN
-    IF OLD.costo <> NEW.costo THEN
-        INSERT INTO item_precio_historial (item_id, costo_anterior, costo_nuevo, fecha_cambio)
-        VALUES (OLD.item_id, OLD.costo, now());
+    IF OLD.costo_adquisicion <> NEW.costo_adquisicion THEN
+        INSERT INTO inventario_costo_historial (inventario_id, costo_anterior, costo_nuevo, fecha_cambio)
+        VALUES (OLD.inventario_id, OLD.costo_adquisicion, NEW.costo_adquisicion, now());
     END IF;
 END;
 //
@@ -132,3 +133,12 @@ BEGIN
 END;
 //
 DELIMITER ;
+
+
+insert into entidades(nombre,tipo_entidad,rol,edad,dni) values 
+	( "Player", "Player", "ADMIN", 19, 1 ),
+	( "NPC1", "NPC", "DUENO_PUESTO", 20, 2 ),
+	( "NPC1", "NPC", "DUENO_PUESTO", 20, 3 );
+    
+insert into puestos(nombre,duenio_id,comision) values
+	( "Puesto1", 3, 0.2 );

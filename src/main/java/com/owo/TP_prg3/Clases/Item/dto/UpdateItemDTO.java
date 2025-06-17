@@ -21,6 +21,4 @@ public class UpdateItemDTO {
     @Size(max = 100, message = "La categoria no debe pasar los 100 caracteres.")
     protected String categoria;
 
-    @Positive(message = "El costo debe ser un número positivo.")
-    protected Double costo;
 }

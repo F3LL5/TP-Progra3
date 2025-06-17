@@ -37,20 +37,9 @@ public class UsuarioServicio {
                 usuario.getId(),
                 usuario.getDni(),
                 usuario.getRol(),
-                usuario.getEntidad()
+                usuario.getEntidad().getEntidad_id()
         );
     }
-
-    private Usuario convertirA_Usuario(UsuarioDTO usuarioDTO){
-        Usuario usuario = new Usuario();
-        usuario.setId(usuario.getId());
-        usuario.setDni(usuarioDTO.getDni());
-        usuario.setRol(usuarioDTO.getRol());
-        usuario.setEntidad(usuario.getEntidad());
-
-        return usuario;
-    }
-
 
     //Metodos
     public Usuario crearUsuario(CreateUsuarioDTO dto) {
@@ -87,16 +76,7 @@ public class UsuarioServicio {
     public List<UsuarioDTO> getAllUsers(){
         return usuarioRepositorio.findAll()
                 .stream()
-                .map(user -> convertirA_DTO(user))
+                .map(this::convertirA_DTO)
                 .toList();
-    }
-
-    public String listado(){
-        StringBuilder s = new StringBuilder();
-        getAllUsers().forEach(u -> s
-                .append( u.getId() + ". ")
-                .append( u )
-                .append(",\n"));
-        return s.toString();
     }
 }

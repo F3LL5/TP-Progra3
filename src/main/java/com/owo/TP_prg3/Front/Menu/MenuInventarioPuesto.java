@@ -109,7 +109,7 @@ public class MenuInventarioPuesto {
         String categoria = scanner.nextLine();
         if (categoria.isBlank()) categoria = null;
 
-        System.out.print("Ordenar por 'nombre' , 'costo','cantidad', (dejar vacío si no aplica): ");
+        System.out.print("Ordenar por 'nombre', 'precioVenta', 'costoAdquisicion', 'cantidad' (dejar vacío si no aplica): ");
         String orden = scanner.nextLine();
         String direccion = null;
         if (orden.isBlank()) {
@@ -159,15 +159,16 @@ public class MenuInventarioPuesto {
         System.out.print("Ingrese ID item: "); Long itemId = Long.valueOf(Escaner.enteroValido(scanner));
         System.out.println("Ingrese la cantidad de stock minimo que desea establecer: "); Integer stockMin=Escaner.enteroValido(scanner);
         System.out.println("Ingrese el precio del item"); BigDecimal precioVenta=BigDecimal.valueOf(Escaner.doubleValido(scanner));
-
+        System.out.println("Ingrese el costo de adquisicion"); BigDecimal costoAdquisicion=BigDecimal.valueOf(Escaner.doubleValido(scanner));
 
         String jsonBody = "{" +
                 "\"cantidad\":" +cantidad + "," +
                 "\"puestoId\":" + puestoId +"," +
-                "\"itemId\":" + itemId + ","+
-                "\"stockMin\":" + stockMin + ","+
-                "\"precioVenta\":" + precioVenta +
-        "}";
+                "\"itemId\":" + itemId + "," +
+                "\"stockMin\":" + stockMin + "," +
+                "\"precioVenta\":" + precioVenta + "," +
+                "\"costoAdquisicion\":" + costoAdquisicion +
+                "}";
         HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
     }
 
@@ -193,6 +194,7 @@ public class MenuInventarioPuesto {
                 3. Item
                 4. Stock Minimo
                 5. Precio de venta
+                6. Costo adquisicion
                 0. Cancelar
                 Ingrese una opción:"""
         );
@@ -210,7 +212,7 @@ public class MenuInventarioPuesto {
                 jsonBody = "{\"puestoId\":" + puestoId + "}";
             }
             case 3 -> {
-                Long itemId = Long.valueOf(Escaner.enteroValido(scanner));
+                int itemId = Escaner.enteroValido(scanner);
                 jsonBody = "{\"itemId\":" + itemId + "}";
             }
             case 4 -> {
@@ -218,8 +220,12 @@ public class MenuInventarioPuesto {
                 jsonBody = "{\"stockMin\":"  + stockMin + "}";
             }
             case 5 -> {
-                BigDecimal precioVenta = BigDecimal.valueOf(Escaner.enteroValido(scanner));
+                BigDecimal precioVenta = BigDecimal.valueOf(Escaner.doubleValido(scanner));
                 jsonBody = "{\"precioVenta\":"  + precioVenta + "}";
+            }
+            case 6 -> {
+                BigDecimal costoAdquisicion = BigDecimal.valueOf(Escaner.doubleValido(scanner));
+                jsonBody = "{\"costoAdquisicion\":"  + costoAdquisicion + "}";
             }
             default -> {
                 System.out.println("Opcion no válida.");
@@ -282,7 +288,8 @@ public class MenuInventarioPuesto {
         String respuestaJson = response.body();
 
         ObjectMapper mapper = new ObjectMapper();
-        List<Map<String, Object>> stock = mapper.readValue(respuestaJson, new TypeReference<List<Map<String, Object>>>() {});
+        List<Map<String, Object>> stock = mapper.readValue(respuestaJson, new TypeReference<>() {
+        });
 
         if (stock.isEmpty()) {
             System.out.println("No hay productos con stock bajo.");

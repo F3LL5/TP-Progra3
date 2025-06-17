@@ -3,17 +3,15 @@ package com.owo.TP_prg3.Front.Menu;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jakewharton.fliptables.FlipTableConverters;
-import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CuentaBancariaDTO;
 import com.owo.TP_prg3.Clases.Item.dto.CreateItemDTO;
 import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import com.owo.TP_prg3.Clases.Item.dto.UpdateItemDTO;
-import com.owo.TP_prg3.Front.Menu.MenuAuditoria.MenuHistorial_Item;
+import com.owo.TP_prg3.Front.Menu.MenuAuditoria.MenuHistorial_InventarioCosto;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 import com.owo.TP_prg3.Front.HttpService;
 import java.io.IOException;
 import java.net.http.HttpResponse;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class MenuItem {
 
@@ -45,7 +43,7 @@ public class MenuItem {
                 case "1.3" -> filtrarYordenar();
 
                 case "6" -> {
-                    MenuHistorial_Item auditoria = new MenuHistorial_Item(authHeader);
+                    MenuHistorial_InventarioCosto auditoria = new MenuHistorial_InventarioCosto(authHeader);
                     auditoria.gestionar();
                 }
 
@@ -66,10 +64,7 @@ public class MenuItem {
                 4. Eliminar
                 5. Modificar
 
-               
                 1.3 filtrarYordenar
-
-                6. Historial de costos
 
                 0. Salir
                 Ingrese la opción:""");
@@ -107,7 +102,7 @@ public class MenuItem {
                 HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null),
                 ItemDTO.class, // Clase esperada para un único ítem
                 "Item encontrado:",
-                "No se encontró el item con ID " + id + "."
+                "No se encontró el itemId con ID " + id + "."
         );
 
         result.ifPresent(obj -> {
@@ -123,7 +118,7 @@ public class MenuItem {
         String categoria = scanner.nextLine();
         if (categoria.isBlank()) categoria = null;
 
-        System.out.print("Ordenar por 'nombre' o 'costo' (dejar vacío si no aplica): ");
+        System.out.print("Ordenar por 'nombre' (dejar vacío si no aplica): ");
         String orden = scanner.nextLine();
         String direccion = null;
         if (orden.isBlank()) {
@@ -165,23 +160,21 @@ public class MenuItem {
 
     //POST
     private void agregar() throws IOException, InterruptedException {
-        System.out.println("\n--- Agregar nuevo item ---");
+        System.out.println("\n--- Agregar nuevo itemId ---");
 
-        System.out.print("Nombre del item: ");
+        System.out.print("Nombre del itemId: ");
         String nombre = Escaner.stringValido(scanner);
-        System.out.print("Categoria del item: ");
+        System.out.print("Categoria del itemId: ");
         String categoria = Escaner.stringValido(scanner);
-        System.out.print("Costo del item: ");
-        Double costo = Escaner.doubleValido(scanner);
 
-        CreateItemDTO createItemDTO = new CreateItemDTO(nombre, categoria, costo);
+        CreateItemDTO createItemDTO = new CreateItemDTO(nombre, categoria);
         String jsonBody = mapper.writeValueAsString(createItemDTO);
 
         Optional<Object> result = handleResponse(
                 HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody),
                 ItemDTO.class, // Clase esperada para el ítem creado
                 "Item agregado exitosamente.",
-                "Error al agregar item."
+                "Error al agregar itemId."
         );
 
         result.ifPresent(obj -> {
@@ -192,7 +185,7 @@ public class MenuItem {
 
     //DELETE
     private void eliminar() throws IOException, InterruptedException {
-        System.out.print("Ingrese el ID del item a eliminar: ");
+        System.out.print("Ingrese el ID del itemId a eliminar: ");
         Integer id = Escaner.enteroValido(scanner);
         HttpResponse<String> response = HttpService.realizarPeticion("DELETE", API_URL + "/" + id, authHeader, null);
 
@@ -206,7 +199,7 @@ public class MenuItem {
 
     //PATCH
     private void modificar() throws IOException, InterruptedException {
-        System.out.print("Ingrese el ID del item a modificar: ");
+        System.out.print("Ingrese el ID del itemId a modificar: ");
         Integer id = Escaner.enteroValido(scanner);
         System.out.println();
 
@@ -214,7 +207,6 @@ public class MenuItem {
             ATRIBUTO A MODIFICAR:
             1. Nombre
             2. Categoria
-            3. Costo
             0. Cancelar
             Ingrese una opcion:""");
         Integer opcion = Escaner.enteroValido(scanner);
@@ -234,11 +226,6 @@ public class MenuItem {
                 updateItemDTO.setCategoria(categoria);
                 attributeSelected = true;
             }
-            case 3 -> {
-                Double costo = Escaner.doubleValido(scanner);
-                updateItemDTO.setCosto(costo);
-                attributeSelected = true;
-            }
             case 0 -> {
                 return; // Cancelar
             }
@@ -254,7 +241,7 @@ public class MenuItem {
                 HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody),
                 ItemDTO.class,
                 "Item modificado exitosamente.",
-                "Error al modificar item."
+                "Error al modificar itemId."
         );
 
         result.ifPresent(obj -> {
