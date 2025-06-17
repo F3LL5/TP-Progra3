@@ -42,7 +42,6 @@ public class MenuItem {
                 case "4" -> eliminar();
                 case "5" -> modificar();
 
-                case "1.2" -> listado();
                 case "1.3" -> filtrarYordenar();
 
                 case "6" -> {
@@ -67,7 +66,7 @@ public class MenuItem {
                 4. Eliminar
                 5. Modificar
 
-                1.2 Listado
+               
                 1.3 filtrarYordenar
 
                 6. Historial de costos
@@ -116,52 +115,6 @@ public class MenuItem {
             ItemDTO item = (ItemDTO) obj;
             System.out.println(FlipTableConverters.fromIterable(List.of(item), ItemDTO.class));
         });
-    }
-
-    private void listado() throws IOException, InterruptedException {
-        System.out.println("\n--- Obteniendo listado de items... ---");
-
-        HttpResponse<String> response = HttpService.realizarPeticion("GET", API_URL + "/listado", authHeader, null);
-        int statusCode = response.statusCode();
-        String respuesta = response.body();
-
-        if (statusCode == 200) {
-            if (respuesta == null || respuesta.isBlank()) {
-                System.out.println("No se recibieron items desde el servidor.");
-                return;
-            }
-
-            List<ItemDTO> items = new ArrayList<>();
-            String[] lineas = respuesta.split("\\r?\\n");
-
-            for (String linea : lineas) {
-                if (linea.contains("ItemDTO(")) {
-                    try {
-                        String contenido = linea.substring(linea.indexOf('(') + 1, linea.indexOf(')'));
-                        Map<String, String> partsMap = Arrays.stream(contenido.split(", "))
-                                .map(s -> s.split("="))
-                                .collect(Collectors.toMap(a -> a[0], a -> a[1]));
-
-                        Long itemId = Long.parseLong(partsMap.get("item_id"));
-                        String nombre = partsMap.get("nombre");
-                        String categoria = partsMap.get("categoria");
-                        double costo = Double.parseDouble(partsMap.get("costo"));
-
-                        ItemDTO item = new ItemDTO(itemId, nombre, categoria, costo);
-                        items.add(item);
-                    } catch (Exception e) {
-                        System.err.println("Error al parsear línea: " + linea + " - " + e.getMessage());
-                    }
-                }
-            }
-            if (items.isEmpty()) {
-                System.out.println("No se pudieron interpretar los items del listado.");
-            } else {
-                System.out.println(FlipTableConverters.fromIterable(items, ItemDTO.class));
-            }
-        } else {
-            handleErrorResponse(statusCode, respuesta);
-        }
     }
 
     private void filtrarYordenar() throws IOException, InterruptedException {
