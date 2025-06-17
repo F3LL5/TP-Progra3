@@ -1,22 +1,25 @@
 package com.owo.TP_prg3.Clases.Pedido.service;
 
-import com.owo.TP_prg3.Clases.DetallePedido.dto.DetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.service.DetallePedidoServicioImpl;
+import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.CreatePedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.UpdatePedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
 import com.owo.TP_prg3.Clases.Pedido.modelo.PedidoRepositorio;
+import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
+import com.owo.TP_prg3.Clases.Transaccion.modelo.Transaccion;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.TransaccionRepositorio;
-import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedidoRepositorio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityNotFoundException;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class PedidoServicioImpl implements PedidoServicio {
@@ -103,4 +106,31 @@ public class PedidoServicioImpl implements PedidoServicio {
         }
         return false;
     }
+
+    @Override
+    public List<PedidoDTO> filtrarYOrdenar(String tipo_transaccion, String sortBy, String sortDir) {
+        List<PedidoDTO> allPedidosDTO = getAllPedidos();
+        Stream<PedidoDTO> pedidoDTOStream = allPedidosDTO.stream();
+
+        if (tipo_transaccion != null && !tipo_transaccion.isEmpty()) {
+            pedidoDTOStream = pedidoDTOStream.filter(pedido -> transaccionRepositorio.getById(pedido.getTransaccionId()).getTipo().name().equalsIgnoreCase(tipo_transaccion) );
+        }
+
+        if (sortBy != null) {
+            Comparator<PedidoDTO> comparator = null;
+            switch (sortBy.toLowerCase()) {
+                case "fecha" -> comparator = Comparator.comparing((PedidoDTO pedido) -> transaccionRepositorio.getById(pedido.getTransaccionId()).getFecha());
+                case "monto" -> comparator = Comparator.comparing((PedidoDTO pedido) -> transaccionRepositorio.getById(pedido.getTransaccionId()).getMonto());
+                case "id_cuenta_origen" -> comparator = Comparator.comparing((PedidoDTO pedido) -> transaccionRepositorio.getById(pedido.getTransaccionId()).getCuentaOrigen().getCuentaBancariaId());
+                case "id_cuenta_destino" -> comparator = Comparator.comparing((PedidoDTO pedido) -> transaccionRepositorio.getById(pedido.getTransaccionId()).getCuentaDestino().getCuentaBancariaId());
+                default -> throw new RuntimeException("Dicho criterio de búsqueda NO existe.");
+            }
+            if(comparator != null) if("desc".equalsIgnoreCase(sortDir)) comparator = comparator.reversed();
+
+            pedidoDTOStream = pedidoDTOStream.sorted(comparator);
+        }
+
+        return pedidoDTOStream.toList();
+    }
+
 }

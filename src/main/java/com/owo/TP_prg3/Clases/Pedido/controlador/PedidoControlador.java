@@ -4,6 +4,7 @@ import com.owo.TP_prg3.Clases.Pedido.dto.CreatePedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.UpdatePedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.service.PedidoServicioImpl;
+import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -43,5 +44,15 @@ public class PedidoControlador {
     @PatchMapping("/{id}")
     public Optional<PedidoDTO> updatePedido(@PathVariable Long id, @Valid @RequestBody UpdatePedidoDTO updatePedidoDTO){
         return pedidoServicio.updatePedido(id, updatePedidoDTO);
+    }
+
+    @GetMapping("/filtrarYOrdenar")
+    public List<PedidoDTO> filtrarYOrdenar(
+            @RequestParam(required = false) String tipo_transaccion,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDir
+
+    ) {
+        return pedidoServicio.filtrarYOrdenar(tipo_transaccion, sortBy, sortDir);
     }
 }

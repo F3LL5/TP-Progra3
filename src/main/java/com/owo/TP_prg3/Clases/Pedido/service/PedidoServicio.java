@@ -13,4 +13,5 @@ public interface PedidoServicio {
     PedidoDTO createPedido(CreatePedidoDTO createPedidoDTO);
     Optional<PedidoDTO> updatePedido(Long id, UpdatePedidoDTO updatePedidoDTO);
     boolean deletePedido(Long id);
+    List<PedidoDTO> filtrarYOrdenar(String tipo_transaccion, String sortBy, String sortDir);
 }

@@ -1,10 +1,12 @@
 package com.owo.TP_prg3.Front.Menu;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jakewharton.fliptables.FlipTableConverters;
 import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
 import com.owo.TP_prg3.Clases.Puesto.dto.PuestoDTO;
+import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
 import com.owo.TP_prg3.Front.HttpService;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 
@@ -37,6 +39,7 @@ public class MenuPedidos {
                 case "3" -> agregar();
                 case "4" -> eliminar();
                 case "5" -> modificar();
+                case "6" -> filtrarYOrdenar();
 
                 case "0" -> {} // Salir
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
@@ -54,6 +57,7 @@ public class MenuPedidos {
                 3. Agregar
                 4. Eliminar
                 5. Modificar
+                6. Filtrar y Ordenar VENTAS, COMPRAS, INGRESOS Y EGRESOS
                 
                 0. Salir
                 Ingrese la opción:""");
@@ -82,6 +86,53 @@ public class MenuPedidos {
 
         System.out.println(FlipTableConverters.fromIterable(List.of(pedido), PedidoDTO.class));
 
+    }
+
+    private void filtrarYOrdenar() throws IOException, InterruptedException {
+        System.out.println("--- Filtrar y ordenar pedidos ---");
+
+        System.out.print("Filtrar por TIPO (COMPRA, VENTA, INGRESO, EGRESO) o dejar vacío: ");
+        String tipo_transaccion = scanner.nextLine().trim();
+        if (tipo_transaccion.isBlank()) tipo_transaccion = null;
+
+        System.out.print("Ordenar por 'fecha', 'monto', 'id_cuenta_origen', 'id_cuenta_destino' o dejar vacío: ");
+        String sortBy = scanner.nextLine().trim();
+        String sortDir = null;
+        if (!sortBy.isBlank()) {
+            System.out.print("Dirección de orden: 'asc' o 'desc' (dejar vacío si no aplica): ");
+            sortDir = scanner.nextLine().trim();
+            if (sortDir.isBlank()) sortDir = null;
+        } else {
+            sortBy = null;
+        }
+
+        // Construcción de la URL
+        StringBuilder urlBuilder = new StringBuilder(API_URL + "/filtrarYOrdenar?");
+        if (tipo_transaccion != null) urlBuilder.append("tipo_transaccion=").append(tipo_transaccion).append("&");
+        if (sortBy != null) urlBuilder.append("sortBy=").append(sortBy).append("&");
+        if (sortDir != null) urlBuilder.append("sortDir=").append(sortDir);
+
+        String finalUrl = urlBuilder.toString();
+        if (finalUrl.endsWith("&") || finalUrl.endsWith("?")) {
+            finalUrl = finalUrl.substring(0, finalUrl.length() - 1);
+        }
+
+        System.out.println("\n-> Consultando " + finalUrl);
+
+        HttpResponse<String> response = HttpService.realizarPeticion("GET", finalUrl, authHeader, null);
+        String respuestaJson = response.body();
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule()); // Soporte para LocalDateTime
+
+        List<TransaccionDTO> transacciones = Arrays.asList(mapper.readValue(respuestaJson, TransaccionDTO[].class));
+
+        if (transacciones.isEmpty()) {
+            System.out.println("No se encontraron transacciones con esos filtros.");
+            return;
+        }
+
+        System.out.println(FlipTableConverters.fromIterable(transacciones, TransaccionDTO.class));
     }
 
     //POST
