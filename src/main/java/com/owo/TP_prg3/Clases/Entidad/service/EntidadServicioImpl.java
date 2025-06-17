@@ -12,9 +12,13 @@ import com.owo.TP_prg3.Clases.Excepciones.RecursoNoEncontradoException;
 import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import com.owo.TP_prg3.Clases.Item.dto.UpdateItemDTO;
 import com.owo.TP_prg3.Clases.Item.modelo.Item;
+import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
+import com.owo.TP_prg3.Clases.Pedido.modelo.PedidoRepositorio;
+import jakarta.transaction.Transactional;
 import org.hibernate.cache.spi.support.AbstractRegion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Comparator;
 import java.util.List;
@@ -27,6 +31,8 @@ public class EntidadServicioImpl implements EntidadServicio {
 
     @Autowired
     private EntidadRepositorio entidadRepositorio;
+    @Autowired
+    private PedidoRepositorio pedidoRepositorio;
 
     // Conversión
     private EntidadDTO convertirA_DTO(Entidad entidad) {
@@ -118,14 +124,27 @@ public class EntidadServicioImpl implements EntidadServicio {
         return optional.map(this::convertirA_DTO);
     }
 
-    @Override
-    public List<EntidadDTO> filtrarYOrdenar(String rol_entidad, String sortBy, String sortDir) {
-        List<EntidadDTO> allEntitys = getAllEntidades();
-        Stream<EntidadDTO> entidadDTOStream = allEntitys.stream();
+    public List<EntidadDTO> filtrarYOrdenar(
+            @RequestParam(required = false) Long puestoId, @RequestParam(required = false) String rol_entidad,
+            @RequestParam(required = false) String sortBy, @RequestParam(required = false) String sortDir) {
+        Stream<EntidadDTO> entidadDTOStream;
+
+        if (puestoId != null) {
+            // Si se proporciona un puestoId, comenzar con las entidades asociadas a ese puesto.
+            entidadDTOStream = getEntidadesByPuestoId(puestoId).stream();
+        } else {
+            // Si no se proporciona puestoId, usar todas las entidades.
+            entidadDTOStream = getAllEntidades().stream();
+        }
 
         if (rol_entidad != null && !rol_entidad.isBlank()) {
             try {
-                RolEntidad.valueOf(rol_entidad.toUpperCase());
+                RolEntidad roleEnum = RolEntidad.valueOf(rol_entidad.toUpperCase());
+                // Si se filtra por puesto, restringir los roles permitidos
+                if (puestoId != null && (roleEnum == RolEntidad.DUENO_PUESTO || roleEnum == RolEntidad.ADMIN)) {
+                    throw new IngresoInvalidoException("Cuando se filtra por puesto, el rol de entidad debe ser CLIENTE o PROVEEDOR.");
+                }
+                entidadDTOStream = entidadDTOStream.filter(entidad -> entidad.getRolEntidad().name().equalsIgnoreCase(rol_entidad));
             } catch (IllegalArgumentException e) {
                 throw new IngresoInvalidoException("El rol de entidad '" + rol_entidad + "' no es válido. Valores permitidos: CLIENTE, PROVEEDOR, DUENO_PUESTO, ADMIN.");
             }
@@ -135,16 +154,13 @@ public class EntidadServicioImpl implements EntidadServicio {
             throw new IngresoInvalidoException("La dirección de ordenamiento debe ser 'asc' o 'desc'.");
         }
 
-        if (rol_entidad != null && !rol_entidad.isEmpty()) {
-            entidadDTOStream = entidadDTOStream.filter(entidad -> entidad.getRolEntidad().name().equalsIgnoreCase(rol_entidad));
-        }
-
         if(sortBy != null) {
             Comparator<EntidadDTO> comparator = null;
             switch (sortBy.toLowerCase()) {
                 case "nombre" -> comparator = Comparator.comparing(EntidadDTO::getNombre);
                 case "edad" -> comparator = Comparator.comparing(EntidadDTO::getEdad);
                 case "dni" -> comparator = Comparator.comparing(EntidadDTO::getDni);
+                case "tipoentidad" -> comparator = Comparator.comparing(EntidadDTO::getTipoEntidad);
                 default -> throw new RuntimeException("Dicho criterio NO existe.");
             }
             if(comparator != null) if ("desc".equalsIgnoreCase(sortDir)) comparator = comparator.reversed();
@@ -153,5 +169,83 @@ public class EntidadServicioImpl implements EntidadServicio {
         }
 
         return entidadDTOStream.toList();
+    }
+
+    // Obtener todas las entidades (CLIENTE, PROVEEDOR) asociadas a un puesto específico
+    public List<EntidadDTO> getEntidadesByPuestoId(Long puestoId) {
+        List<EntidadDTO> allEntities = getAllEntidades(); // Obtener todas las entidades
+        return allEntities.stream()
+                .filter(entidad -> {
+                    // Si la entidad es CLIENTE o PROVEEDOR
+                    if (entidad.getRolEntidad() == RolEntidad.CLIENTE || entidad.getRolEntidad() == RolEntidad.PROVEEDOR) {
+                        // Buscar si esta entidad tiene algún pedido asociado al puestoId
+                        return pedidoRepositorio.findAll().stream()
+                                .anyMatch(pedido -> pedido.getPuestoId().equals(puestoId) &&
+                                        (pedido.getTransaccion().getCuentaOrigen().getEntidad().getEntidad_id().equals(entidad.getEntidad_id()) ||
+                                                pedido.getTransaccion().getCuentaDestino().getEntidad().getEntidad_id().equals(entidad.getEntidad_id())));
+                    }
+                    return false;
+                })
+                .collect(Collectors.toList());
+    }
+
+    // Buscar entidad por ID y Puesto ID
+    public Optional<EntidadDTO> getEntidadByIdAndPuestoId(Long id, Long puestoId) {
+        Optional<EntidadDTO> entidad = getEntidadById(id);
+
+        if (entidad.isPresent()) {
+            boolean isAssociated = getEntidadesByPuestoId(puestoId).stream()
+                    .anyMatch(e -> e.getEntidad_id().equals(id));
+            if (isAssociated) {
+                return entidad;
+            }
+        }
+        return Optional.empty();
+    }
+
+    // Agregar Entidad para un Puesto específico
+    @Transactional
+    public EntidadDTO createEntidadForPuesto(Long puestoId, CreateEntidadDTO createEntidadDTO) {
+        if (createEntidadDTO.getRolEntidad() != RolEntidad.CLIENTE && createEntidadDTO.getRolEntidad() != RolEntidad.PROVEEDOR) {
+            throw new IngresoInvalidoException("Solo se pueden crear entidades con rol CLIENTE o PROVEEDOR para un puesto.");
+        }
+        return createEntidad(createEntidadDTO);
+    }
+
+    // Eliminar Entidad de un Puesto específico
+    @Transactional
+    public boolean deleteEntidadFromPuesto(Long id, Long puestoId) {
+        Optional<EntidadDTO> entidad = getEntidadByIdAndPuestoId(id, puestoId);
+        if (entidad.isPresent()) {
+            return deleteEntidad(id);
+        }
+        throw new RecursoNoEncontradoException("La entidad con ID " + id + " no fue encontrada o no está asociada al puesto " + puestoId + " para ser eliminada.");
+    }
+
+    // Modificar Entidad de un Puesto específico
+    @Transactional
+    public Optional<EntidadDTO> updateEntidadForPuesto(Long id, Long puestoId, UpdateEntidadDTO updateEntidadDTO) {
+        Optional<EntidadDTO> entidad = getEntidadByIdAndPuestoId(id, puestoId);
+        if (entidad.isPresent()) {
+            return updateEntidad(id, updateEntidadDTO);
+        }
+        throw new RecursoNoEncontradoException("La entidad con ID " + id + " no fue encontrada o no está asociada al puesto " + puestoId + " para ser modificada.");
+    }
+
+    // Filtrar Clientes con pedidos de un puesto específico
+    public List<EntidadDTO> getClientesConPedidosByPuestoId(Long puestoId) {
+        List<Pedido> pedidosDePuesto = pedidoRepositorio.findAll().stream()
+                .filter(pedido -> pedido.getPuestoId().equals(puestoId))
+                .toList();
+
+        List<Long> clienteIds = pedidosDePuesto.stream()
+                .map(pedido -> pedido.getTransaccion().getCuentaOrigen().getEntidad().getEntidad_id())
+                .distinct()
+                .toList();
+
+        return entidadRepositorio.findAll().stream()
+                .filter(entidad -> clienteIds.contains(entidad.getEntidad_id()) && entidad.getRolEntidad() == RolEntidad.CLIENTE)
+                .map(this::convertirA_DTO)
+                .collect(Collectors.toList());
     }
 }

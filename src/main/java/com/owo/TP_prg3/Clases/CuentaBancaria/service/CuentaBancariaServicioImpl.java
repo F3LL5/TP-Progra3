@@ -117,4 +117,11 @@ public class CuentaBancariaServicioImpl implements CuentaBancariaServicio {
         }
         return false;
     }
+
+    public Optional<CuentaBancariaDTO> getCuentaBancariaByEntidadId(Long entidadId) {
+        return cuentaBancariaRepositorio.findAll().stream()
+                .filter(cuenta -> cuenta.getEntidad() != null && cuenta.getEntidad().getEntidad_id().equals(entidadId))
+                .map(this::convertirA_DTO)
+                .findFirst();
+    }
 }

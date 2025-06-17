@@ -44,4 +44,24 @@ public class DetallePedidoControlador {
     public Optional<DetallePedidoDTO> updateDetallePedido(@PathVariable Long id, @Valid @RequestBody UpdateDetallePedidoDTO updateDetallePedidoDTO){
         return detallePedidoServicio.updateDetallePedido(id, updateDetallePedidoDTO);
     }
+
+    @DeleteMapping("/{id}/puesto/{puestoId}")
+    public boolean deleteDetallePedidoForPuesto(@PathVariable Long id, @PathVariable Long puestoId){
+        // Primero, verifica si el detalle de pedido pertenece al puesto
+        Optional<DetallePedidoDTO> detalle = detallePedidoServicio.getDetallePedidoByIdAndPuestoId(id, puestoId);
+        if (detalle.isPresent()) {
+            return detallePedidoServicio.deleteDetallePedido(id);
+        }
+        return false;
+    }
+
+    @PatchMapping("/{id}/puesto/{puestoId}")
+    public Optional<DetallePedidoDTO> updateDetallePedidoForPuesto(@PathVariable Long id, @PathVariable Long puestoId, @Valid @RequestBody UpdateDetallePedidoDTO updateDetallePedidoDTO){
+        // Primero, verifica si el detalle de pedido pertenece al puesto
+        Optional<DetallePedidoDTO> detalle = detallePedidoServicio.getDetallePedidoByIdAndPuestoId(id, puestoId);
+        if (detalle.isPresent()) {
+            return detallePedidoServicio.updateDetallePedido(id, updateDetallePedidoDTO);
+        }
+        return Optional.empty();
+    }
 }

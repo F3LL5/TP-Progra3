@@ -54,4 +54,10 @@ public class CuentaBancariaControlador {
     public Optional<CuentaBancariaDTO> updateCuentaBancaria(@PathVariable Long id, @Valid @RequestBody UpdateCuentaBancariaDTO updateCuentaBancariaDTO){
         return cuentaBancariaServicio.updateCuentaBancaria(id, updateCuentaBancariaDTO);
     }
+
+    @GetMapping("/entidad/{entidadId}")
+    public ResponseEntity<CuentaBancariaDTO> getCuentaBancariaByEntidadId(@PathVariable Long entidadId){
+        CuentaBancariaDTO cuentaBancaria = cuentaBancariaServicio.getCuentaBancariaByEntidadId(entidadId).orElse(null);
+        return ResponseEntity.ok(cuentaBancaria);
+    }
 }

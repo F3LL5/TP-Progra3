@@ -163,4 +163,17 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
         }
         return false;
     }
+
+    public List<DetallePedidoDTO> getDetallesPedidoByPedidoIdAndPuestoId(Long pedidoId, Long puestoId) {
+        return detallePedidoRepositorio.findAll().stream()
+                .filter(detalle -> detalle.getPedido() != null && detalle.getPedido().getPedidoId().equals(pedidoId) && detalle.getPedido().getPuestoId().equals(puestoId))
+                .map(this::convertirA_DTO)
+                .collect(Collectors.toList());
+    }
+
+    public Optional<DetallePedidoDTO> getDetallePedidoByIdAndPuestoId(Long id, Long puestoId) {
+        return detallePedidoRepositorio.findById(id)
+                .filter(detalle -> detalle.getPedido() != null && detalle.getPedido().getPuestoId().equals(puestoId))
+                .map(this::convertirA_DTO);
+    }
 }

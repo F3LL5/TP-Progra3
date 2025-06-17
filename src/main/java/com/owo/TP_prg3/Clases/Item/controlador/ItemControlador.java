@@ -60,11 +60,12 @@ public class ItemControlador {
 
     @GetMapping("/filtrarYordenar")
     public ResponseEntity<List<ItemDTO>> filtrarYordenar(
+            @RequestParam(required = false) Long puestoId,
             @RequestParam(required = false) String categoria,
             @RequestParam(required = false) String orden,
             @RequestParam(required = false) String direccion
     ) {
-        List<ItemDTO> items = itemServicio.filtrarYordenar(categoria, orden, direccion);
+        List<ItemDTO> items = itemServicio.filtrarYordenar(puestoId, categoria, orden, direccion);
         return ResponseEntity.ok(items);
     }
 

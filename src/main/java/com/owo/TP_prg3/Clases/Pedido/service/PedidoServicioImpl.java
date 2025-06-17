@@ -1,6 +1,7 @@
 package com.owo.TP_prg3.Clases.Pedido.service;
 
 import com.owo.TP_prg3.Clases.DetallePedido.service.DetallePedidoServicioImpl;
+import com.owo.TP_prg3.Clases.Excepciones.RecursoNoEncontradoException;
 import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.CreatePedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
@@ -131,6 +132,54 @@ public class PedidoServicioImpl implements PedidoServicio {
         }
 
         return pedidoDTOStream.toList();
+    }
+
+    // Obtener todos los pedidos asociados a un puesto específico
+    public List<PedidoDTO> getPedidosByPuestoId(Long puestoId) {
+        return pedidoRepositorio.findAll().stream()
+                .filter(pedido -> pedido.getPuestoId().equals(puestoId))
+                .map(this::convertirA_DTO)
+                .collect(Collectors.toList());
+    }
+
+    // Buscar pedido por ID y Puesto ID
+    public Optional<PedidoDTO> getPedidoByIdAndPuestoId(Long id, Long puestoId) {
+        return pedidoRepositorio.findById(id)
+                .filter(pedido -> pedido.getPuestoId().equals(puestoId))
+                .map(this::convertirA_DTO);
+    }
+
+    // Eliminar Pedido de un Puesto específico
+    @Transactional
+    public boolean deletePedidoFromPuesto(Long id, Long puestoId) {
+        Optional<Pedido> pedidoOptional = pedidoRepositorio.findById(id);
+        if (pedidoOptional.isPresent() && pedidoOptional.get().getPuestoId().equals(puestoId)) {
+            pedidoRepositorio.deleteById(id);
+            return true;
+        }
+        throw new RecursoNoEncontradoException("Pedido con ID " + id + " no encontrado o no pertenece al puesto " + puestoId + " para eliminar.");
+    }
+
+    // Modificar Pedido de un Puesto específico
+    @Transactional
+    public Optional<PedidoDTO> updatePedidoForPuesto(Long id, Long puestoId, UpdatePedidoDTO updatePedidoDTO) {
+        return pedidoRepositorio.findById(id)
+                .filter(pedido -> pedido.getPuestoId().equals(puestoId))
+                .map(pedido -> {
+                    if (updatePedidoDTO.getTransaccionId() != null) {
+                        transaccionRepositorio
+                                .findById(updatePedidoDTO.getTransaccionId())
+                                .ifPresentOrElse( pedido::setTransaccion, () -> {
+                                    throw new EntityNotFoundException("Transaccion con ID " + updatePedidoDTO.getTransaccionId() + " no encontrada.");
+                                });
+                    }
+
+                    Pedido updatedPedido = pedidoRepositorio.save(pedido);
+                    return convertirA_DTO(updatedPedido);
+                })
+                .or(() -> {
+                    throw new RecursoNoEncontradoException("Pedido con ID " + id + " no encontrado o no pertenece al puesto " + puestoId + " para actualizar.");
+                });
     }
 
 }
