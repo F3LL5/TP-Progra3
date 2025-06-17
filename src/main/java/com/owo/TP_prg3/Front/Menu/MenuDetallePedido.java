@@ -1,18 +1,18 @@
 package com.owo.TP_prg3.Front.Menu;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jakewharton.fliptables.FlipTableConverters;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.DetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedido;
+import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
 import com.owo.TP_prg3.Front.HttpService;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 
 import java.io.IOException;
 import java.net.http.HttpResponse;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class MenuDetallePedido {
 
@@ -20,6 +20,7 @@ public class MenuDetallePedido {
     private static final String API_URL = "http://localhost:8080/api/detalles-pedido";
     private final String authHeader;
     private final Scanner scanner = new Scanner(System.in);
+    private final ObjectMapper mapper = new ObjectMapper();
 
     //Constructor
     public MenuDetallePedido(String authHeader) {this.authHeader = authHeader;}
@@ -61,19 +62,41 @@ public class MenuDetallePedido {
     //Metodos
     //GET
     private void obtenerTodas() throws IOException, InterruptedException {
-        System.out.println("\n--- Obteniendo todas los detalle de pedido... ---");
-        HttpResponse<String> response =  HttpService.realizarPeticion("GET", API_URL, authHeader, null);
-        String respuestaJson = response.body();
-        ObjectMapper mapper = new ObjectMapper();
-        List<DetallePedidoDTO> detalles = Arrays.asList(mapper.readValue(respuestaJson, DetallePedidoDTO[].class));
+        System.out.println("\n--- Obteniendo todos los detalles de pedidos... ---");
 
-        System.out.println(FlipTableConverters.fromIterable(detalles, DetallePedidoDTO.class));
+        Optional<Object> result = handleResponse(
+                HttpService.realizarPeticion("GET", API_URL, authHeader, null),
+                DetallePedidoDTO.class,
+                "Detalles de pedidos obtenidos exitosamente.",
+                "No se pudieron obtener los items."
+        );
+
+        result.ifPresent(obj -> {
+            List<DetallePedidoDTO> detalles = (List<DetallePedidoDTO>) obj;
+            if (!detalles.isEmpty()) {
+                System.out.println(FlipTableConverters.fromIterable(detalles, DetallePedidoDTO.class));
+            } else {
+                System.out.println("No se encontraron resultados.");
+            }
+        });
+
     }
 
     private void buscarPorId() throws IOException, InterruptedException {
-        System.out.print("Ingrese el ID del detalle de pedido: ");
+        System.out.print("Ingrese el ID de la entidad: ");
         Integer id = Escaner.enteroValido(scanner);
-        HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null);
+
+        Optional<Object> result = handleResponse(
+                HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null),
+                DetallePedidoDTO.class,
+                "Detalle del pedido encontrado:",
+                "No se encontró el detalle del pedido con ID " + id + "."
+        );
+
+        result.ifPresent(obj -> {
+            DetallePedidoDTO detalle = (DetallePedidoDTO) obj;
+            System.out.println(FlipTableConverters.fromIterable(List.of(detalle), DetallePedidoDTO.class));
+        });
     }
 
     //POST
@@ -146,6 +169,63 @@ public class MenuDetallePedido {
         }
 
         HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody);
+    }
+
+    /// METODOS HANDLERS DE ERRORES
+    private Optional<Object> handleResponse(HttpResponse<String> response, Class<?> clazz, String successMessage, String errorMessage) {
+        int statusCode = response.statusCode();
+        String responseBody = response.body();
+
+        if (statusCode >= 200 && statusCode < 300) { // Códigos de éxito (2xx)
+            System.out.println(successMessage); // El mensaje de éxito aún se imprime aquí
+            if (responseBody != null && !responseBody.isBlank()) {
+                try {
+                    if (responseBody.startsWith("[")) { // Asumimos que es una lista
+                        // Se utiliza mapper.getTypeFactory().constructCollectionType para List<?>
+                        List<?> items = mapper.readValue(responseBody, mapper.getTypeFactory().constructCollectionType(List.class, clazz));
+                        return Optional.of(items); // Retorna la lista parseada
+                    } else { // Asumimos que es un objeto único
+                        Object item = mapper.readValue(responseBody, clazz);
+                        return Optional.of(item); // Retorna el objeto parseado
+                    }
+                } catch (IOException e) {
+                    System.err.println("Error al parsear la respuesta JSON: " + e.getMessage());
+                    return Optional.empty(); // Retorna Optional vacío si hay error de parseo
+                }
+            } else {
+                System.out.println("La respuesta del servidor está vacía.");
+                return Optional.empty(); // Retorna Optional vacío si la respuesta está vacía
+            }
+        } else { // Códigos de error
+            handleErrorResponse(statusCode, responseBody);
+            System.err.println(errorMessage);
+            return Optional.empty(); // Retorna Optional vacío en caso de error
+        }
+    }
+
+    private void handleErrorResponse(int statusCode, String responseBody) {
+        System.err.println("Error HTTP - Código: " + statusCode);
+        try {
+            // Attempt to parse the error response as a Map
+            Map<String, Object> errorMap = mapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {
+            });
+
+            if (errorMap.containsKey("errores")) { // For MethodArgumentNotValidException (400)
+                List<String> errors = (List<String>) errorMap.get("errores");
+                System.err.println("Detalles de la validación:");
+                errors.forEach(System.err::println);
+            } else if (errorMap.containsKey("mensaje")) { // For custom exceptions
+                System.err.println("Mensaje: " + errorMap.get("mensaje"));
+            } else if (errorMap.containsKey("error")) { // Generic Spring Boot errors
+                System.err.println("Error: " + errorMap.get("error"));
+                System.err.println("Ruta: " + errorMap.get("path"));
+            } else {
+                System.err.println("Respuesta de error no reconocida: " + responseBody);
+            }
+        } catch (IOException e) {
+            System.err.println("Error al parsear el cuerpo del error: " + e.getMessage());
+            System.err.println("Cuerpo de la respuesta original: " + responseBody);
+        }
     }
 
 }
