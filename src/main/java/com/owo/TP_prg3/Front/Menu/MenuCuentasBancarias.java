@@ -89,15 +89,15 @@ public class MenuCuentasBancarias {
 
         Optional<Object> result = handleResponse(
                 HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null),
-                ItemDTO.class, // Clase esperada para un único ítem
-                "Item encontrado:",
-                "No se encontró el item con ID " + id + "."
+                CuentaBancariaDTO.class, 
+                "Cuenta no  encontrado:",
+                "No se encontró la cuenta con ID " + id + "."
         );
 
         result.ifPresent(obj -> {
             // Se asume que si hay un resultado, es un único ItemDTO
-            ItemDTO item = (ItemDTO) obj;
-            System.out.println(FlipTableConverters.fromIterable(List.of(item), ItemDTO.class));
+            CuentaBancariaDTO cuenta = (CuentaBancariaDTO) obj;
+            System.out.println(FlipTableConverters.fromIterable(List.of(cuenta), CuentaBancariaDTO.class));
         });
     }
 
