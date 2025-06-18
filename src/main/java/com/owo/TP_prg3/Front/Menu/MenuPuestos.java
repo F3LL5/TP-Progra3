@@ -16,15 +16,16 @@ import java.net.http.HttpResponse;
 import java.util.*;
 
 public class MenuPuestos {
+    ///-------------------------------------ATRIBUTOS-------------------------------------------------------------------
     private static final String API_URL = "http://localhost:8080/api/puestos";
     private final String authHeader;
     private final Scanner scanner = new Scanner(System.in);
-
+   ///-------------------------------------CONSTRUCTOR------------------------------------------------------------------
     public MenuPuestos(String authHeader) {
         this.authHeader = authHeader;
         HandlerResponse.setObjectMapper(new ObjectMapper());
     }
-
+   ///--------------------------------------MENU------------------------------------------------------------------------
     public void gestionar() throws IOException, InterruptedException {
         String opcion;
         do {
@@ -65,7 +66,7 @@ public class MenuPuestos {
                 INGRESE LA OPCIÓN QUE DESEE:""");
     }
 
-    /// GET
+    ///------------------------------------GET--------------------------------------------------------------------------
     private void obtener_todos() throws IOException, InterruptedException {
         System.out.println("OBTENIENDO PUESTOS...");
         HttpResponse<String> response = HttpService.realizarPeticion("GET", API_URL, authHeader, null);
@@ -149,7 +150,7 @@ public class MenuPuestos {
         });
     }
 
-    /// POST
+    ///-----------------------------------POST--------------------------------------------------------------------------
     private void agregar() throws IOException, InterruptedException {
         System.out.println("AGREGAR NUEVO PUESTO");
         System.out.print("Ingrese NOMBRE: ");
@@ -177,7 +178,7 @@ public class MenuPuestos {
         });
     }
 
-    /// DELETE
+    ///----------------------------------DELETE-------------------------------------------------------------------------
     private void eliminar() throws IOException, InterruptedException {
         System.out.println("Ingrese ID del puesto que desea eliminar: ");
         String id = Escaner.stringValido(scanner);
@@ -191,6 +192,7 @@ public class MenuPuestos {
         }
     }
 
+    ///----------------------------------PATCH--------------------------------------------------------------------------
     private void modificar() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID del puesto que desea modificar: ");
         Integer id = Escaner.enteroValido(scanner);

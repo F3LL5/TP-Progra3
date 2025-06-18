@@ -15,19 +15,18 @@ import java.net.http.HttpResponse;
 import java.util.*;
 
 public class MenuItem {
-
-    //Atributos
+    ///-----------------------------------ATRIBUTOS---------------------------------------------------------------------
     private static final String API_URL = "http://localhost:8080/api/items";
     private final String authHeader;
     private final Scanner scanner = new Scanner(System.in);
 
-    //Constructor
+    ///----------------------------------CONSTRUCTOR--------------------------------------------------------------------
     public MenuItem(String authHeader) {
         this.authHeader = authHeader;
         HandlerResponse.setObjectMapper(new ObjectMapper());
     }
 
-    //Menu
+    ///-------------------------------------MENU------------------------------------------------------------------------
     public void gestionar() throws IOException, InterruptedException {
         String opcion;
         do {
@@ -54,7 +53,6 @@ public class MenuItem {
         } while (!opcion.equals("0"));
     }
 
-
     private void mostrarMenu() {
     System.out.print("""
                 \n--- MENÚ DE GESTIÓN DE ITEMS ---
@@ -71,8 +69,8 @@ public class MenuItem {
                 Ingrese la opción:""");
     }
 
-    //Metodos
-    //GET
+    ///------------------------------------METODOS----------------------------------------------------------------------
+    ///--------------------------------------GET------------------------------------------------------------------------
     private void obtenerTodas() throws IOException, InterruptedException {
         System.out.println("\n--- Obteniendo todos los items... ---");
 
@@ -170,7 +168,7 @@ public class MenuItem {
         });
     }
 
-    //POST
+    ///--------------------------------------POST-----------------------------------------------------------------------
     private void agregar() throws IOException, InterruptedException {
         System.out.println("\n--- Agregar nuevo itemId ---");
 
@@ -195,7 +193,7 @@ public class MenuItem {
         });
     }
 
-    //DELETE
+    ///-------------------------------------DELETE----------------------------------------------------------------------
     private void eliminar() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID del itemId a eliminar: ");
         Integer id = Escaner.enteroValido(scanner);
@@ -209,7 +207,7 @@ public class MenuItem {
         }
     }
 
-    //PATCH
+    ///-------------------------------------PATCH-----------------------------------------------------------------------
     private void modificar() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID del itemId a modificar: ");
         Integer id = Escaner.enteroValido(scanner);

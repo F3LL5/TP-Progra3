@@ -29,7 +29,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 public class MenuDuenoPuesto {
-
+    ///--------------------------------------ATRIBUTOS------------------------------------------------------------------
     private static final String API_URL_ENTIDADES = "http://localhost:8080/api/entidades";
     private static final String API_URL_INVENTARIO_PUESTO = "http://localhost:8080/api/inventario-puesto";
     private static final String API_URL_PEDIDOS = "http://localhost:8080/api/pedidos";
@@ -38,18 +38,19 @@ public class MenuDuenoPuesto {
     private static final String API_URL_CUENTAS_BANCARIAS = "http://localhost:8080/api/cuentas-bancarias";
     private static final String API_URL_PUESTOS = "http://localhost:8080/api/puestos";
 
-
     private final String authHeader;
     private final Scanner scanner = new Scanner(System.in);
     private final Puesto puestoUsuario;
     private final ObjectMapper mapper = new ObjectMapper();
 
+    ///----------------------------------CONSTRUCTOR--------------------------------------------------------------------
     public MenuDuenoPuesto(String authHeader, Puesto puestoUsuario) {
         this.authHeader = authHeader;
         this.puestoUsuario = puestoUsuario;
         HandlerResponse.setObjectMapper(new ObjectMapper());
     }
 
+    ///---------------------------------MENU----------------------------------------------------------------------------
     public void gestionar() throws IOException, InterruptedException {
         if (puestoUsuario == null) {
             System.out.println("No tiene un puesto asignado. No puede acceder al menú de Dueño de Puesto.");
@@ -133,7 +134,7 @@ public class MenuDuenoPuesto {
         } while (!opcion.equals("0"));
     }
 
-    // Métodos para gestionar entidades de su puesto
+    /// ------------------------------ENTIDAD DE SU PUESTO--------------------------------------------------------------
     private void obtenerEntidadesDeMiPuesto() throws IOException, InterruptedException {
         String rol1 = "CLIENTE";
         String rol2 = "PROVEEDOR";
@@ -447,10 +448,7 @@ public class MenuDuenoPuesto {
     }
 
 
-    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    /// INVENTARIO
-    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+    /// --------------------------------METODOS INVENTARIO--------------------------------------------------------------
     private void gestionarInventarioPuesto() throws IOException, InterruptedException {
         String opcion;
         do {
@@ -590,7 +588,7 @@ public class MenuDuenoPuesto {
         });
     }
 
-    /// POST
+    ///-------------------------------------POST DEL PUESTO-------------------------------------------------------------
     private void agregarInventarioPorPuesto() throws IOException, InterruptedException {
         System.out.println("AGREGAR NUEVO INVENTARIO");
         System.out.print("Ingrese cantidad: ");
@@ -623,7 +621,7 @@ public class MenuDuenoPuesto {
         }
     }
 
-    /// DELETE
+    ///-------------------------------------DELETE DEL PUESTO-----------------------------------------------------------
     private void eliminarInventarioPorPuesto() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID del inventario a eliminar de su puesto: ");
         Integer id = Escaner.enteroValido(scanner);
@@ -637,7 +635,7 @@ public class MenuDuenoPuesto {
         }
     }
 
-    ///PATCH
+    ///--------------------------------------PATCH DEL PUESTO-----------------------------------------------------------
     private void modificarInventarioPorPuesto() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID del inventario a modificar en su puesto: ");
         Long id = Long.valueOf(Escaner.enteroValido(scanner));
@@ -701,8 +699,7 @@ public class MenuDuenoPuesto {
         }
     }
 
-
-    /// METODOS DE STOCK
+    ///--------------------------------------METODOS DE STOCK-----------------------------------------------------------
     private void mostrarProductosEnStock() throws IOException, InterruptedException {
         Long id = puestoUsuario.getPuestoId();
 
@@ -768,10 +765,7 @@ public class MenuDuenoPuesto {
     }
 
 
-    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    /// CUENTA BANCARIA
-    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+    /// -------------------------------------CUENTA BANCARIA------------------------------------------------------------
     private void verMiCuentaBancaria() throws IOException, InterruptedException {
         System.out.println("\n--- Visualizando detalles de su cuenta bancaria ---");
         if (puestoUsuario != null && puestoUsuario.getDuenio().getEntidad_id() != null) {
@@ -791,9 +785,7 @@ public class MenuDuenoPuesto {
         }
     }
 
-    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    /// TRANSACCIONES
-    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    /// ------------------------------------TRANSACCIONES---------------------------------------------------------------
 
     private void gestionarTransaccionesPuesto() throws IOException, InterruptedException {
         String opcion;
@@ -817,7 +809,7 @@ public class MenuDuenoPuesto {
         } while (!opcion.equals("0"));
     }
 
-    // Métodos para gestionar transacciones de su puesto
+    ///-----------------------METODOS PARA GESTIONAR TRANSACCIONES DE SU PUESTO----------------------------------------
     private void obtenerTransaccionesDeMiPuesto() throws IOException, InterruptedException {
         System.out.println("\n--- Obteniendo transacciones de su puesto... ---");
         Optional<Object> result = HandlerResponse.handleResponse(
@@ -901,10 +893,9 @@ public class MenuDuenoPuesto {
         });
     }
 
-    /*
-     Gestiona los pedidos del puesto del dueño.
-     Incluye obtener todos, buscar por ID, agregar, eliminar y modificar.
-    */
+    ///--------------------Gestiona los pedidos del puesto del dueño.---------------------------------------------------
+    ///-----------Incluye obtener todos, buscar por ID, agregar, eliminar y modificar.----------------------------------
+
     private void gestionarPedidosPuesto() throws IOException, InterruptedException {
         String opcion;
         do {
@@ -931,7 +922,7 @@ public class MenuDuenoPuesto {
         } while (!opcion.equals("0"));
     }
 
-    // Métodos para gestionar pedidos de su puesto
+    ///-------------------------Métodos para gestionar pedidos de su puesto---------------------------------------------
     private void obtenerPedidosDeMiPuesto() throws IOException, InterruptedException {
         System.out.println("\n--- Obteniendo todos los pedidos de su puesto... ---");
         Optional<Object> result = HandlerResponse.handleResponse(
@@ -1177,10 +1168,9 @@ public class MenuDuenoPuesto {
         System.out.println(FlipTableConverters.fromIterable(transacciones, TransaccionDTO.class));
     }
 
-    /*
-     Gestiona los detalles de pedido del puesto del dueño.
-     Incluye obtener todos, buscar por ID, agregar, eliminar y modificar.
-    */
+
+    ///--------------------GESTINONA LOS DETALLES DE PEDIDOS DEL PUESTO-------------------------------------------------
+    ///------------------Incluye obtener todos, buscar por ID, agregar, eliminar y modificar.---------------------------
     private void gestionarDetallesPedidoPuesto() throws IOException, InterruptedException {
         String opcion;
         do {
@@ -1205,7 +1195,7 @@ public class MenuDuenoPuesto {
         } while (!opcion.equals("0"));
     }
 
-    // Métodos para gestionar detalles de pedido de su puesto
+    ///-----------------------Métodos para gestionar detalles de pedido de su puesto------------------------------------
     private void obtenerDetallesPedidoDeMiPuestoPorPedido() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID del pedido del cual desea ver los detalles (de su puesto): ");
         Integer pedidoId = Escaner.enteroValido(scanner);
@@ -1226,7 +1216,6 @@ public class MenuDuenoPuesto {
             }
         });
     }
-
 
     private void agregarDetallePedidoAMiPuesto() throws IOException, InterruptedException {
         System.out.println("\n--- Registrar detalle de pedido para un pedido de su puesto ---");
@@ -1318,6 +1307,4 @@ public class MenuDuenoPuesto {
         MenuItem menuItem = new MenuItem(authHeader);
         menuItem.gestionar();
     }
-
-
 }

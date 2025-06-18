@@ -15,15 +15,16 @@ import java.net.http.HttpResponse;
 import java.util.*;
 
 public class MenuEntidades {
-
+    /// --------------------------------------ATRIBUTOS-----------------------------------------------------------------
     private static final String API_URL = "http://localhost:8080/api/entidades";
     private final String authHeader;
     private final Scanner scanner = new Scanner(System.in);
-
+    /// ------------------------------------CONSTRUCTOR-----------------------------------------------------------------
     public MenuEntidades(String authHeader) {
         this.authHeader = authHeader;
         HandlerResponse.setObjectMapper(new ObjectMapper());
     }
+    /// -----------------------------------MENU-------------------------------------------------------------------------
     public void gestionar() throws IOException, InterruptedException {
         String opcion;
         do {
@@ -57,9 +58,9 @@ public class MenuEntidades {
                 Ingrese la opción: """);
     }
 
-    // --- Métodos de operaciones CRUD ---
+    /// ---------------------------------------METODOS------------------------------------------------------------------
 
-    /// GET
+    /// ----------------------------------------GET---------------------------------------------------------------------
     private void obtenerTodas() throws IOException, InterruptedException {
         System.out.println("\n--- Obteniendo todas las entidades... ---");
 
@@ -176,7 +177,7 @@ public class MenuEntidades {
     }
 
 
-    /// POST
+    /// ---------------------------------------------POST---------------------------------------------------------------
     private void agregar() throws IOException, InterruptedException {
         System.out.println("\n--- Agregar nueva entidad ---");
         System.out.print("Nombre: ");
@@ -213,7 +214,7 @@ public class MenuEntidades {
         });
     }
 
-    /// DELETE
+    /// -------------------------------------------DELETE---------------------------------------------------------------
     private void eliminar() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID de la entidad a eliminar: ");
         Integer id = Escaner.enteroValido(scanner);
@@ -228,7 +229,7 @@ public class MenuEntidades {
     }
 
 
-    // PATCH
+    /// --------------------------------------PATCH---------------------------------------------------------------------
     private void modificar() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID de la entidad a modificar: ");
         Integer id = Escaner.enteroValido(scanner);

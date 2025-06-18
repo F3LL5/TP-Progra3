@@ -20,19 +20,18 @@ import java.util.Optional;
 import java.util.Scanner;
 
 public class MenuTransacciones {
-
-    //Atributos
+    ///---------------------------------------ATRIBUTOS-----------------------------------------------------------------
     private static final String API_URL = "http://localhost:8080/api/transacciones";
     private final String authHeader;
     private final Scanner scanner = new Scanner(System.in);
 
-    //Constructor
+    ///-------------------------------------CONSTRUCTOR-----------------------------------------------------------------
     public MenuTransacciones(String authHeader) {
         this.authHeader = authHeader;
         HandlerResponse.setObjectMapper(new ObjectMapper().registerModule(new JavaTimeModule()));
     }
 
-    //Menu
+    ///-------------------------------------MENU------------------------------------------------------------------------
     public void gestionar() throws IOException, InterruptedException {
         String opcion;
         do {
@@ -53,7 +52,6 @@ public class MenuTransacciones {
         } while (!opcion.equals("0"));
     }
 
-
     private void mostrarMenu() {
         System.out.print("""
                 \n--- MENÚ DE GESTIÓN DE TRANSACCIONES ---
@@ -69,8 +67,8 @@ public class MenuTransacciones {
                 Ingrese la opción:""");
     }
 
-    //Metodos
-    //GET
+    ///-----------------------------------METODOS-----------------------------------------------------------------------
+    ///-------------------------------------GET-------------------------------------------------------------------------
     private void obtenerTodas() throws IOException, InterruptedException {
         System.out.println("\n--- Obteniendo todas las transacciones... ---");
 
@@ -88,7 +86,6 @@ public class MenuTransacciones {
 
         FlipTableHelper.imprimir(transacciones);
     }
-
 
     private void buscarPorId() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID de la entidad: ");
@@ -187,8 +184,7 @@ public class MenuTransacciones {
         });
     }
 
-
-
+    ///--------------------------------------POST-----------------------------------------------------------------------
     private void agregar() throws IOException, InterruptedException {
         System.out.println("\n--- Registrar transacción ---");
 
@@ -248,13 +244,14 @@ public class MenuTransacciones {
         });
     }
 
-    //DELETE
+    ///---------------------------------------DELETE--------------------------------------------------------------------
     private void eliminar() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID de la transaccion a eliminar: ");
         Integer id = Escaner.enteroValido(scanner);
         HttpService.realizarPeticion("DELETE", API_URL + "/" + id, authHeader, null);
     }
 
+    ///--------------------------------------------PATCH----------------------------------------------------------------
     private void modificar() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID del transacción a modificar: ");
         Integer id = Escaner.enteroValido(scanner);

@@ -18,16 +18,15 @@ import java.util.List;
 import java.util.Scanner;
 
 public class MenuPedidos {
-
-    //Atributos
+    ///-----------------------------------ATRIBUTOS---------------------------------------------------------------------
     private static final String API_URL = "http://localhost:8080/api/pedidos";
     private final String authHeader;
     private final Scanner scanner = new Scanner(System.in);
 
-    //Constructor
+    ///----------------------------------CONSTRUCTOR--------------------------------------------------------------------
     public MenuPedidos(String authHeader) {this.authHeader = authHeader;}
 
-    //Menu
+    ///-------------------------------------MENU------------------------------------------------------------------------
     public void gestionar() throws IOException, InterruptedException {
         String opcion;
         do {
@@ -48,7 +47,6 @@ public class MenuPedidos {
         } while (!opcion.equals("0"));
     }
 
-
     private void mostrarMenu() {
         System.out.print("""
                 \n--- MENÚ DE GESTIÓN DE PEDIDO ---
@@ -64,8 +62,8 @@ public class MenuPedidos {
                 Ingrese la opción:""");
     }
 
-    //Metodos
-    //GET
+    ///------------------------------------METODOS----------------------------------------------------------------------
+    ///--------------------------------------GET------------------------------------------------------------------------
     private void obtenerTodas() throws IOException, InterruptedException {
         System.out.println("\n--- Obteniendo todas los pedido... ---");
         HttpResponse<String> response =  HttpService.realizarPeticion("GET", API_URL, authHeader, null);
@@ -167,7 +165,7 @@ public class MenuPedidos {
         System.out.println(FlipTableConverters.fromIterable(transacciones, TransaccionDTO.class));
     }
 
-    //POST
+    ///-------------------------------------POST------------------------------------------------------------------------
     private void agregar() throws IOException, InterruptedException {
         System.out.println("\n--- Registrar pedido ---");
 
@@ -186,14 +184,14 @@ public class MenuPedidos {
         HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
     }
 
-    //DELETE
+    ///------------------------------------DELETE-----------------------------------------------------------------------
     private void eliminar() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID del pedido a eliminar: ");
         Integer id = Escaner.enteroValido(scanner);
         HttpService.realizarPeticion("DELETE", API_URL + "/" + id, authHeader, null);
     }
 
-    //PATCH
+    ///-------------------------------------PATCH-----------------------------------------------------------------------
     private void modificar() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID del pedido a modificar: ");
         Integer id = Escaner.enteroValido(scanner);

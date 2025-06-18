@@ -15,14 +15,15 @@ import java.net.http.HttpResponse;
 import java.util.*;
 
 public class MenuInventarioPuesto {
-
+    /// ----------------------------------------ATRIBUTOS---------------------------------------------------------------
     private static final String API_URL = "http://localhost:8080/api/inventario-puesto";
     private final String authHeader;
     private final Scanner scanner = new Scanner(System.in);
     private final ObjectMapper mapper = new ObjectMapper();
 
+    /// --------------------------------------CONSTRUCTOR---------------------------------------------------------------
     public MenuInventarioPuesto(String authHeader) {this.authHeader = authHeader;}
-
+    /// --------------------------------------MENU----------------------------------------------------------------------
     public void gestionar() throws IOException, InterruptedException {
         String opcion;
         do {
@@ -62,7 +63,7 @@ public class MenuInventarioPuesto {
     }
 
 
-    /// GET
+    /// ----------------------------------------GET---------------------------------------------------------------------
     private void obtener_todos() throws IOException, InterruptedException {
         System.out.println("\n--- Obteniendo todos los inventarios... ---");
 
@@ -100,7 +101,6 @@ public class MenuInventarioPuesto {
         });
 
     }
-
 
     private void filtrarYordenarItemsInventario() throws IOException, InterruptedException {
         System.out.println("--- FILTRAR Y ORDENAR ITEMS DEL INVENTARIO ---");
@@ -172,8 +172,7 @@ public class MenuInventarioPuesto {
         });
     }
 
-
-    /// POST
+    ///--------------------------------------POST-----------------------------------------------------------------------
     private void agregar() throws IOException, InterruptedException {
         System.out.println("AGREGAR NUEVO INVENTARIO");
         System.out.print("Ingrese cantidad: "); Integer cantidad = Escaner.enteroValido(scanner);
@@ -194,16 +193,14 @@ public class MenuInventarioPuesto {
         HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
     }
 
-
-
-   /// DELETE
+   ///------------------------------------- DELETE----------------------------------------------------------------------
     private void eliminar() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID del inventario a eliminar: ");
         Integer id = Escaner.enteroValido(scanner);
         HttpService.realizarPeticion("DELETE", API_URL + "/" + id, authHeader, null);
     }
 
-   ///PATCH
+   ///--------------------------------------PATCH-----------------------------------------------------------------------
     private void modificar() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID del inventario a modificar: ");
         Long id = Long.valueOf(Escaner.enteroValido(scanner));
@@ -259,8 +256,7 @@ public class MenuInventarioPuesto {
 
     }
 
-
-    /// METODOS DE STOCK
+    ///--------------------------------METODOS DE STOCK-----------------------------------------------------------------
     private void mostrarProductosEnStock() throws IOException, InterruptedException {
         System.out.println("Ingrese id de puesto");
         Integer id = Escaner.enteroValido(scanner);
@@ -326,7 +322,7 @@ public class MenuInventarioPuesto {
         System.out.println(FlipTable.of(headers, data));
     }
 
-    /// METODO HANDLER
+    ///----------------------------------METODO HANDLER-----------------------------------------------------------------
     private Optional<Object> handleResponse(HttpResponse<String> response, Class<?> clazz, String successMessage, String errorMessage) {
         int statusCode = response.statusCode();
         String responseBody = response.body();
