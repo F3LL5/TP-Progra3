@@ -1,4 +1,4 @@
-package com.owo.TP_prg3.Clases.Excepciones;
+package com.owo.TP_prg3.Excepciones;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

@@ -1,6 +1,6 @@
 package com.owo.TP_prg3.Clases.Puesto.controlador;
 
-import com.owo.TP_prg3.Clases.Excepciones.RecursoNoEncontradoException;
+import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
 import com.owo.TP_prg3.Clases.Puesto.dto.CreatePuestoDTO;
 import com.owo.TP_prg3.Clases.Puesto.dto.PuestoDTO;
 import com.owo.TP_prg3.Clases.Puesto.dto.UpdatePuestoDTO;
@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/puestos")

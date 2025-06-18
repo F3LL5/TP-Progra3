@@ -7,10 +7,9 @@ import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancaria;
 import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancariaRepositorio;
 import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
 import com.owo.TP_prg3.Clases.Entidad.modelo.EntidadRepositorio;
-import com.owo.TP_prg3.Clases.Entidad.modelo.RolEntidad;
-import com.owo.TP_prg3.Clases.Excepciones.ConflictoDeDatosException;
-import com.owo.TP_prg3.Clases.Excepciones.IngresoInvalidoException;
-import com.owo.TP_prg3.Clases.Excepciones.RecursoNoEncontradoException;
+import com.owo.TP_prg3.Excepciones.ConflictoDeDatosException;
+import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

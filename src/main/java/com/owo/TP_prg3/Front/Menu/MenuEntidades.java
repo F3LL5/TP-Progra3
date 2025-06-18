@@ -1,16 +1,11 @@
 package com.owo.TP_prg3.Front.Menu;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jakewharton.fliptables.FlipTableConverters;
-import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CuentaBancariaDTO;
 import com.owo.TP_prg3.Clases.Entidad.dto.CreateEntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.dto.EntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.dto.UpdateEntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.modelo.RolEntidad;
-import com.owo.TP_prg3.Clases.Excepciones.Handler.HandlerResponse;
-import com.owo.TP_prg3.Clases.Item.dto.CreateItemDTO;
-import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
+import com.owo.TP_prg3.Excepciones.Handler.HandlerResponse;
 import com.owo.TP_prg3.Front.HttpService;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;

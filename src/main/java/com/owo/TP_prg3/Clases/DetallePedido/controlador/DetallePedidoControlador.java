@@ -4,7 +4,7 @@ import com.owo.TP_prg3.Clases.DetallePedido.dto.CreateDetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.DetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.UpdateDetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.service.DetallePedidoServicioImpl;
-import com.owo.TP_prg3.Clases.Excepciones.RecursoNoEncontradoException;
+import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

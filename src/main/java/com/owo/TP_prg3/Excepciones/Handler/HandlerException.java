@@ -1,8 +1,8 @@
-package com.owo.TP_prg3.Clases.Excepciones.Handler;
+package com.owo.TP_prg3.Excepciones.Handler;
 
-import com.owo.TP_prg3.Clases.Excepciones.ConflictoDeDatosException;
-import com.owo.TP_prg3.Clases.Excepciones.IngresoInvalidoException;
-import com.owo.TP_prg3.Clases.Excepciones.RecursoNoEncontradoException;
+import com.owo.TP_prg3.Excepciones.ConflictoDeDatosException;
+import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;

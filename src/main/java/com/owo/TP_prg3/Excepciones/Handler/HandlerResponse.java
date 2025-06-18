@@ -1,4 +1,4 @@
-package com.owo.TP_prg3.Clases.Excepciones.Handler;
+package com.owo.TP_prg3.Excepciones.Handler;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,7 +50,7 @@ public abstract class HandlerResponse {
     }
 
     public static void handleErrorResponse(int statusCode, String responseBody) {
-        System.err.println("Error HTTP - Código: " + statusCode);
+        // System.err.println("Error HTTP - Código: " + statusCode);
         try {
             // Attempt to parse the error response as a Map
             Map<String, Object> errorMap = mapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {

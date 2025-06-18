@@ -1,11 +1,13 @@
 package com.owo.TP_prg3.Clases.Transaccion.controlador;
 
+import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
 import com.owo.TP_prg3.Clases.Transaccion.dto.CreateTransaccionDTO;
 import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
 import com.owo.TP_prg3.Clases.Transaccion.dto.UpdateTransaccionDTO;
 import com.owo.TP_prg3.Clases.Transaccion.service.TransaccionServicioImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,33 +28,40 @@ public class TransaccionControlador {
     }
 
     @GetMapping("/{id}")
-    public TransaccionDTO getTransaccionById(@PathVariable Long id){
-        return transaccionServicio.getTransaccionById(id).orElse(null);
+    public ResponseEntity<TransaccionDTO> getCuentaBancariaById(@PathVariable Long id) {
+        return transaccionServicio.getTransaccionById(id)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Transacción con ID " + id + " no encontrada."));
     }
 
     @PostMapping
-    public TransaccionDTO createTransaccion(@Valid @RequestBody CreateTransaccionDTO createTransaccionDTO){
-        return transaccionServicio.createTransaccion(createTransaccionDTO);
+    public ResponseEntity<TransaccionDTO> createTransaccion(@Valid @RequestBody CreateTransaccionDTO createTransaccionDTO){
+        TransaccionDTO transaccionDTO = transaccionServicio.createTransaccion(createTransaccionDTO);
+        return new ResponseEntity<>(transaccionDTO, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")
-    public boolean deleteTransaccion(@PathVariable Long id){
-        return transaccionServicio.deleteTransaccion(id);
+    public ResponseEntity<String> deleteCuentaBancaria(@PathVariable Long id){
+        transaccionServicio.deleteTransaccion(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}")
-    public Optional<TransaccionDTO> updateTransaccion(@PathVariable Long id, @Valid @RequestBody UpdateTransaccionDTO updateTransaccionDTO){
-        return transaccionServicio.updateTransaccion(id, updateTransaccionDTO);
+    public ResponseEntity<TransaccionDTO> updateTransaccion(@PathVariable Long id, @Valid @RequestBody UpdateTransaccionDTO updateTransaccionDTO) {
+        TransaccionDTO updated = transaccionServicio.updateTransaccion(id, updateTransaccionDTO)
+                .orElse(null);
+        return ResponseEntity.ok(updated);
     }
 
     @GetMapping("/filtrarYOrdenar")
-    public List<TransaccionDTO> filtrarYOrdenar(
+    public ResponseEntity<List<TransaccionDTO>> filtrarYOrdenar(
             @RequestParam(required = false) String tipo_transaccion,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDir
 
     ) {
-        return transaccionServicio.filtrarYOrdenar(tipo_transaccion, sortBy, sortDir);
+        List<TransaccionDTO> transaccion = transaccionServicio.filtrarYOrdenar(tipo_transaccion, sortBy, sortDir);
+        return ResponseEntity.ok(transaccion);
     }
 
 

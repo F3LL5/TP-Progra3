@@ -2,19 +2,21 @@ package com.owo.TP_prg3.Front.Menu;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.jakewharton.fliptables.FlipTableConverters;
-import com.owo.TP_prg3.Clases.Puesto.dto.PuestoDTO;
+import com.owo.TP_prg3.Clases.Transaccion.dto.UpdateTransaccionDTO;
+import com.owo.TP_prg3.Excepciones.Handler.HandlerResponse;
+import com.owo.TP_prg3.Clases.Transaccion.dto.CreateTransaccionDTO;
 import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
-import com.owo.TP_prg3.Clases.Transaccion.modelo.TipoTransaccion;
-import com.owo.TP_prg3.Clases.Transaccion.modelo.Transaccion;
 import com.owo.TP_prg3.Front.HttpService;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
+import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class MenuTransacciones {
@@ -25,7 +27,10 @@ public class MenuTransacciones {
     private final Scanner scanner = new Scanner(System.in);
 
     //Constructor
-    public MenuTransacciones(String authHeader) {this.authHeader = authHeader;}
+    public MenuTransacciones(String authHeader) {
+        this.authHeader = authHeader;
+        HandlerResponse.setObjectMapper(new ObjectMapper().registerModule(new JavaTimeModule()));
+    }
 
     //Menu
     public void gestionar() throws IOException, InterruptedException {
@@ -71,11 +76,8 @@ public class MenuTransacciones {
         HttpResponse<String> response = HttpService.realizarPeticion("GET", API_URL, authHeader, null);
         String respuestaJson = response.body();
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule()); // Habilita el soporte para LocalDateTime
-
         List<TransaccionDTO> transacciones = Arrays.asList(
-                mapper.readValue(respuestaJson, TransaccionDTO[].class)
+                new ObjectMapper().readValue(respuestaJson, TransaccionDTO[].class)
         );
 
         if (transacciones.isEmpty()) {
@@ -83,8 +85,7 @@ public class MenuTransacciones {
             return;
         }
 
-        // Simplemente pasa la lista de TransaccionDTO y la clase al conversor
-        System.out.println(FlipTableConverters.fromIterable(transacciones, TransaccionDTO.class));
+        FlipTableHelper.imprimir(transacciones);
     }
 
 
@@ -92,14 +93,17 @@ public class MenuTransacciones {
         System.out.print("Ingrese el ID de la entidad: ");
         Integer id = Escaner.enteroValido(scanner);
 
-        HttpResponse<String> response = HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null);
-        String respuestaJson = response.body();
+        Optional<Object> result = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null),
+                TransaccionDTO.class,
+                "Transacción no  encontrado:",
+                "No se encontró la transacción con ID " + id + "."
+        );
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule()); // Soporte para LocalDateTime
-
-        TransaccionDTO transaccion = mapper.readValue(respuestaJson, TransaccionDTO.class);
-        System.out.println(FlipTableConverters.fromIterable(List.of(transaccion), TransaccionDTO.class));
+        result.ifPresent(obj -> {
+            TransaccionDTO transaccionDTO = (TransaccionDTO) obj;
+            FlipTableHelper.imprimir(List.of(transaccionDTO));
+        });
     }
 
     private void filtrarYOrdenar() throws IOException, InterruptedException {
@@ -131,65 +135,77 @@ public class MenuTransacciones {
             finalUrl = finalUrl.substring(0, finalUrl.length() - 1);
         }
 
-        System.out.println("\n-> Consultando " + finalUrl);
+        System.out.println("\n-> Consultando: " + finalUrl);
 
-        HttpResponse<String> response = HttpService.realizarPeticion("GET", finalUrl, authHeader, null);
-        String respuestaJson = response.body();
+        Optional<Object> result = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("GET", finalUrl, authHeader, null),
+                TransaccionDTO.class,
+                "Items filtrados y ordenados exitosamente.",
+                "No se pudieron filtrar/ordenar los items."
+        );
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule()); // Soporte para LocalDateTime
-
-        List<TransaccionDTO> transacciones = Arrays.asList(mapper.readValue(respuestaJson, TransaccionDTO[].class));
-
-        if (transacciones.isEmpty()) {
-            System.out.println("No se encontraron transacciones con esos filtros.");
-            return;
-        }
-
-        System.out.println(FlipTableConverters.fromIterable(transacciones, TransaccionDTO.class));
+        result.ifPresent(obj -> {
+            List<TransaccionDTO> transacciones = (List<TransaccionDTO>) obj;
+            if (transacciones.isEmpty()) {
+                System.out.println("No se encontraron transacciones con esos filtros.");
+                return;
+            }
+            FlipTableHelper.imprimir(transacciones);
+        });
     }
 
 
 
-    //POST
     private void agregar() throws IOException, InterruptedException {
-        System.out.println("\n--- Registrar transaccion ---");
+        System.out.println("\n--- Registrar transacción ---");
 
-        System.out.print("Tipo de transaccion [COMPRA,VENTA,INGRESO,EGRESO]: ");
-        String tipo = Escaner.stringValido(scanner);
+        System.out.print("Tipo de transacción [COMPRA, VENTA, INGRESO, EGRESO]: ");
+        String tipo = Escaner.stringValido(scanner).toUpperCase();
+
         System.out.print("Monto: ");
-        String monto = Escaner.stringValido(scanner);
+        BigDecimal monto = BigDecimal.valueOf(Escaner.doubleValido(scanner));
 
-        String jsonBody = "";
-        if (tipo.equals("COMPRA") || tipo.equals("VENTA")){
-            System.out.print("id de la cuenta comprador: ");
-            Double CuentaOrigenId = Escaner.doubleValido(scanner);
-            System.out.print("id de la cuenta vendedor : ");
-            Double CuentaDestinoId = Escaner.doubleValido(scanner);
+        Long cuentaOrigenId = null;
+        Long cuentaDestinoId = null;
 
-            jsonBody =
-                    "{" +
-                        "\"tipo\":\"" + tipo + "\"," +
-                        "\"monto\":" + monto + "," +
-                        "\"cuentaOrigenId\":" + CuentaOrigenId + "," +
-                        "\"cuentaDestinoId\":" + CuentaDestinoId  +
-                    "}";
-            HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
-
-        } else if (tipo.equals("INGRESO") || tipo.equals("EGRESO")){
-            System.out.print("id de la cuenta: ");
-            Double CuentaDestinoId = Escaner.doubleValido(scanner);
-
-            jsonBody =
-                    "{" +
-                        "\"tipo\":\"" + tipo + "\"," +
-                        "\"monto\":" + monto + "," +
-                        "\"cuentaDestinoId\":" + CuentaDestinoId  +
-                    "}";
-            HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
-        } else {
-            System.out.println("Tipo de transaccion incorrecta.");
+        switch (tipo) {
+            case "COMPRA", "VENTA" -> {
+                System.out.print("ID de la cuenta comprador: ");
+                cuentaOrigenId = Escaner.enteroValido(scanner).longValue();
+                System.out.print("ID de la cuenta vendedor: ");
+                cuentaDestinoId = Escaner.enteroValido(scanner).longValue();
+            }
+            case "INGRESO", "EGRESO" -> {
+                System.out.print("ID de la cuenta: ");
+                cuentaDestinoId = Escaner.enteroValido(scanner).longValue();
+            }
+            default -> {
+                System.out.println("Tipo de transacción incorrecto.");
+                return;
+            }
         }
+
+        // Armás el DTO
+        CreateTransaccionDTO dto = new CreateTransaccionDTO();
+        dto.setTipo(tipo);
+        dto.setMonto(monto);
+        dto.setCuentaOrigenId(cuentaOrigenId);
+        dto.setCuentaDestinoId(cuentaDestinoId);
+
+        String jsonBody = new ObjectMapper().writeValueAsString(dto);
+
+        // Hacés la petición y manejás la respuesta
+        Optional<Object> result = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody),
+                TransaccionDTO.class,
+                "Transacción registrada exitosamente.",
+                "Error al registrar transacción."
+        );
+
+        result.ifPresent(obj -> {
+            TransaccionDTO transaccion = (TransaccionDTO) obj;
+            FlipTableHelper.imprimir(List.of(transaccion));
+        });
     }
 
     //DELETE
@@ -199,54 +215,74 @@ public class MenuTransacciones {
         HttpService.realizarPeticion("DELETE", API_URL + "/" + id, authHeader, null);
     }
 
-    //PATCH
     private void modificar() throws IOException, InterruptedException {
-        System.out.print("Ingrese el ID del transaccion a modificar: ");
+        System.out.print("Ingrese el ID del transacción a modificar: ");
         Integer id = Escaner.enteroValido(scanner);
         System.out.println();
 
         System.out.print("""
-                ATRIBUTO A MODIFICAR:
-                1. Tipo [COMPRA,VENTA,INGRESO,EGRESO]
-                2. Monto
-                3. Fecha
-                4. ID de la cuenta origen
-                5. ID de la cuenta destino
-                0. Cancelar
-                Ingrese una opcion:""");
-        Integer opcion = Escaner.enteroValido(scanner);
-        if (opcion != 0 ) System.out.print("Ingrese el nuevo valor: ");
+            ATRIBUTO A MODIFICAR:
+            1. Tipo [COMPRA,VENTA,INGRESO,EGRESO]
+            2. Monto
+            3. Fecha
+            4. ID de la cuenta origen
+            5. ID de la cuenta destino
+            0. Cancelar
+            Ingrese una opción:""");
 
-        String jsonBody = "";
-        switch (opcion){
+        Integer opcion = Escaner.enteroValido(scanner);
+
+        if (opcion != 0) System.out.print("Ingrese el nuevo valor: ");
+        UpdateTransaccionDTO updateDTO = new UpdateTransaccionDTO();
+        boolean attributeSelected = false;
+
+        switch (opcion) {
             case 1 -> {
-                String tipo = Escaner.stringValido(scanner);
-                jsonBody = "{\"tipo\":\"" +  tipo + "\"}" ;
+                String tipo = Escaner.stringValido(scanner).toUpperCase();
+                updateDTO.setTipo(tipo);
+                attributeSelected = true;
             }
             case 2 -> {
-                Double monto = Escaner.doubleValido(scanner);
-                jsonBody = "{\"monto\":" + monto + "}";
+                BigDecimal monto = BigDecimal.valueOf(Escaner.doubleValido(scanner));
+                updateDTO.setMonto(monto);
+                attributeSelected = true;
             }
             case 3 -> {
                 LocalDateTime fecha = Escaner.fechaYhora(scanner);
-                jsonBody = "{\"fecha\":\"" + fecha + "\"}";
+                updateDTO.setFecha(fecha);
+                attributeSelected = true;
             }
             case 4 -> {
-                String cuentaOrigenId = Escaner.stringValido(scanner);
-                jsonBody = "{\"cuentaOrigenId\":"  + cuentaOrigenId + "}";
+                Long cuentaOrigenId = Escaner.enteroValido(scanner).longValue();
+                updateDTO.setCuentaOrigenId(cuentaOrigenId);
+                attributeSelected = true;
             }
             case 5 -> {
-                String cuentaDestinoId = Escaner.stringValido(scanner);
-                jsonBody = "{\"cuentaDestinoId\":"  + cuentaDestinoId + "}";
+                Long cuentaDestinoId = Escaner.enteroValido(scanner).longValue();
+                updateDTO.setCuentaDestinoId(cuentaDestinoId);
+                attributeSelected = true;
             }
-            case 0 -> {}
             default -> {
-                System.out.println("Opcion no valida.");
+                System.out.println("Opción no válida.");
                 return;
             }
         }
 
-        HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody);
+        if (!attributeSelected) return;
+
+        String jsonBody = new ObjectMapper().writeValueAsString(updateDTO);
+
+        Optional<Object> result = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody),
+                TransaccionDTO.class,
+                "Transacción modificada exitosamente.",
+                "Error al modificar transacción."
+        );
+
+        result.ifPresent(obj -> {
+            TransaccionDTO transaccion = (TransaccionDTO) obj;
+            FlipTableHelper.imprimir(List.of(transaccion));
+        });
     }
 
 }

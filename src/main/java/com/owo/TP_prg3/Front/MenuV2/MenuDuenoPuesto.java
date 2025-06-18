@@ -6,7 +6,7 @@ import com.owo.TP_prg3.Clases.Entidad.dto.CreateEntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.dto.EntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.dto.UpdateEntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.modelo.RolEntidad;
-import com.owo.TP_prg3.Clases.Excepciones.Handler.HandlerResponse;
+import com.owo.TP_prg3.Excepciones.Handler.HandlerResponse;
 import com.owo.TP_prg3.Clases.Puesto.modelo.Puesto;
 import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.DetallePedidoDTO;
@@ -17,7 +17,6 @@ import com.owo.TP_prg3.Front.HttpService;
 import com.owo.TP_prg3.Front.Menu.MenuInventarioPuesto;
 import com.owo.TP_prg3.Front.Menu.MenuItem;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
-import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;
 
 import java.io.IOException;
 import java.net.http.HttpResponse;

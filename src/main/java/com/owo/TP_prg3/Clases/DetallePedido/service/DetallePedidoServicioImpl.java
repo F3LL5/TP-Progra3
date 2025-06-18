@@ -5,7 +5,7 @@ import com.owo.TP_prg3.Clases.DetallePedido.dto.DetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.UpdateDetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedido;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedidoRepositorio;
-import com.owo.TP_prg3.Clases.Excepciones.RecursoNoEncontradoException;
+import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
 import com.owo.TP_prg3.Clases.InventarioPuesto.modelo.InventarioPuesto;
 import com.owo.TP_prg3.Clases.InventarioPuesto.modelo.InventarioPuestoRepositorio;
 import com.owo.TP_prg3.Clases.Item.modelo.Item;

@@ -4,9 +4,7 @@ import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CreateCuentaBancariaDTO;
 import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CuentaBancariaDTO;
 import com.owo.TP_prg3.Clases.CuentaBancaria.dto.UpdateCuentaBancariaDTO;
 import com.owo.TP_prg3.Clases.CuentaBancaria.service.CuentaBancariaServicioImpl;
-import com.owo.TP_prg3.Clases.Excepciones.IngresoInvalidoException;
-import com.owo.TP_prg3.Clases.Excepciones.RecursoNoEncontradoException;
-import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
+import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/cuentas-bancarias")

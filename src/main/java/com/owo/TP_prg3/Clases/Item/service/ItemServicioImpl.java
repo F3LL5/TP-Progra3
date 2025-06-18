@@ -1,7 +1,7 @@
 package com.owo.TP_prg3.Clases.Item.service;
 
-import com.owo.TP_prg3.Clases.Excepciones.IngresoInvalidoException;
-import com.owo.TP_prg3.Clases.Excepciones.RecursoNoEncontradoException;
+import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
 import com.owo.TP_prg3.Clases.InventarioPuesto.modelo.InventarioPuesto;
 import com.owo.TP_prg3.Clases.InventarioPuesto.modelo.InventarioPuestoRepositorio;
 import com.owo.TP_prg3.Clases.Item.dto.CreateItemDTO;

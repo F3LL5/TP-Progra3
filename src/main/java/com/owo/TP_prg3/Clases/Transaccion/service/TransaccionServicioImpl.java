@@ -1,11 +1,11 @@
 package com.owo.TP_prg3.Clases.Transaccion.service;
 
 import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancaria;
-import com.owo.TP_prg3.Clases.Excepciones.IngresoInvalidoException;
-import com.owo.TP_prg3.Clases.Excepciones.RecursoNoEncontradoException;
+import com.owo.TP_prg3.Excepciones.ConflictoDeDatosException;
+import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
 import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
 import com.owo.TP_prg3.Clases.Pedido.modelo.PedidoRepositorio;
-import com.owo.TP_prg3.Clases.Puesto.modelo.Puesto;
 import com.owo.TP_prg3.Clases.Puesto.modelo.PuestoRepositorio;
 import com.owo.TP_prg3.Clases.Transaccion.dto.CreateTransaccionDTO;
 import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
@@ -17,9 +17,9 @@ import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancariaRepositorio; /
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional; // Importar para @Transactional
-import jakarta.persistence.EntityNotFoundException; // Para manejar casos donde no se encuentra una entidad referenciada
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime; // Para manejar el campo fecha
 import java.util.Comparator;
 import java.util.List;
@@ -61,7 +61,7 @@ public class TransaccionServicioImpl implements TransaccionServicio {
             cuentaBancariaRepositorio.findById(transaccionDTO.getCuentaOrigenId())
                     .ifPresentOrElse(
                             transaccion::setCuentaOrigen,
-                            () -> { throw new EntityNotFoundException("Cuenta de origen con ID " + transaccionDTO.getCuentaOrigenId() + " no encontrada."); }
+                            () -> { throw new RecursoNoEncontradoException("Cuenta de origen con ID " + transaccionDTO.getCuentaOrigenId() + " no encontrada."); }
                     );
         }
 
@@ -69,7 +69,7 @@ public class TransaccionServicioImpl implements TransaccionServicio {
             cuentaBancariaRepositorio.findById(transaccionDTO.getCuentaDestinoId())
                     .ifPresentOrElse(
                             transaccion::setCuentaDestino,
-                            () -> { throw new EntityNotFoundException("Cuenta de destino con ID " + transaccionDTO.getCuentaDestinoId() + " no encontrada."); }
+                            () -> { throw new RecursoNoEncontradoException("Cuenta de destino con ID " + transaccionDTO.getCuentaDestinoId() + " no encontrada."); }
                     );
         }
 
@@ -89,7 +89,9 @@ public class TransaccionServicioImpl implements TransaccionServicio {
 
     @Override
     public Optional<TransaccionDTO> getTransaccionById(Long id) {
-        return transaccionRepositorio.findById(id).map(this::convertirA_DTO);
+        return Optional.of(transaccionRepositorio.findById(id)
+                .map(this::convertirA_DTO)
+                .orElseThrow(() -> new RecursoNoEncontradoException("La transacción de ID " + id + " no ha sido encontrada.")));
     }
 
     @Override
@@ -149,8 +151,21 @@ public class TransaccionServicioImpl implements TransaccionServicio {
         List<TransaccionDTO> allTransacciones = getAllTransacciones();
         Stream<TransaccionDTO> transaccionDTOStream = allTransacciones.stream();
 
-        if(tipo_transaccion != null && !tipo_transaccion.isEmpty()) {
+        if (tipo_transaccion != null && !tipo_transaccion.isBlank()) {
+            if (!tipo_transaccion.equalsIgnoreCase("COMPRA") &&
+                    !tipo_transaccion.equalsIgnoreCase("VENTA") &&
+                    !tipo_transaccion.equalsIgnoreCase("INGRESO") &&
+                    !tipo_transaccion.equalsIgnoreCase("EGRESO")) {
+                throw new IngresoInvalidoException("Tipo de transacción inválido: " + tipo_transaccion);
+            }
             transaccionDTOStream = transaccionDTOStream.filter(transaccion -> transaccion.getTipo().equalsIgnoreCase(tipo_transaccion));
+
+        }
+
+        if (sortDir != null && !sortDir.isBlank()) {
+            if (!sortDir.equalsIgnoreCase("asc") && !sortDir.equalsIgnoreCase("desc")) {
+                throw new IngresoInvalidoException("La dirección de orden debe ser 'asc' o 'desc'.");
+            }
         }
 
         if(sortBy != null) {
@@ -160,7 +175,7 @@ public class TransaccionServicioImpl implements TransaccionServicio {
                 case "monto" -> comparator = Comparator.comparing(TransaccionDTO::getMonto);
                 case "id_cuenta_origen" -> comparator = Comparator.comparing(TransaccionDTO::getCuentaOrigenId);
                 case "id_cuenta_destino" -> comparator = Comparator.comparing(TransaccionDTO::getCuentaDestinoId);
-                default -> throw new RuntimeException("Dicho criterio de búsqueda NO existe.");
+                default -> throw new IngresoInvalidoException("Dicho criterio de búsqueda NO existe.");
             }
             if(comparator != null) if("desc".equalsIgnoreCase(sortDir)) comparator = comparator.reversed();
 
@@ -255,9 +270,12 @@ public class TransaccionServicioImpl implements TransaccionServicio {
         CuentaBancaria cuentaDestino = transaccion.getCuentaDestino();
         CuentaBancaria cuentaOrigen = transaccion.getCuentaOrigen();
 
+        if (createTransaccionDTO.getMonto() == null || createTransaccionDTO.getMonto().compareTo(BigDecimal.ZERO) <= 0)
+            throw new IngresoInvalidoException("El monto de la transacción debe ser mayor a 0");
+
         switch (transaccion.getTipo()){
             case TipoTransaccion.VENTA -> {
-                if (cuentaDestino.getSaldo().compareTo(transaccion.getMonto())<0) throw new IllegalArgumentException("Saldo insuficiente en la cuenta de origen para esta transacción.");
+                if (cuentaDestino.getSaldo().compareTo(transaccion.getMonto())<0) throw new ConflictoDeDatosException("Saldo insuficiente en la cuenta de origen para esta transacción.");
 
 
                 cuentaOrigen.setSaldo( cuentaOrigen.getSaldo().add(transaccion.getMonto()) );
@@ -268,7 +286,7 @@ public class TransaccionServicioImpl implements TransaccionServicio {
                 cuentaBancariaRepositorio.save(cuentaOrigen);
             }
             case TipoTransaccion.COMPRA -> {
-                if (cuentaOrigen.getSaldo().compareTo(transaccion.getMonto())<0) throw new IllegalArgumentException("Saldo insuficiente en la cuenta de origen para esta transacción.");
+                if (cuentaOrigen.getSaldo().compareTo(transaccion.getMonto())<0) throw new ConflictoDeDatosException("Saldo insuficiente en la cuenta de origen para esta transacción.");
 
 
                 cuentaOrigen.setSaldo( cuentaOrigen.getSaldo().subtract(transaccion.getMonto()) );
@@ -297,14 +315,11 @@ public class TransaccionServicioImpl implements TransaccionServicio {
 
     @Override
     public boolean deleteTransaccion(Long id) {
-        if (transaccionRepositorio.existsById(id)) {
-            Transaccion transaccion = transaccionRepositorio.findById(id).get();
-
-            revertirMovimientoDeFondos(transaccion);
-            transaccionRepositorio.deleteById(id);
-            return true;
+        if (!transaccionRepositorio.existsById(id)) {
+            throw new RecursoNoEncontradoException("Cuenta bancaria con ID " + id + " no encontrada.");
         }
-        return false;
+        transaccionRepositorio.deleteById(id);
+        return true;
     }
 
     /// PATCH ------------------------------------------------------------------------------------------------------------------------------------------------
@@ -312,37 +327,45 @@ public class TransaccionServicioImpl implements TransaccionServicio {
     @Override
     @Transactional // Aplica la gestión transaccional
     public Optional<TransaccionDTO> updateTransaccion(Long id, UpdateTransaccionDTO updateTransaccionDTO) {
-        return transaccionRepositorio.findById(id)
-                .map(transaccion -> {
-                    if (updateTransaccionDTO.getTipo() != null) {
-                        transaccion.setTipo(TipoTransaccion.valueOf(updateTransaccionDTO.getTipo()));
-                    }
-                    if (updateTransaccionDTO.getFecha() != null) {
-                        transaccion.setFecha(updateTransaccionDTO.getFecha());
-                    }
-                    if (updateTransaccionDTO.getMonto() != null) {
-                        transaccion.setMonto(updateTransaccionDTO.getMonto());
-                    }
+        Transaccion transaccion = transaccionRepositorio.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("La transacción de ID " + id + " no ha sido encontrada."));
 
-                    if (updateTransaccionDTO.getCuentaOrigenId() != null) {
-                        cuentaBancariaRepositorio.findById(updateTransaccionDTO.getCuentaOrigenId())
-                                .ifPresentOrElse(
-                                        transaccion::setCuentaOrigen,
-                                        () -> { throw new EntityNotFoundException("Cuenta de origen con ID " + updateTransaccionDTO.getCuentaOrigenId() + " no encontrada."); }
-                                );
-                    }
+        if (updateTransaccionDTO.getTipo() != null) {
+            transaccion.setTipo(TipoTransaccion.valueOf(updateTransaccionDTO.getTipo()));
+        }
 
-                    if (updateTransaccionDTO.getCuentaDestinoId() != null) {
-                        cuentaBancariaRepositorio.findById(updateTransaccionDTO.getCuentaDestinoId())
-                                .ifPresentOrElse(
-                                        transaccion::setCuentaDestino,
-                                        () -> { throw new EntityNotFoundException("Cuenta de destino con ID " + updateTransaccionDTO.getCuentaDestinoId() + " no encontrada."); }
-                                );
-                    }
+        if (updateTransaccionDTO.getFecha() != null) {
+            if (updateTransaccionDTO.getFecha().isAfter(LocalDate.now().atStartOfDay())) {
+                throw new IngresoInvalidoException("La fecha de la transacción no puede ser futura");
+            }
+            transaccion.setFecha(updateTransaccionDTO.getFecha());
+        }
 
-                    Transaccion updatedTransaccion = transaccionRepositorio.save(transaccion);
-                    return convertirA_DTO(updatedTransaccion);
-                });
+        if (updateTransaccionDTO.getMonto() != null) {
+            if (updateTransaccionDTO.getMonto().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IngresoInvalidoException("El monto no debe ser negativo.");
+            }
+            transaccion.setMonto(updateTransaccionDTO.getMonto());
+        }
+
+        if (updateTransaccionDTO.getCuentaOrigenId() != null) {
+            cuentaBancariaRepositorio.findById(updateTransaccionDTO.getCuentaOrigenId())
+                    .ifPresentOrElse(
+                            transaccion::setCuentaOrigen,
+                            () -> { throw new RecursoNoEncontradoException("Cuenta de origen con ID " + updateTransaccionDTO.getCuentaOrigenId() + " no encontrada."); }
+                    );
+        }
+
+        if (updateTransaccionDTO.getCuentaDestinoId() != null) {
+            cuentaBancariaRepositorio.findById(updateTransaccionDTO.getCuentaDestinoId())
+                    .ifPresentOrElse(
+                            transaccion::setCuentaDestino,
+                            () -> { throw new RecursoNoEncontradoException("Cuenta de destino con ID " + updateTransaccionDTO.getCuentaDestinoId() + " no encontrada."); }
+                    );
+        }
+
+        Transaccion updatedTransaccion = transaccionRepositorio.save(transaccion);
+        return Optional.of(convertirA_DTO(updatedTransaccion));
     }
 
     @Transactional
@@ -365,29 +388,29 @@ public class TransaccionServicioImpl implements TransaccionServicio {
 
         switch (tipo) {
             case VENTA:
-                if (cuentaDestino == null) throw new IllegalArgumentException("Cuenta de destino requerida para VENTA.");
-                if (cuentaOrigen == null) throw new IllegalArgumentException("Cuenta de origen requerida para VENTA.");
+                if (cuentaDestino == null) throw new IngresoInvalidoException("Cuenta de destino requerida para VENTA.");
+                if (cuentaOrigen == null) throw new IngresoInvalidoException("Cuenta de origen requerida para VENTA.");
 
                 cuentaOrigen.setSaldo(cuentaOrigen.getSaldo().add(montoDelta));
                 cuentaDestino.setSaldo(cuentaDestino.getSaldo().subtract(montoDelta));
                 break;
             case COMPRA:
-                if (cuentaOrigen == null) throw new IllegalArgumentException("Cuenta de origen requerida para COMPRA.");
-                if (cuentaDestino == null) throw new IllegalArgumentException("Cuenta de destino requerida para COMPRA.");
+                if (cuentaOrigen == null) throw new IngresoInvalidoException("Cuenta de origen requerida para COMPRA.");
+                if (cuentaDestino == null) throw new IngresoInvalidoException("Cuenta de destino requerida para COMPRA.");
 
                 cuentaOrigen.setSaldo(cuentaOrigen.getSaldo().subtract(montoDelta));
                 cuentaDestino.setSaldo(cuentaDestino.getSaldo().add(montoDelta));
                 break;
             case INGRESO:
-                if (cuentaDestino == null) throw new IllegalArgumentException("Cuenta de destino requerida para INGRESO.");
+                if (cuentaDestino == null) throw new IngresoInvalidoException("Cuenta de destino requerida para INGRESO.");
                 cuentaDestino.setSaldo(cuentaDestino.getSaldo().add(montoDelta));
                 break;
             case EGRESO:
-                if (cuentaDestino == null) throw new IllegalArgumentException("Cuenta de destino requerida para EGRESO.");
+                if (cuentaDestino == null) throw new IngresoInvalidoException("Cuenta de destino requerida para EGRESO.");
                 cuentaDestino.setSaldo(cuentaDestino.getSaldo().subtract(montoDelta));
                 break;
             default:
-                throw new IllegalArgumentException("Tipo de transacción no soportado para el ajuste de saldos: " + tipo);
+                throw new IngresoInvalidoException("Tipo de transacción no soportado para el ajuste de saldos: " + tipo);
         }
 
         if (cuentaOrigen != null) {

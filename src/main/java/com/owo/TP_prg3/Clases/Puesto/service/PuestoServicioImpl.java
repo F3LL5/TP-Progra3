@@ -1,9 +1,9 @@
 package com.owo.TP_prg3.Clases.Puesto.service;
 
 import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
-import com.owo.TP_prg3.Clases.Excepciones.ConflictoDeDatosException;
-import com.owo.TP_prg3.Clases.Excepciones.IngresoInvalidoException;
-import com.owo.TP_prg3.Clases.Excepciones.RecursoNoEncontradoException;
+import com.owo.TP_prg3.Excepciones.ConflictoDeDatosException;
+import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
 import com.owo.TP_prg3.Clases.Puesto.dto.CreatePuestoDTO;
 import com.owo.TP_prg3.Clases.Puesto.dto.PuestoDTO;
 import com.owo.TP_prg3.Clases.Puesto.dto.UpdatePuestoDTO;
