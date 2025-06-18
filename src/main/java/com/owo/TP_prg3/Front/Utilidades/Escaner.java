@@ -96,13 +96,14 @@ public abstract class Escaner {
     public static double porcentaje (Scanner scanner){
         while (true){
 
-            System.out.println("Ingrese el porcentaje de la comision :");
+            System.out.println("Ingrese el porcentaje de la comision(0-100):");
             double porcentaje=doubleValido(scanner);
+            double porcentajeFinal=porcentaje/100;
 
                 if (porcentaje < 0 || porcentaje > 100) {
                     throw new IngresoInvalidoException("Número ingresado invalido (0-100).");
                 }else {
-                    return porcentaje;
+                    return porcentajeFinal;
                 }
         }
     }
