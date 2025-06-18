@@ -45,6 +45,7 @@ public class MenuPuestos {
                 }
                 default -> System.out.println("OPCIÓN INVÁLIDA. VUELVA A INTENTAR");
             }
+            Escaner.pausa(scanner);
         } while (!opcion.equals("0"));
     }
 

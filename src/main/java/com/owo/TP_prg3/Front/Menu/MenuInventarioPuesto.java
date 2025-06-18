@@ -40,6 +40,7 @@ public class MenuInventarioPuesto {
                 case "0" -> {}
                 default -> System.out.println("OPCIÓN INVÁLIDA. VUELVA A INTENTAR");
             }
+            Escaner.pausa(scanner);
         } while (!opcion.equals("0"));
     }
 

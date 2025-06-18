@@ -44,6 +44,7 @@ public class MenuPedidos {
                 case "0" -> {} // Salir
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
+            Escaner.pausa(scanner);
         } while (!opcion.equals("0"));
     }
 

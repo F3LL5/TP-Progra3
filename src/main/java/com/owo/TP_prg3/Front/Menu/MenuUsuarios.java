@@ -39,6 +39,7 @@ public class MenuUsuarios {
                 case "0" -> {}
                 default -> System.out.println("Opción no válida.");
             }
+            Escaner.pausa(scanner);
         } while (!opcion.equals("0"));
     }
 

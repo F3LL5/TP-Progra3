@@ -73,6 +73,7 @@ public class MenuDuenoPuesto {
                 case "0" -> System.out.println("Saliendo del menú de Dueño de Puesto.");
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
+            Escaner.pausa(scanner);
         } while (!opcion.equals("0"));
     }
 
