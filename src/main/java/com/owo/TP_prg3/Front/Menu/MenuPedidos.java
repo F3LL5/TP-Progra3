@@ -89,26 +89,57 @@ public class MenuPedidos {
     }
 
     private void filtrarYOrdenar() throws IOException, InterruptedException {
-        System.out.println("--- Filtrar y ordenar pedidos ---");
+        System.out.println("--- FILTRAR Y ORDENAR PEDIDOS ---");
 
-        System.out.print("Filtrar por TIPO (COMPRA, VENTA, INGRESO, EGRESO) o dejar vacío: ");
-        String tipo_transaccion = scanner.nextLine().trim();
-        if (tipo_transaccion.isBlank()) tipo_transaccion = null;
+        System.out.println("""
+            TIPO DE TRANSACCIÓN:
+            [1] COMPRA
+            [2] VENTA
+            [3] INGRESO
+            [4] EGRESO
+            [0] SIN FILTRO
+            Opción:""");
+        int estado = Escaner.enteroValido(scanner);
+        String estado_pedido = switch (estado) {
+            case 1 -> "COMPRA";
+            case 2 -> "VENTA";
+            case 3 -> "INGRESO";
+            case 4 -> "EGRESO";
+            default -> null;
+        };
 
-        System.out.print("Ordenar por 'fecha', 'monto', 'id_cuenta_origen', 'id_cuenta_destino' o dejar vacío: ");
-        String sortBy = scanner.nextLine().trim();
-        String sortDir = null;
-        if (!sortBy.isBlank()) {
-            System.out.print("Dirección de orden: 'asc' o 'desc' (dejar vacío si no aplica): ");
-            sortDir = scanner.nextLine().trim();
-            if (sortDir.isBlank()) sortDir = null;
-        } else {
-            sortBy = null;
-        }
+        System.out.println("""
+        ORDENAR POR:
+        [1] FECHA
+        [2] MONTO
+        [3] ID DE CUENTA ORIGEN
+        [4] ID DE CUENTA DESTINO
+        [0] SIN ORDENAMIENTO
+        Opción:""");
+        int by = Escaner.enteroValido(scanner);
+        String sortBy = switch (by) {
+            case 1 -> "fecha";
+            case 2 -> "monto";
+            case 3 -> "id_cuenta_origen";
+            case 4 -> "id_cuenta_destino";
+            default -> null;
+        };
 
-        // Construcción de la URL
+        System.out.println("""
+        DIRECCIÓN DE ORDEN:
+        [1] ASCENDENTE
+        [2] DESCENDENTE
+        [0] SIN DIRECCIÓN
+        Opción:""");
+        int dir = Escaner.enteroValido(scanner);
+        String sortDir = switch (dir) {
+            case 1 -> "asc";
+            case 2 -> "desc";
+            default -> null;
+        };
+
         StringBuilder urlBuilder = new StringBuilder(API_URL + "/filtrarYOrdenar?");
-        if (tipo_transaccion != null) urlBuilder.append("tipo_transaccion=").append(tipo_transaccion).append("&");
+        if (estado_pedido != null) urlBuilder.append("tipo_transaccion=").append(estado_pedido).append("&");
         if (sortBy != null) urlBuilder.append("sortBy=").append(sortBy).append("&");
         if (sortDir != null) urlBuilder.append("sortDir=").append(sortDir);
 

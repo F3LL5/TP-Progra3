@@ -102,29 +102,50 @@ public class MenuInventarioPuesto {
 
 
     private void filtrarYordenarItemsInventario() throws IOException, InterruptedException {
-        System.out.println("--- Filtrar y ordenar items del inventario ---");
-        System.out.println("Ingrese id del puesto");
-        Long puestoId=Long.valueOf(Escaner.enteroValido(scanner));
+        System.out.println("--- FILTRAR Y ORDENAR ITEMS DEL INVENTARIO ---");
+
+        System.out.print("Ingrese ID del puesto: ");
+        Long puestoId = Long.valueOf(Escaner.enteroValido(scanner));
+
         System.out.print("Filtrar por categoría (dejar vacío si no aplica): ");
         String categoria = scanner.nextLine();
         if (categoria.isBlank()) categoria = null;
 
-        System.out.print("Ordenar por 'nombre', 'precioVenta', 'costoAdquisicion', 'cantidad' (dejar vacío si no aplica): ");
-        String orden = scanner.nextLine();
-        String direccion = null;
-        if (orden.isBlank()) {
-            orden = null;
-        } else {
-            System.out.print("Ordenar 'asc' o 'desc' (dejar vacío si no aplica): ");
-            direccion = scanner.nextLine();
-            if (direccion.isBlank()) direccion = null;
-        }
+        System.out.println("""
+        ORDENAR POR:
+        [1] NOMBRE
+        [2] PRECIO VENTA
+        [3] COSTO ADQUISICIÓN
+        [4] CANTIDAD
+        [0] SIN ORDENAMIENTO
+        Opción:""");
+        int opcOrden = Escaner.enteroValido(scanner);
+        String sortBy = switch (opcOrden) {
+            case 1 -> "nombre";
+            case 2 -> "precioVenta";
+            case 3 -> "costoAdquisicion";
+            case 4 -> "cantidad";
+            default -> null;
+        };
+
+        System.out.println("""
+        DIRECCIÓN DE ORDEN:
+        [1] ASCENDENTE
+        [2] DESCENDENTE
+        [0] SIN DIRECCIÓN
+        Opción:""");
+        int opcDir = Escaner.enteroValido(scanner);
+        String sortDir = switch (opcDir) {
+            case 1 -> "asc";
+            case 2 -> "desc";
+            default -> null;
+        };
 
         StringBuilder urlBuilder = new StringBuilder(API_URL + "/filtrarYordenarItemsInventario?");
         urlBuilder.append("id=").append(puestoId).append("&");
         if (categoria != null) urlBuilder.append("categoria=").append(categoria).append("&");
-        if (orden != null) urlBuilder.append("orden=").append(orden).append("&");
-        if (direccion != null) urlBuilder.append("direccion=").append(direccion);
+        if (sortBy != null) urlBuilder.append("orden=").append(sortBy).append("&");
+        if (sortDir != null) urlBuilder.append("direccion=").append(sortDir);
 
         String finalUrl = urlBuilder.toString();
         if (finalUrl.endsWith("&") || finalUrl.endsWith("?")) {

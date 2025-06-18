@@ -116,16 +116,29 @@ public class MenuItem {
         String categoria = scanner.nextLine();
         if (categoria.isBlank()) categoria = null;
 
-        System.out.print("Ordenar por 'nombre' (dejar vacío si no aplica): ");
-        String orden = scanner.nextLine();
-        String direccion = null;
-        if (orden.isBlank()) {
-            orden = null;
-        } else {
-            System.out.print("Ordenar 'asc' o 'desc' (dejar vacío si no aplica): ");
-            direccion = scanner.nextLine();
-            if (direccion.isBlank()) direccion = null;
-        }
+        System.out.println("""
+        ORDENAR POR:
+        [1] NOMBRE
+        [0] SIN ORDENAMIENTO
+        Opción:""");
+        int by = Escaner.enteroValido(scanner);
+        String orden = switch (by) {
+            case 1 -> "nombre";
+            default -> null;
+        };
+
+        System.out.println("""
+        DIRECCIÓN DE ORDEN:
+        [1] ASCENDENTE
+        [2] DESCENDENTE
+        [0] SIN DIRECCIÓN
+        Opción:""");
+        int dir = Escaner.enteroValido(scanner);
+        String direccion = switch (dir) {
+            case 1 -> "asc";
+            case 2 -> "desc";
+            default -> null;
+        };
 
         StringBuilder urlBuilder = new StringBuilder(API_URL + "/filtrarYordenar?");
         if (categoria != null) urlBuilder.append("categoria=").append(categoria).append("&");

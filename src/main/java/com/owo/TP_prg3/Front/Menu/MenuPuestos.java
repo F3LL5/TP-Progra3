@@ -96,17 +96,32 @@ public class MenuPuestos {
     }
 
     private void filtrarYOrdenar() throws IOException, InterruptedException {
-        System.out.println("--- Fitrar y ordenar por nombre ---");
-        System.out.println("Filtrar por NOMBRE de puesto o dejar vacío: ");
-        String nombre = scanner.nextLine().trim();
-        if (nombre.isBlank()) nombre = null;
+        System.out.println("""
+        ORDENAR POR:
+        [1] NOMBRE
+        [0] SIN ORDENAMIENTO
+        Opción:""");
+        int by = Escaner.enteroValido(scanner);
+        String sortBy = switch (by) {
+            case 1 -> "nombre";
+            default -> null;
+        };
 
-        System.out.println("Ordenar de forma... (asc / desc) o dejar vacío: ");
-        String sortDir = scanner.nextLine().trim();
-        if (sortDir.isBlank()) sortDir = null;
+        System.out.println("""
+        DIRECCIÓN DE ORDEN:
+        [1] ASCENDENTE
+        [2] DESCENDENTE
+        [0] SIN DIRECCIÓN
+        Opción:""");
+        int dir = Escaner.enteroValido(scanner);
+        String sortDir = switch (dir) {
+            case 1 -> "asc";
+            case 2 -> "desc";
+            default -> null;
+        };
 
         StringBuilder urlBuilder = new StringBuilder(API_URL + "/filtrarYOrdenarPorNombre?");
-        if (nombre != null) urlBuilder.append("nombre=").append(nombre).append("&");
+        if (sortBy != null) urlBuilder.append("nombre=").append(sortBy).append("&");
         if (sortDir != null) urlBuilder.append("sortDir=").append(sortDir);
 
         String finalUrl = urlBuilder.toString();

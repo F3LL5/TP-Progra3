@@ -97,28 +97,58 @@ public class MenuEntidades {
     }
 
     private void filtrarYOrdenar() throws IOException, InterruptedException {
-        System.out.println("--- Filtrar y ordenar entidades ---");
+        System.out.println("--- FILTRAR Y ORDENAR ENTIDADES ---");
 
-        System.out.print("Filtrar por ROL (DUENO_PUESTO, CLIENTE, PROVEEDOR) o dejar vacío: ");
-        String rol = scanner.nextLine().trim();
-        if (rol.isBlank()) rol = null;
+        System.out.println("""
+        TIPO DE ENTIDAD:
+        [1] DUEÑO DE PUESTO
+        [2] CLIENTE
+        [3] PROVEEDOR
+        [0] SIN FILTRO
+        Opción:""");
+        int tipo = Escaner.enteroValido(scanner);
+        String rol_entidad = switch (tipo) {
+            case 1 -> "DUENO_PUESTO";
+            case 2 -> "CLIENTE";
+            case 3 -> "PROVEEDOR";
+            default -> null;
+        };
 
-        System.out.print("Ordenar por 'nombre', 'edad', 'dni' o 'tipoEntidad' (dejar vacío si no aplica): ");
-        String orden = scanner.nextLine().trim();
-        String direccion = null;
-        if (orden.isBlank()) {
-            orden = null;
-        } else {
-            System.out.print("Dirección de orden: 'asc' o 'desc' (dejar vacío si no aplica): ");
-            direccion = scanner.nextLine().trim();
-            if (direccion.isBlank()) direccion = null;
-        }
+        System.out.println("""
+        ORDENAR POR:
+        [1] NOMBRE
+        [2] EDAD
+        [3] DNI
+        [4] TIPO DE ENTIDAD
+        [0] SIN ORDENAMIENTO
+        Opción:""");
+        int by = Escaner.enteroValido(scanner);
+        String sortBy = switch (by) {
+            case 1 -> "nombre";
+            case 2 -> "edad";
+            case 3 -> "dni";
+            case 4 -> "tipoEntidad";
+            default -> null;
+        };
+
+        System.out.println("""
+        DIRECCIÓN DE ORDEN:
+        [1] ASCENDENTE
+        [2] DESCENDENTE
+        [0] SIN DIRECCIÓN
+        Opción:""");
+        int dir = Escaner.enteroValido(scanner);
+        String sortDir = switch (dir) {
+            case 1 -> "asc";
+            case 2 -> "desc";
+            default -> null;
+        };
 
         // Construcción de la URL
         StringBuilder urlBuilder = new StringBuilder(API_URL + "/filtrarYOrdenar?");
-        if (rol != null) urlBuilder.append("rol_entidad=").append(rol).append("&");
-        if (orden != null) urlBuilder.append("sortBy=").append(orden).append("&");
-        if (direccion != null) urlBuilder.append("sortDir=").append(direccion);
+        if (rol_entidad != null) urlBuilder.append("rol_entidad=").append(rol_entidad).append("&");
+        if (sortBy != null) urlBuilder.append("sortBy=").append(sortBy).append("&");
+        if (sortDir != null) urlBuilder.append("sortDir=").append(sortDir);
 
         String finalUrl = urlBuilder.toString();
         if (finalUrl.endsWith("&") || finalUrl.endsWith("?")) {
