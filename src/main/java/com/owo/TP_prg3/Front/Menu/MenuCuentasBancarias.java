@@ -14,19 +14,18 @@ import java.net.http.HttpResponse;
 import java.util.*;
 
 public class MenuCuentasBancarias {
-
-    //Atributos
+    ///---------------------------------ATRIBUTOS-----------------------------------------------------------------------
     private static final String API_URL = "http://localhost:8080/api/cuentas-bancarias";
     private final String authHeader;
     private final Scanner scanner = new Scanner(System.in);
 
-    //Constructor
+    ///--------------------------------CONSTRUCTOR----------------------------------------------------------------------
     public MenuCuentasBancarias(String authHeader){
         this.authHeader = authHeader;
         HandlerResponse.setObjectMapper(new ObjectMapper());
     }
 
-    //Menu
+    ///----------------------------------MENU---------------------------------------------------------------------------
     public void gestionar() throws IOException, InterruptedException {
         String opcion;
         do {
@@ -61,8 +60,8 @@ public class MenuCuentasBancarias {
                 Ingrese la opción:""");
     }
 
-    //Metodos
-    //GET
+    ///--------------------------------METODOS--------------------------------------------------------------------------
+    ///---------------------------------GET-----------------------------------------------------------------------------
     private void obtenerTodas() throws IOException, InterruptedException {
         System.out.println("\n--- Obteniendo todas las cuentas bancarias... ---");
 
@@ -80,7 +79,6 @@ public class MenuCuentasBancarias {
 
         FlipTableHelper.imprimir(cuentas);
     }
-
     private void buscarPorId() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID de la entidad: ");
         Integer id = Escaner.enteroValido(scanner);
@@ -98,7 +96,7 @@ public class MenuCuentasBancarias {
         });
     }
 
-    //POST
+    ///--------------------------------POST-----------------------------------------------------------------------------
     private void agregar() throws IOException, InterruptedException {
         System.out.println("\n--- Agregar nueva cuenta bancaria ---");
 
@@ -124,7 +122,7 @@ public class MenuCuentasBancarias {
         });
     }
 
-    //DELETE
+    ///-------------------------------DELETE----------------------------------------------------------------------------
     private void eliminar() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID de la cuenta a eliminar: ");
         Integer id = Escaner.enteroValido(scanner);

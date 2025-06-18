@@ -14,15 +14,15 @@ import java.util.Scanner;
 
 public class MenuHistorial_InventarioCosto {
 
-    //Atributos
+    ///---------------------------------------ATRIBUTOS-----------------------------------------------------------------
     private static final String API_URL = "http://localhost:8080/api/InventarioCostoHistorial";
     private final String authHeader;
     private final Scanner scanner = new Scanner(System.in);
 
-    //Constructor
+    ///--------------------------------------CONSTRUCTOR----------------------------------------------------------------
     public MenuHistorial_InventarioCosto(String authHeader) {this.authHeader = authHeader;}
 
-    //Menu
+    ///-----------------------------------------MENU--------------------------------------------------------------------
     public void gestionar() throws IOException, InterruptedException {
         String opcion;
         do {
@@ -39,7 +39,6 @@ public class MenuHistorial_InventarioCosto {
         } while (!opcion.equals("0"));
     }
 
-
     private void mostrarMenu() {
         System.out.print("""
                 \n--- MENÚ DE AUDITORIA COSTO ---
@@ -52,8 +51,8 @@ public class MenuHistorial_InventarioCosto {
                 Ingrese la opción:""");
     }
 
-    //Metodos
-    //GET
+    ///---------------------------------------METODOS-------------------------------------------------------------------
+    ///----------------------------------------GET----------------------------------------------------------------------
     private void obtenerTodas() throws IOException, InterruptedException {
         System.out.println("\n--- Obteniendo todos los historiales de inventario costo... ---");
 
@@ -90,7 +89,4 @@ public class MenuHistorial_InventarioCosto {
             FlipTableHelper.imprimir(List.of(historial));
         });
     }
-
-
-
 }

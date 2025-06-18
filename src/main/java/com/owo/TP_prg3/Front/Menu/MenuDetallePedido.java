@@ -16,16 +16,16 @@ import java.util.*;
 
 public class MenuDetallePedido {
 
-    //Atributos
+    ///----------------------------------------ATRIBUTOS----------------------------------------------------------------
     private static final String API_URL = "http://localhost:8080/api/detalles-pedido";
     private final String authHeader;
     private final Scanner scanner = new Scanner(System.in);
     private final ObjectMapper mapper = new ObjectMapper();
 
-    //Constructor
+    ///--------------------------------------CONSTRUCTOR----------------------------------------------------------------
     public MenuDetallePedido(String authHeader) {this.authHeader = authHeader;}
 
-    //Menu
+    ///----------------------------------------MENU---------------------------------------------------------------------
     public void gestionar() throws IOException, InterruptedException {
         String opcion;
         do {
@@ -44,8 +44,6 @@ public class MenuDetallePedido {
             Escaner.pausa(scanner);
         } while (!opcion.equals("0"));
     }
-
-
     private void mostrarMenu() {
         System.out.print("""
                 \n--- MENÚ DE GESTIÓN DE DETALLE PEDIDO ---
@@ -60,8 +58,8 @@ public class MenuDetallePedido {
                 Ingrese la opción:""");
     }
 
-    //Metodos
-    //GET
+    ///--------------------------------------METODOS--------------------------------------------------------------------
+    ///---------------------------------------GET-----------------------------------------------------------------------
     private void obtenerTodas() throws IOException, InterruptedException {
         System.out.println("\n--- Obteniendo todos los detalles de pedidos... ---");
 
@@ -100,7 +98,7 @@ public class MenuDetallePedido {
         });
     }
 
-    //POST
+    ///-------------------------------------POST------------------------------------------------------------------------
     private void agregar() throws IOException, InterruptedException {
         System.out.println("\n--- Registrar el detalle de pedido ---");
 
@@ -124,14 +122,14 @@ public class MenuDetallePedido {
         HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
     }
 
-    //DELETE
+    ///-----------------------------------DELETE------------------------------------------------------------------------
     private void eliminar() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID del detalle de pedido a eliminar: ");
         Integer id = Escaner.enteroValido(scanner);
         HttpService.realizarPeticion("DELETE", API_URL + "/" + id, authHeader, null);
     }
 
-    //PATCH
+    ///-----------------------------------PATCH-------------------------------------------------------------------------
     private void modificar() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID del detalle de pedido a modificar: ");
         Integer id = Escaner.enteroValido(scanner);
@@ -172,7 +170,7 @@ public class MenuDetallePedido {
         HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody);
     }
 
-    /// METODOS HANDLERS DE ERRORES
+    ///------------------------ METODOS HANDLERS DE ERRORES-------------------------------------------------------------
     private Optional<Object> handleResponse(HttpResponse<String> response, Class<?> clazz, String successMessage, String errorMessage) {
         int statusCode = response.statusCode();
         String responseBody = response.body();
@@ -203,7 +201,6 @@ public class MenuDetallePedido {
             return Optional.empty(); // Retorna Optional vacío en caso de error
         }
     }
-
     private void handleErrorResponse(int statusCode, String responseBody) {
         System.err.println("Error HTTP - Código: " + statusCode);
         try {

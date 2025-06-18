@@ -14,17 +14,17 @@ import java.util.Optional;
 import java.util.Scanner;
 
 public class MenuHistorial_Duenio {
-    //Atributos
+    ///------------------------------------------Atributos--------------------------------------------------------------
     private static final String API_URL = "http://localhost:8080/api/DuenioHistorial";
     private final String authHeader;
     private final Scanner scanner = new Scanner(System.in);
 
-    /// CONSTRUCTOR
+    ///----------------------------------------CONSTRUCTOR--------------------------------------------------------------
     public MenuHistorial_Duenio(String authHeader) {
         this.authHeader = authHeader;
     }
 
-    /// MENU
+    ///------------------------------------------- MENU-----------------------------------------------------------------
     public void gestionar() throws IOException, InterruptedException {
         String opcion;
         do {
@@ -52,7 +52,7 @@ public class MenuHistorial_Duenio {
                 Ingrese la opción:""");
     }
 
-    //GET
+    ///---------------------------------------------GET-----------------------------------------------------------------
     private void obtenerTodas() throws IOException, InterruptedException {
         System.out.println("\n--- Obteniendo todos los historiales de duenios... ---");
 
