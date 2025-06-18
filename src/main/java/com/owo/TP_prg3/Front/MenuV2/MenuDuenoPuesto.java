@@ -1,11 +1,15 @@
 package com.owo.TP_prg3.Front.MenuV2;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.jakewharton.fliptables.FlipTable;
 import com.jakewharton.fliptables.FlipTableConverters;
 import com.owo.TP_prg3.Clases.Entidad.dto.CreateEntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.dto.EntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.dto.UpdateEntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.modelo.RolEntidad;
+import com.owo.TP_prg3.Clases.InventarioPuesto.dto.InventarioPuestoDTO;
 import com.owo.TP_prg3.Excepciones.Handler.HandlerResponse;
 import com.owo.TP_prg3.Clases.Puesto.modelo.Puesto;
 import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
@@ -19,7 +23,9 @@ import com.owo.TP_prg3.Front.Menu.MenuItem;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.http.HttpResponse;
+import java.time.LocalDate;
 import java.util.*;
 
 public class MenuDuenoPuesto {
@@ -56,9 +62,9 @@ public class MenuDuenoPuesto {
             opcion = Escaner.stringValido(scanner);
             switch (opcion) {
                 case "1" -> gestionarEntidadesPuesto();
-                case "2" -> System.out.println("No tiene permisos para gestionar usuarios desde este menú."); // Según el gráfico
+                case "2" -> System.out.println("No tiene permisos para gestionar usuarios desde este menú.");
                 case "3" -> modificarMiPuesto();
-                case "4" -> gestionarItemsPuesto();
+                case "4" -> gestionarInventarioPuesto();
                 case "5" -> verMiCuentaBancaria();
                 case "6" -> gestionarTransaccionesPuesto();
                 case "7" -> gestionarPedidosPuesto();
@@ -76,7 +82,7 @@ public class MenuDuenoPuesto {
                 1. Gestionar Entidades (Clientes y Proveedores de su puesto)
                 2. Gestionar Usuarios (No permitido para Dueños de Puesto)
                 3. Modificar Mi Puesto
-                4. Gestionar inventario
+                4. Gestionar inventario de mi puesto
                 5. Ver Detalles de Mi Cuenta Bancaria
                 6. Gestionar Transacciones (De su puesto)
                 7. Gestionar Pedidos (De su puesto)
@@ -440,19 +446,331 @@ public class MenuDuenoPuesto {
     }
 
 
-    /*
-     Gestiona los ítems de inventario del puesto del dueño.
-     Invoca a MenuInventarioPuesto, pasando el ID del puesto para que filtre las operaciones.
-    */
-    private void gestionarItemsPuesto() throws IOException, InterruptedException {
-        MenuInventarioPuesto menuInventarioPuesto = new MenuInventarioPuesto(authHeader);
-        menuInventarioPuesto.gestionar(); // Pasar el puestoUsuario.getPuestoId()
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    /// INVENTARIO
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    private void gestionarInventarioPuesto() throws IOException, InterruptedException {
+        String opcion;
+        do {
+            System.out.print("""
+                    \n--- GESTIÓN DE INVENTARIO (SU PUESTO) ---
+                    OPCIONES:
+                    1. Obtener todos los inventarios de mi puesto
+                    2. Buscar por ID
+                    3. Agregar inventario
+                    4. Eliminar inventario
+                    5. Modificar inventario
+                    6. Mostrar productos en stock
+                    7. Mostrar productos en stock bajo
+                    8. Filtrar y ordenar inventario de puesto
+                    0. Volver al menú de Dueño de Puesto
+                    Ingrese una opción:"""
+            );
+            opcion = Escaner.stringValido(scanner);
+            switch (opcion) {
+                case "1" -> obtenerInventariosDeMiPuesto();
+                case "2" -> buscarInventarioPorIdDeMiPuesto();
+                case "3" -> agregarInventarioPorPuesto();
+                case "4" -> eliminarInventarioPorPuesto();
+                case "5" -> modificarInventarioPorPuesto();
+                case "6" -> mostrarProductosEnStock();
+                case "7" -> mostrarProductosEnStockBajo();
+                case "8" -> filtrarYordenarItemsInventario();
+                case "0" -> {}
+                default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
+            }
+        } while (!opcion.equals("0"));
     }
 
-    /*
-     Permite al dueño ver los detalles de su propia cuenta bancaria.
-     Se asume que la entidad asociada al puesto tiene una cuenta bancaria.
-    */
+    private void obtenerInventariosDeMiPuesto() throws IOException, InterruptedException {
+        System.out.println("\n--- Obteniendo ítems de inventario de su puesto ---");
+
+        Optional<Object> result = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("GET", API_URL_INVENTARIO_PUESTO + "/puesto/" + puestoUsuario.getPuestoId(), authHeader, null),
+                InventarioPuestoDTO.class, // Esperamos una lista de InventarioPuestoDTO
+                "Ítems de inventario de su puesto obtenidos exitosamente.",
+                "No se pudieron obtener los ítems de inventario de su puesto."
+        );
+
+        result.ifPresent(obj -> {
+            List<InventarioPuestoDTO> items = (List<InventarioPuestoDTO>) obj;
+            if (!items.isEmpty()) {
+                System.out.println(FlipTableConverters.fromIterable(items, InventarioPuestoDTO.class));
+            } else {
+                System.out.println("No se encontraron ítems en el inventario de su puesto.");
+            }
+        });
+    }
+
+    private void buscarInventarioPorIdDeMiPuesto() throws IOException, InterruptedException {
+        System.out.print("Ingrese el ID del ítem de inventario a buscar en su puesto: ");
+        Integer id = Escaner.enteroValido(scanner);
+
+        Optional<Object> result = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("GET", API_URL_INVENTARIO_PUESTO + "/" + id + "/puesto/" + puestoUsuario.getPuestoId(), authHeader, null),
+                InventarioPuestoDTO.class,
+                "Ítem de inventario encontrado en su puesto:",
+                "No se encontró el ítem de inventario con ID " + id + " en su puesto."
+        );
+
+        result.ifPresent(obj -> {
+            InventarioPuestoDTO item = (InventarioPuestoDTO) obj;
+            System.out.println(FlipTableConverters.fromIterable(List.of(item), InventarioPuestoDTO.class));
+        });
+    }
+
+    private void filtrarYordenarItemsInventario() throws IOException, InterruptedException {
+        System.out.println("--- FILTRAR Y ORDENAR ITEMS DEL INVENTARIO ---");
+
+        Long puestoId = puestoUsuario.getPuestoId(); // Obtener el ID del puesto del atributo de la clase
+
+        System.out.print("Filtrar por categoría (dejar vacío si no aplica): ");
+        String categoria = scanner.nextLine();
+        if (categoria.isBlank()) categoria = null;
+
+        System.out.println("""
+        ORDENAR POR:
+        [1] NOMBRE
+        [2] PRECIO VENTA
+        [3] COSTO ADQUISICIÓN
+        [4] CANTIDAD
+        [0] SIN ORDENAMIENTO
+        Opción:""");
+        int opcOrden = Escaner.enteroValido(scanner);
+        String sortBy = switch (opcOrden) {
+            case 1 -> "nombre";
+            case 2 -> "precioVenta";
+            case 3 -> "costoAdquisicion";
+            case 4 -> "cantidad";
+            default -> null;
+        };
+
+        System.out.println("""
+        DIRECCIÓN DE ORDEN:
+        [1] ASCENDENTE
+        [2] DESCENDENTE
+        [0] SIN DIRECCIÓN
+        Opción:""");
+        int opcDir = Escaner.enteroValido(scanner);
+        String sortDir = switch (opcDir) {
+            case 1 -> "asc";
+            case 2 -> "desc";
+            default -> null;
+        };
+
+        StringBuilder urlBuilder = new StringBuilder(API_URL_INVENTARIO_PUESTO + "/filtrarYordenarItemsInventario?");
+        urlBuilder.append("id=").append(puestoId).append("&");
+        if (categoria != null) urlBuilder.append("categoria=").append(categoria).append("&");
+        if (sortBy != null) urlBuilder.append("orden=").append(sortBy).append("&");
+        if (sortDir != null) urlBuilder.append("direccion=").append(sortDir);
+
+        String finalUrl = urlBuilder.toString();
+        if (finalUrl.endsWith("&") || finalUrl.endsWith("?")) {
+            finalUrl = finalUrl.substring(0, finalUrl.length() - 1);
+        }
+
+        System.out.println("\n-> Consultando " + finalUrl);
+
+        Optional<Object> result = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("GET", finalUrl, authHeader, null),
+                InventarioPuestoDTO.class,
+                "Inventarios filtrados y ordenados exitosamente.",
+                "No se pudieron filtrar/ordenar los inventarios."
+        );
+
+        result.ifPresent(obj -> {
+            List<InventarioPuestoDTO> inventarios = (List<InventarioPuestoDTO>) obj;
+            if (!inventarios.isEmpty()) {
+                System.out.println(FlipTableConverters.fromIterable(inventarios, InventarioPuestoDTO.class));
+            } else {
+                System.out.println("No se encontraron resultados.");
+            }
+        });
+    }
+
+    /// POST
+    private void agregarInventarioPorPuesto() throws IOException, InterruptedException {
+        System.out.println("AGREGAR NUEVO INVENTARIO");
+        System.out.print("Ingrese cantidad: ");
+        Integer cantidad = Escaner.enteroValido(scanner);
+        Long puestoId = puestoUsuario.getPuestoId();
+        System.out.print("Ingrese ID item: ");
+        Long itemId = Long.valueOf(Escaner.enteroValido(scanner));
+        System.out.println("Ingrese la cantidad de stock minimo que desea establecer: ");
+        Integer stockMin = Escaner.enteroValido(scanner);
+        System.out.println("Ingrese el precio del item");
+        BigDecimal precioVenta = BigDecimal.valueOf(Escaner.doubleValido(scanner));
+        System.out.println("Ingrese el costo de adquisicion");
+        BigDecimal costoAdquisicion = BigDecimal.valueOf(Escaner.doubleValido(scanner));
+
+        String jsonBody = "{" +
+                "\"cantidad\":" + cantidad + "," +
+                "\"puestoId\":" + puestoId + "," +
+                "\"itemId\":" + itemId + "," +
+                "\"stockMin\":" + stockMin + "," +
+                "\"precioVenta\":" + precioVenta + "," +
+                "\"costoAdquisicion\":" + costoAdquisicion +
+                "}";
+        HttpResponse<String> response = HttpService.realizarPeticion("POST", API_URL_INVENTARIO_PUESTO, authHeader, jsonBody);
+
+        int statusCode = response.statusCode();
+        if (statusCode >= 200 && statusCode < 300) {
+            System.out.println("Inventario agregado exitosamente a su puesto.");
+        } else {
+            HandlerResponse.handleErrorResponse(statusCode, response.body());
+        }
+    }
+
+    /// DELETE
+    private void eliminarInventarioPorPuesto() throws IOException, InterruptedException {
+        System.out.print("Ingrese el ID del inventario a eliminar de su puesto: ");
+        Integer id = Escaner.enteroValido(scanner);
+        HttpResponse<String> response = HttpService.realizarPeticion("DELETE", API_URL_INVENTARIO_PUESTO + "/" + id + "/puesto/" + puestoUsuario.getPuestoId(), authHeader, null);
+
+        int statusCode = response.statusCode();
+        if (statusCode == 204) {
+            System.out.println("Inventario con ID " + id + " eliminado exitosamente de su puesto.");
+        } else {
+            HandlerResponse.handleErrorResponse(statusCode, response.body());
+        }
+    }
+
+    ///PATCH
+    private void modificarInventarioPorPuesto() throws IOException, InterruptedException {
+        System.out.print("Ingrese el ID del inventario a modificar en su puesto: ");
+        Long id = Long.valueOf(Escaner.enteroValido(scanner));
+        System.out.println();
+
+        System.out.print("""
+            ATRIBUTO A MODIFICAR:
+            1. Cantidad
+            2. Puesto
+            3. Item
+            4. Stock Minimo
+            5. Precio de venta
+            6. Costo adquisicion
+            0. Cancelar
+            Ingrese una opción:"""
+        );
+        Integer opcion = Escaner.enteroValido(scanner);
+
+        if (opcion != 0) System.out.print("Ingrese el nuevo valor: ");
+        String jsonBody = "";
+        switch (opcion) {
+            case 1 -> {
+                Integer cantidad = Escaner.enteroValido(scanner);
+                jsonBody = "{\"cantidad\":" + cantidad + "}";
+            }
+            case 2 -> {
+                // Si se permite cambiar el puesto de un inventario, el backend debería manejarlo.
+                // En este caso, el endpoint específico de puesto lo restringiría.
+                Long puestoIdNuevo = Long.valueOf(Escaner.enteroValido(scanner));
+                jsonBody = "{\"puestoId\":" + puestoIdNuevo + "}";
+            }
+            case 3 -> {
+                int itemId = Escaner.enteroValido(scanner);
+                jsonBody = "{\"itemId\":" + itemId + "}";
+            }
+            case 4 -> {
+                Integer stockMin = Escaner.enteroValido(scanner);
+                jsonBody = "{\"stockMin\":" + stockMin + "}";
+            }
+            case 5 -> {
+                BigDecimal precioVenta = BigDecimal.valueOf(Escaner.doubleValido(scanner));
+                jsonBody = "{\"precioVenta\":" + precioVenta + "}";
+            }
+            case 6 -> {
+                BigDecimal costoAdquisicion = BigDecimal.valueOf(Escaner.doubleValido(scanner));
+                jsonBody = "{\"costoAdquisicion\":" + costoAdquisicion + "}";
+            }
+            default -> {
+                System.out.println("Opcion no válida.");
+                return;
+            }
+        }
+        // Modificado: Ahora se envía el puestoId en la URL para modificar un inventario específico del puesto
+        HttpResponse<String> response = HttpService.realizarPeticion("PATCH", API_URL_INVENTARIO_PUESTO + "/" + id + "/puesto/" + puestoUsuario.getPuestoId(), authHeader, jsonBody);
+
+        int statusCode = response.statusCode();
+        if (statusCode >= 200 && statusCode < 300) {
+            System.out.println("Inventario modificado exitosamente en su puesto.");
+        } else {
+            HandlerResponse.handleErrorResponse(statusCode, response.body());
+        }
+    }
+
+
+    /// METODOS DE STOCK
+    private void mostrarProductosEnStock() throws IOException, InterruptedException {
+        Long id = puestoUsuario.getPuestoId();
+
+        // Realizar la petición HTTP
+        HttpResponse<String> response = HttpService.realizarPeticion(
+                "GET",
+                API_URL_INVENTARIO_PUESTO + "/obtenerInvConStock/" + id,
+                authHeader,
+                null
+        );
+
+        String respuestaJson = response.body();
+
+        // Deserializar JSON a lista de Map<String, Object>
+        // Se usa 'this.mapper' para usar la instancia de la clase
+        List<Map<String, Object>> stock = this.mapper.readValue(
+                respuestaJson,
+                new TypeReference<List<Map<String, Object>>>() {
+                }
+        );
+
+        // Verificar si hay resultados
+        if (stock.isEmpty()) {
+            System.out.println("No hay productos en stock.");
+            return;
+        }
+
+        // Obtener headers (nombres de columnas)
+        String[] headers = stock.getFirst().keySet().toArray(new String[0]);
+
+        // Obtener los datos como matriz de strings
+        String[][] data = stock.stream()
+                .map(m -> m.values().stream()
+                        .map(v -> v == null ? "" : v.toString())
+                        .toArray(String[]::new))
+                .toArray(String[][]::new);
+
+        // Imprimir la tabla con FlipTable
+        System.out.println(FlipTable.of(headers, data));
+    }
+
+    private void mostrarProductosEnStockBajo() throws IOException, InterruptedException {
+        System.out.println("Ingrese id de puesto");
+        Long id = puestoUsuario.getPuestoId();
+
+        HttpResponse<String> response = HttpService.realizarPeticion("GET", API_URL_INVENTARIO_PUESTO + "/obtenerInvConStockBajo/" + id, authHeader, null);
+        String respuestaJson = response.body();
+
+        List<Map<String, Object>> stock = this.mapper.readValue(respuestaJson, new TypeReference<>() {
+        });
+
+        if (stock.isEmpty()) {
+            System.out.println("No hay productos con stock bajo.");
+            return;
+        }
+
+        String[] headers = stock.get(0).keySet().toArray(new String[0]);
+        String[][] data = stock.stream()
+                .map(m -> m.values().stream().map(String::valueOf).toArray(String[]::new))
+                .toArray(String[][]::new);
+
+        System.out.println(FlipTable.of(headers, data));
+    }
+
+
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    /// CUENTA BANCARIA
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     private void verMiCuentaBancaria() throws IOException, InterruptedException {
         System.out.println("\n--- Visualizando detalles de su cuenta bancaria ---");
         if (puestoUsuario != null && puestoUsuario.getDuenio().getEntidad_id() != null) {
@@ -472,11 +790,10 @@ public class MenuDuenoPuesto {
         }
     }
 
-    /*
-     Gestiona las transacciones del puesto
-     Incluye obtener todas, buscar por ID y filtrar/ordenar.
-     Las operaciones de agregar, eliminar y modificar no están permitidas para el dueño.
-    */
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    /// TRANSACCIONES
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     private void gestionarTransaccionesPuesto() throws IOException, InterruptedException {
         String opcion;
         do {
@@ -754,6 +1071,109 @@ public class MenuDuenoPuesto {
         } else {
             HandlerResponse.handleErrorResponse(statusCode, response.body());
         }
+    }
+
+    private void filtrarYOrdenarPedido() throws IOException, InterruptedException {
+        System.out.println("--- FILTRAR Y ORDENAR PEDIDOS ---");
+
+        System.out.println("""
+            TIPO DE TRANSACCIÓN:
+            [1] COMPRA
+            [2] VENTA
+            [3] INGRESO
+            [4] EGRESO
+            [0] SIN FILTRO
+            Opción:""");
+        int estado = Escaner.enteroValido(scanner);
+        String estado_pedido = switch (estado) {
+            case 1 -> "COMPRA";
+            case 2 -> "VENTA";
+            case 3 -> "INGRESO";
+            case 4 -> "EGRESO";
+            default -> null;
+        };
+
+        LocalDate fechaMin;
+        LocalDate fechaMax;
+        System.out.println("""
+            FILTRADO POR FECHAS:
+            [1] ESTABLECER FECHA MAX
+            [0] SIN FILTRO FECHA MAX
+            Opción:""");
+        int opcionFecha = Escaner.enteroValido(scanner);
+        switch (opcionFecha) {
+            case 1 -> fechaMin = Escaner.fecha(scanner);
+            default -> fechaMin = null;
+        };
+        System.out.println("""
+            FILTRADO POR FECHAS:
+            [1] ESTABLECER FECHA MIN
+            [0] SIN FILTRO FECHA MIN
+            Opción:""");
+        int opcionFecha2 = Escaner.enteroValido(scanner);
+        switch (opcionFecha2) {
+            case 1 -> fechaMax = Escaner.fecha(scanner);
+            default -> fechaMax = null;
+        };
+
+        System.out.println("""
+        ORDENAR POR:
+        [1] FECHA
+        [2] MONTO
+        [3] ID DE CUENTA ORIGEN
+        [4] ID DE CUENTA DESTINO
+        [0] SIN ORDENAMIENTO
+        Opción:""");
+        int by = Escaner.enteroValido(scanner);
+        String sortBy = switch (by) {
+            case 1 -> "fecha";
+            case 2 -> "monto";
+            case 3 -> "id_cuenta_origen";
+            case 4 -> "id_cuenta_destino";
+            default -> null;
+        };
+
+        System.out.println("""
+        DIRECCIÓN DE ORDEN:
+        [1] ASCENDENTE
+        [2] DESCENDENTE
+        [0] SIN DIRECCIÓN
+        Opción:""");
+        int dir = Escaner.enteroValido(scanner);
+        String sortDir = switch (dir) {
+            case 1 -> "asc";
+            case 2 -> "desc";
+            default -> null;
+        };
+
+        StringBuilder urlBuilder = new StringBuilder(API_URL_PEDIDOS + "/filtrarYOrdenar?");
+        if (estado_pedido != null) urlBuilder.append("tipo_transaccion=").append(estado_pedido).append("&");
+        if (fechaMin != null) urlBuilder.append("fechaMin=").append(estado_pedido).append("&");
+        if (fechaMax != null) urlBuilder.append("fechaMax=").append(estado_pedido).append("&");
+        if (sortBy != null) urlBuilder.append("sortBy=").append(sortBy).append("&");
+        if (sortDir != null) urlBuilder.append("sortDir=").append(sortDir);
+
+        String finalUrl = urlBuilder.toString();
+        if (finalUrl.endsWith("&") || finalUrl.endsWith("?")) {
+            finalUrl = finalUrl.substring(0, finalUrl.length() - 1);
+        }
+
+        System.out.println("\n-> Consultando " + finalUrl);
+
+        HttpResponse<String> response = HttpService.realizarPeticion("GET", finalUrl, authHeader, null);
+        String respuestaJson = response.body();
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule()); // Soporte para LocalDateTime
+
+        List<TransaccionDTO> transacciones = Arrays.asList(mapper.readValue(respuestaJson, TransaccionDTO[].class));
+
+        if (transacciones.isEmpty()) {
+            System.out.println("No se encontraron transacciones con esos filtros.");
+            return;
+        }
+
+        System.out.println(FlipTableConverters.fromIterable(transacciones, TransaccionDTO.class));
     }
 
     /*

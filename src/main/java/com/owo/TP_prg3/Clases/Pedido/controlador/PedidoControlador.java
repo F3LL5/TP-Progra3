@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -69,14 +70,12 @@ public class PedidoControlador {
     }
 
 
-    @GetMapping("/filtrarYordenar")
-    public ResponseEntity<List<PedidoDTO>> filtrarYordenarPedidos(
-            @RequestParam(required = false) String tipoTransaccion,
-            @RequestParam(required = false) String orden,
-            @RequestParam(required = false) String direccion
-    ) {
-        List<PedidoDTO> pedidos = pedidoServicio.filtrarYOrdenar(tipoTransaccion, orden, direccion);
-        return ResponseEntity.ok(pedidos);
+    @GetMapping("/filtrarYOrdenar")
+    public List<PedidoDTO> filtrarYOrdenar(
+            @RequestParam(required = false) String tipo_transaccion,
+            @RequestParam(required = false) LocalDate fechaMin, @RequestParam(required = false) LocalDate fechaMax,
+            @RequestParam(required = false) String sortBy, @RequestParam(required = false) String sortDir) {
+        return pedidoServicio.filtrarYOrdenar(tipo_transaccion, fechaMin, fechaMax, sortBy, sortDir);
     }
 
 

@@ -19,7 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityNotFoundException;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -163,14 +165,56 @@ public class PedidoServicioImpl implements PedidoServicio {
     }
 
     @Override
-    public List<PedidoDTO> filtrarYOrdenar(String tipo_transaccion, String sortBy, String sortDir) {
-        List<PedidoDTO> allPedidosDTO = getAllPedidos();
-        Stream<PedidoDTO> pedidoDTOStream = allPedidosDTO.stream();
+    public List<PedidoDTO> filtrarYOrdenar(String tipo_transaccion, LocalDate fechaMin, LocalDate fechaMax, String sortBy, String sortDir) {
+        List<PedidoDTO> pedidos = getAllPedidos();
+        Stream<PedidoDTO> pedidoDTOStream = pedidos.stream();
 
+        /// FILTRADO POR TIPO DE TRANSACCION
         if (tipo_transaccion != null && !tipo_transaccion.isEmpty()) {
             pedidoDTOStream = pedidoDTOStream.filter(pedido -> transaccionRepositorio.getById(pedido.getTransaccionId()).getTipo().name().equalsIgnoreCase(tipo_transaccion) );
         }
 
+        /// FILTRADO DE FECHAS
+        if ( fechaMin!=null  &&  fechaMax!=null  &&  fechaMin.isAfter(fechaMax) ){ //Si se ingresa un intervalo de fechas y son una contradiccion los da vuelta
+            LocalDate aux = fechaMin;
+            fechaMin = fechaMax;
+            fechaMax = aux;
+        }
+
+        if ( fechaMin != null ){
+            final LocalDateTime fechaMinDateTime = fechaMin.atStartOfDay();
+
+            // Primero obtiene las transaccioens mayores a la fecha min
+            List<Transaccion> transacciones = transaccionRepositorio.findAll();
+            List<Transaccion> transaccionesFiltradasFechaMin = transacciones.stream()
+                    .filter( transaccion -> !transaccion.getFecha().isBefore(fechaMinDateTime))
+                    .toList();
+            // Filtra los pedidos que su transaccion haya sido efectuada desp de la fecha min
+            pedidoDTOStream = pedidoDTOStream
+                    .filter(pedido ->
+                            transaccionesFiltradasFechaMin.stream()
+                                    .anyMatch( t -> t.getTransaccionId().equals(pedido.getTransaccionId())));
+        }
+        if ( fechaMax != null ){
+            final LocalDateTime fechaMaxDateTime = fechaMax.atTime(LocalTime.MAX);
+
+            // Primero obtiene las transaccioens menores a la fecha max
+            List<Transaccion> transacciones = transaccionRepositorio.findAll();
+            List<Transaccion> transaccionesFiltradasFechaMax = transacciones.stream()
+                    .filter( transaccion -> !transaccion.getFecha().isAfter( fechaMaxDateTime ))
+                    .toList();
+            // Filtra los pedidos que su transaccion haya sido efectuada antes de la fecha max
+            pedidoDTOStream = pedidoDTOStream
+                    .filter(pedido ->
+                            transaccionesFiltradasFechaMax.stream()
+                                    .anyMatch( t -> t.getTransaccionId().equals(pedido.getTransaccionId())));
+        }
+
+        // Si se ingresa un rango de fechas, por ej antes de diciembre y desp de abril.
+        // Primero filtra las mayores de abril y desp las menores de diciembre.
+        // No al mismo tiempo por si desea solo poner un min y un max individualmente
+
+        ///  ORDENAMIENTO
         if (sortBy != null) {
             Comparator<PedidoDTO> comparator = null;
             switch (sortBy.toLowerCase()) {

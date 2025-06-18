@@ -4,6 +4,7 @@ import com.owo.TP_prg3.Clases.Pedido.dto.CreatePedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.UpdatePedidoDTO;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,5 +14,5 @@ public interface PedidoServicio {
     PedidoDTO createPedido(CreatePedidoDTO createPedidoDTO);
     Optional<PedidoDTO> updatePedido(Long id, UpdatePedidoDTO updatePedidoDTO);
     boolean deletePedido(Long id);
-    List<PedidoDTO> filtrarYOrdenar(String tipo_transaccion, String sortBy, String sortDir);
+    List<PedidoDTO> filtrarYOrdenar(String tipo_transaccion, LocalDate fechaMin, LocalDate fechaMax, String sortBy, String sortDir);
 }

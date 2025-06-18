@@ -32,8 +32,7 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
     @Autowired
     private ItemServicioImpl itemServicio;
 
-
-
+    /// CONVERSION ------------------------------------------------------------------------------------------------------------------------------------------------
 
     private InventarioPuestoDTO convertirA_DTO(InventarioPuesto inventarioPuesto) {
         return new InventarioPuestoDTO(
@@ -73,6 +72,8 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
         return inventarioPuesto;
     }
 
+    /// GET ------------------------------------------------------------------------------------------------------------------------------------------------
+
     @Override
     public List<InventarioPuestoDTO> getAllInventarioPuestos() {
         return inventarioPuestoRepositorio.findAll()
@@ -86,101 +87,10 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
         return inventarioPuestoRepositorio.findById(id).map(this::convertirA_DTO);
     }
 
-    @Override
-    @Transactional
-    public InventarioPuestoDTO createInventarioPuesto(CreateInventarioPuestoDTO createInventarioPuestoDTO) {
-        // Verifica si ya existe ese inventario del itemId
-        Optional<InventarioPuesto> inventarioPuestoOptional = inventarioPuestoRepositorio
-                .findByPuesto_PuestoIdAndItemId(createInventarioPuestoDTO.getPuestoId(), createInventarioPuestoDTO.getItemId());
-
-
-        // Si ya existe, lanza un error en lugar de actualizar
-        if (inventarioPuestoOptional.isPresent()){
-            System.out.println("DEBUG: Inventario ya existe para Puesto ID " + createInventarioPuestoDTO.getPuestoId() + " e Item ID " + createInventarioPuestoDTO.getItemId() + ". Lanzando excepción.");
-            throw new IllegalArgumentException("Ya existe un inventario para el puesto con ID " + createInventarioPuestoDTO.getPuestoId() + " y el item con ID " + createInventarioPuestoDTO.getItemId() + ".");
-        } else {
-            InventarioPuesto inventarioPuesto = convertirA_InventarioPuesto(createInventarioPuestoDTO);
-            InventarioPuesto savedInventarioPuesto = inventarioPuestoRepositorio.save(inventarioPuesto);
-            return convertirA_DTO(savedInventarioPuesto);
-        }
-    }
-
-    @Override
-    public Optional<InventarioPuestoDTO> updateInventarioPuesto(Long id, UpdateInventarioPuestoDTO updateInventarioPuestoDTO) {
+    public Optional<InventarioPuestoDTO> getInventarioPuestoByIdAndPuestoId(Long id, Long puestoId) {
         return inventarioPuestoRepositorio.findById(id)
-                .map(inventarioPuesto -> {
-                    Integer cantidadActual = inventarioPuesto.getCantidad();
-                    BigDecimal costoActual = inventarioPuesto.getCostoAdquisicion();
-
-                    // Si el DTO trae una nueva cantidad Y es diferente a la actual
-                    if (updateInventarioPuestoDTO.getCantidad() != null && !updateInventarioPuestoDTO.getCantidad().equals(cantidadActual)) {
-                        Integer nuevaCantidadEnDTO = updateInventarioPuestoDTO.getCantidad();
-
-                        // Si la cantidad en el DTO es MAYOR a la actual y trae un costo de adquisición (significa un ingreso)
-                        if (nuevaCantidadEnDTO > cantidadActual && updateInventarioPuestoDTO.getCostoAdquisicion() != null) {
-                            Integer cantidadIngreso = nuevaCantidadEnDTO - cantidadActual;
-                            BigDecimal costoIngreso = updateInventarioPuestoDTO.getCostoAdquisicion();
-
-                            BigDecimal nuevoCostoPonderado = calcularCostoPromedioPonderado(
-                                    costoActual, cantidadActual,
-                                    costoIngreso, cantidadIngreso);
-
-                            inventarioPuesto.setCostoAdquisicion(nuevoCostoPonderado);
-                            inventarioPuesto.setCantidad(nuevaCantidadEnDTO); // Actualiza la cantidad total
-                        } else {
-                            // Casos de salida de stock o aumento sin costo explícito
-                            // El costo promedio existente se mantiene, a menos que se sobrescriba explícitamente el costo.
-                            inventarioPuesto.setCantidad(nuevaCantidadEnDTO);
-                            if (updateInventarioPuestoDTO.getCostoAdquisicion() != null) {
-                                // Si se actualiza solo el costo sin un ingreso de cantidad, se sobrescribe directamente.
-                                inventarioPuesto.setCostoAdquisicion(updateInventarioPuestoDTO.getCostoAdquisicion());
-                            }
-                        }
-                    } else if (updateInventarioPuestoDTO.getCostoAdquisicion() != null) {
-                        // Si la cantidad NO cambia, pero el costo de adquisición SÍ se proporciona, lo actualizamos directamente.
-                        inventarioPuesto.setCostoAdquisicion(updateInventarioPuestoDTO.getCostoAdquisicion());
-                    }
-
-                    // Otros campos
-                    if (updateInventarioPuestoDTO.getItemId() != null) {
-                        // Si el DTO proporciona un nuevo itemId, lo buscamos y asignamos.
-                        itemRepositorio.findById(updateInventarioPuestoDTO.getItemId())
-                                .ifPresentOrElse(
-                                        item -> inventarioPuesto.setItemId(item.getItem_id()),
-                                        () -> { throw new EntityNotFoundException("Item con ID " + updateInventarioPuestoDTO.getItemId() + " no encontrado."); }
-                                );
-                    } else {
-                        if (inventarioPuesto.getItemId() == null) {
-                            throw new IllegalStateException("El itemId del inventario es nulo y no se proporcionó un nuevo itemId en el DTO.");
-                        }
-                    }
-
-                    if (updateInventarioPuestoDTO.getPuestoId() != null) {
-                        puestoRepositorio.findById(updateInventarioPuestoDTO.getPuestoId())
-                                .ifPresentOrElse(
-                                        inventarioPuesto::setPuesto,
-                                        () -> { throw new EntityNotFoundException("Puesto con ID " + updateInventarioPuestoDTO.getPuestoId() + " no encontrado."); }
-                                );
-                    }
-                    if (updateInventarioPuestoDTO.getStockMin() != null) {
-                        inventarioPuesto.setStockMin(updateInventarioPuestoDTO.getStockMin());
-                    }
-                    if (updateInventarioPuestoDTO.getPrecioVenta() != null) {
-                        inventarioPuesto.setPrecioVenta(updateInventarioPuestoDTO.getPrecioVenta());
-                    }
-
-                    InventarioPuesto updatedInventarioPuesto = inventarioPuestoRepositorio.save(inventarioPuesto);
-                    return convertirA_DTO(updatedInventarioPuesto);
-                });
-    }
-
-    @Override
-    public boolean deleteInventarioPuesto(Long id) {
-        if (inventarioPuestoRepositorio.existsById(id)) {
-            inventarioPuestoRepositorio.deleteById(id);
-            return true;
-        }
-        return false;
+                .filter(inventario -> inventario.getPuesto().getPuestoId().equals(puestoId)) // Filtra por puestoId
+                .map(this::convertirA_DTO);
     }
 
     //devuelve todos los inventarios del puesto con esa id
@@ -336,6 +246,182 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
         return itemsMap;
     }
 
+    /// POST ------------------------------------------------------------------------------------------------------------------------------------------------
+
+    @Override
+    @Transactional
+    public InventarioPuestoDTO createInventarioPuesto(CreateInventarioPuestoDTO createInventarioPuestoDTO) {
+        // Verifica si ya existe ese inventario del itemId
+        Optional<InventarioPuesto> inventarioPuestoOptional = inventarioPuestoRepositorio
+                .findByPuesto_PuestoIdAndItemId(createInventarioPuestoDTO.getPuestoId(), createInventarioPuestoDTO.getItemId());
+
+
+        // Si ya existe, lanza un error en lugar de actualizar
+        if (inventarioPuestoOptional.isPresent()){
+            System.out.println("DEBUG: Inventario ya existe para Puesto ID " + createInventarioPuestoDTO.getPuestoId() + " e Item ID " + createInventarioPuestoDTO.getItemId() + ". Lanzando excepción.");
+            throw new IllegalArgumentException("Ya existe un inventario para el puesto con ID " + createInventarioPuestoDTO.getPuestoId() + " y el item con ID " + createInventarioPuestoDTO.getItemId() + ".");
+        } else {
+            InventarioPuesto inventarioPuesto = convertirA_InventarioPuesto(createInventarioPuestoDTO);
+            InventarioPuesto savedInventarioPuesto = inventarioPuestoRepositorio.save(inventarioPuesto);
+            return convertirA_DTO(savedInventarioPuesto);
+        }
+    }
+
+    /// DELETE ------------------------------------------------------------------------------------------------------------------------------------------------
+
+    @Override
+    public boolean deleteInventarioPuesto(Long id) {
+        if (inventarioPuestoRepositorio.existsById(id)) {
+            inventarioPuestoRepositorio.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean deleteInventarioPuesto(Long id, Long puestoId) {
+        // Verifica que el inventario exista y que pertenezca al puesto especificado
+        Optional<InventarioPuesto> inventarioPuestoOptional = inventarioPuestoRepositorio.findById(id);
+        if (inventarioPuestoOptional.isPresent() && inventarioPuestoOptional.get().getPuesto().getPuestoId().equals(puestoId)) {
+            inventarioPuestoRepositorio.deleteById(id);
+            return true;
+        }
+        return false; // Retorna false si no existe o no pertenece al puesto
+    }
+
+    /// PATCH ------------------------------------------------------------------------------------------------------------------------------------------------
+
+    @Override
+    public Optional<InventarioPuestoDTO> updateInventarioPuesto(Long id, UpdateInventarioPuestoDTO updateInventarioPuestoDTO) {
+        return inventarioPuestoRepositorio.findById(id)
+                .map(inventarioPuesto -> {
+                    Integer cantidadActual = inventarioPuesto.getCantidad();
+                    BigDecimal costoActual = inventarioPuesto.getCostoAdquisicion();
+
+                    // Si el DTO trae una nueva cantidad Y es diferente a la actual
+                    if (updateInventarioPuestoDTO.getCantidad() != null && !updateInventarioPuestoDTO.getCantidad().equals(cantidadActual)) {
+                        Integer nuevaCantidadEnDTO = updateInventarioPuestoDTO.getCantidad();
+
+                        // Si la cantidad en el DTO es MAYOR a la actual y trae un costo de adquisición (significa un ingreso)
+                        if (nuevaCantidadEnDTO > cantidadActual && updateInventarioPuestoDTO.getCostoAdquisicion() != null) {
+                            Integer cantidadIngreso = nuevaCantidadEnDTO - cantidadActual;
+                            BigDecimal costoIngreso = updateInventarioPuestoDTO.getCostoAdquisicion();
+
+                            BigDecimal nuevoCostoPonderado = calcularCostoPromedioPonderado(
+                                    costoActual, cantidadActual,
+                                    costoIngreso, cantidadIngreso);
+
+                            inventarioPuesto.setCostoAdquisicion(nuevoCostoPonderado);
+                            inventarioPuesto.setCantidad(nuevaCantidadEnDTO); // Actualiza la cantidad total
+                        } else {
+                            // Casos de salida de stock o aumento sin costo explícito
+                            // El costo promedio existente se mantiene, a menos que se sobrescriba explícitamente el costo.
+                            inventarioPuesto.setCantidad(nuevaCantidadEnDTO);
+                            if (updateInventarioPuestoDTO.getCostoAdquisicion() != null) {
+                                // Si se actualiza solo el costo sin un ingreso de cantidad, se sobrescribe directamente.
+                                inventarioPuesto.setCostoAdquisicion(updateInventarioPuestoDTO.getCostoAdquisicion());
+                            }
+                        }
+                    } else if (updateInventarioPuestoDTO.getCostoAdquisicion() != null) {
+                        // Si la cantidad NO cambia, pero el costo de adquisición SÍ se proporciona, lo actualizamos directamente.
+                        inventarioPuesto.setCostoAdquisicion(updateInventarioPuestoDTO.getCostoAdquisicion());
+                    }
+
+                    // Otros campos
+                    if (updateInventarioPuestoDTO.getItemId() != null) {
+                        // Si el DTO proporciona un nuevo itemId, lo buscamos y asignamos.
+                        itemRepositorio.findById(updateInventarioPuestoDTO.getItemId())
+                                .ifPresentOrElse(
+                                        item -> inventarioPuesto.setItemId(item.getItem_id()),
+                                        () -> { throw new EntityNotFoundException("Item con ID " + updateInventarioPuestoDTO.getItemId() + " no encontrado."); }
+                                );
+                    } else {
+                        if (inventarioPuesto.getItemId() == null) {
+                            throw new IllegalStateException("El itemId del inventario es nulo y no se proporcionó un nuevo itemId en el DTO.");
+                        }
+                    }
+
+                    if (updateInventarioPuestoDTO.getPuestoId() != null) {
+                        puestoRepositorio.findById(updateInventarioPuestoDTO.getPuestoId())
+                                .ifPresentOrElse(
+                                        inventarioPuesto::setPuesto,
+                                        () -> { throw new EntityNotFoundException("Puesto con ID " + updateInventarioPuestoDTO.getPuestoId() + " no encontrado."); }
+                                );
+                    }
+                    if (updateInventarioPuestoDTO.getStockMin() != null) {
+                        inventarioPuesto.setStockMin(updateInventarioPuestoDTO.getStockMin());
+                    }
+                    if (updateInventarioPuestoDTO.getPrecioVenta() != null) {
+                        inventarioPuesto.setPrecioVenta(updateInventarioPuestoDTO.getPrecioVenta());
+                    }
+
+                    InventarioPuesto updatedInventarioPuesto = inventarioPuestoRepositorio.save(inventarioPuesto);
+                    return convertirA_DTO(updatedInventarioPuesto);
+                });
+    }
+
+    public Optional<InventarioPuestoDTO> updateInventarioPuesto(Long id, Long puestoId, UpdateInventarioPuestoDTO updateInventarioPuestoDTO) {
+        // Busca el inventario y verifica que pertenezca al puesto especificado
+        return inventarioPuestoRepositorio.findById(id)
+                .filter(inventarioPuesto -> inventarioPuesto.getPuesto().getPuestoId().equals(puestoId)) // Filtra para asegurar que pertenece al puesto
+                .map(inventarioPuesto -> {
+                    Integer cantidadActual = inventarioPuesto.getCantidad();
+                    BigDecimal costoActual = inventarioPuesto.getCostoAdquisicion();
+
+                    if (updateInventarioPuestoDTO.getCantidad() != null && !updateInventarioPuestoDTO.getCantidad().equals(cantidadActual)) {
+                        Integer nuevaCantidadEnDTO = updateInventarioPuestoDTO.getCantidad();
+
+                        if (nuevaCantidadEnDTO > cantidadActual && updateInventarioPuestoDTO.getCostoAdquisicion() != null) {
+                            Integer cantidadIngreso = nuevaCantidadEnDTO - cantidadActual;
+                            BigDecimal costoIngreso = updateInventarioPuestoDTO.getCostoAdquisicion();
+
+                            BigDecimal nuevoCostoPonderado = calcularCostoPromedioPonderado(
+                                    costoActual, cantidadActual,
+                                    costoIngreso, cantidadIngreso);
+
+                            inventarioPuesto.setCostoAdquisicion(nuevoCostoPonderado);
+                            inventarioPuesto.setCantidad(nuevaCantidadEnDTO);
+                        } else {
+                            inventarioPuesto.setCantidad(nuevaCantidadEnDTO);
+                            if (updateInventarioPuestoDTO.getCostoAdquisicion() != null) {
+                                inventarioPuesto.setCostoAdquisicion(updateInventarioPuestoDTO.getCostoAdquisicion());
+                            }
+                        }
+                    } else if (updateInventarioPuestoDTO.getCostoAdquisicion() != null) {
+                        inventarioPuesto.setCostoAdquisicion(updateInventarioPuestoDTO.getCostoAdquisicion());
+                    }
+
+                    if (updateInventarioPuestoDTO.getItemId() != null) {
+                        itemRepositorio.findById(updateInventarioPuestoDTO.getItemId())
+                                .ifPresentOrElse(
+                                        item -> inventarioPuesto.setItemId(item.getItem_id()),
+                                        () -> { throw new EntityNotFoundException("Item con ID " + updateInventarioPuestoDTO.getItemId() + " no encontrado."); }
+                                );
+                    } else {
+                        if (inventarioPuesto.getItemId() == null) {
+                            throw new IllegalStateException("El itemId del inventario es nulo y no se proporcionó un nuevo itemId en el DTO.");
+                        }
+                    }
+
+                    if (updateInventarioPuestoDTO.getPuestoId() != null) {
+                        puestoRepositorio.findById(updateInventarioPuestoDTO.getPuestoId())
+                                .ifPresentOrElse(
+                                        inventarioPuesto::setPuesto,
+                                        () -> { throw new EntityNotFoundException("Puesto con ID " + updateInventarioPuestoDTO.getPuestoId() + " no encontrado."); }
+                                );
+                    }
+                    if (updateInventarioPuestoDTO.getStockMin() != null) {
+                        inventarioPuesto.setStockMin(updateInventarioPuestoDTO.getStockMin());
+                    }
+                    if (updateInventarioPuestoDTO.getPrecioVenta() != null) {
+                        inventarioPuesto.setPrecioVenta(updateInventarioPuestoDTO.getPrecioVenta());
+                    }
+
+                    InventarioPuesto updatedInventarioPuesto = inventarioPuestoRepositorio.save(inventarioPuesto);
+                    return convertirA_DTO(updatedInventarioPuesto);
+                });
+    }
+
+    // Otro
     private BigDecimal calcularCostoPromedioPonderado(
             BigDecimal costoExistente, Integer cantidadExistente, BigDecimal costoNuevoIngreso, Integer cantidadNuevoIngreso) {
 
