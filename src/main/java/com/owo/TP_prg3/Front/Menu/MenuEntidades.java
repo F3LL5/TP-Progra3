@@ -13,6 +13,7 @@ import com.owo.TP_prg3.Clases.Item.dto.CreateItemDTO;
 import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import com.owo.TP_prg3.Front.HttpService;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
+import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;
 
 import java.io.IOException;
 import java.net.http.HttpResponse;
@@ -76,7 +77,7 @@ public class MenuEntidades {
         result.ifPresent(obj -> {
             List<EntidadDTO> entidades = (List<EntidadDTO>) obj;
             if (!entidades.isEmpty()) {
-                System.out.println(FlipTableConverters.fromIterable(entidades, EntidadDTO.class));
+                FlipTableHelper.imprimir(entidades);
             } else {
                 System.out.println("No se encontraron resultados.");
             }
@@ -96,7 +97,7 @@ public class MenuEntidades {
 
         result.ifPresent(obj -> {
             EntidadDTO entidad = (EntidadDTO) obj;
-            System.out.println(FlipTableConverters.fromIterable(List.of(entidad), EntidadDTO.class));
+            FlipTableHelper.imprimir(List.of(entidad));
         });
     }
 
@@ -140,7 +141,7 @@ public class MenuEntidades {
         result.ifPresent(obj -> {
             List<EntidadDTO> entidades = (List<EntidadDTO>) obj;
             if (!entidades.isEmpty()) {
-                System.out.println(FlipTableConverters.fromIterable(entidades, EntidadDTO.class));
+                FlipTableHelper.imprimir(List.of(entidades));
             } else {
                 System.out.println("No se encontraron resultados.");
             }
@@ -174,7 +175,7 @@ public class MenuEntidades {
 
         result.ifPresent(obj -> {
             EntidadDTO entidadDTO = (EntidadDTO) obj;
-            System.out.println(FlipTableConverters.fromIterable(List.of(entidadDTO), EntidadDTO.class));
+            FlipTableHelper.imprimir(List.of(entidadDTO));
         });
     }
 
@@ -270,7 +271,7 @@ public class MenuEntidades {
 
         result.ifPresent(obj -> {
             EntidadDTO entidad = (EntidadDTO) obj;
-            System.out.println(FlipTableConverters.fromIterable(List.of(entidad), EntidadDTO.class));
+            FlipTableHelper.imprimir(List.of(entidad));
         });
     }
 }
