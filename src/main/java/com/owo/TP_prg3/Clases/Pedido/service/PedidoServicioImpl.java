@@ -114,6 +114,7 @@ public class PedidoServicioImpl implements PedidoServicio {
         else transaccion.setCuentaDestino(cuentaBancariaRepositorio.findById(createPedidoDTO2.getIdCuentaDestino()).get());
         transaccion.setFecha(LocalDateTime.now());
         Transaccion transaccion1=transaccionRepositorio.save(transaccion);
+        //transaccion1 tengo q modificar creo
 
         Pedido pedido=new Pedido();
         pedido.setTransaccion(transaccion1);

@@ -12,6 +12,8 @@ import com.owo.TP_prg3.Clases.Item.modelo.Item;
 import com.owo.TP_prg3.Clases.Item.modelo.ItemRepositorio;
 import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
 import com.owo.TP_prg3.Clases.Pedido.modelo.PedidoRepositorio;
+import com.owo.TP_prg3.Clases.Transaccion.modelo.Transaccion;
+import com.owo.TP_prg3.Clases.Transaccion.modelo.TransaccionRepositorio;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,9 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
     private PedidoRepositorio pedidoRepositorio;
     @Autowired
     private InventarioPuestoRepositorio inventarioPuestoRepositorio;
+    @Autowired
+    TransaccionRepositorio transaccionRepositorio;
+
 
     private DetallePedidoDTO convertirA_DTO(DetallePedido detallePedido) {
         return new DetallePedidoDTO(
@@ -93,6 +98,8 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
         DetallePedido nuevoDetallePedido = convertirA_DetallePedido(createDetallePedidoDTO);
         DetallePedido savedDetallePedido = detallePedidoRepositorio.save(nuevoDetallePedido);
 
+        updateTransaccionMontoForPedido(savedDetallePedido.getPedido().getPedidoId());
+
         return convertirA_DTO(savedDetallePedido);
     }
 
@@ -125,6 +132,9 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
                     }
 
                     DetallePedido detallePedidoModificado = detallePedidoRepositorio.save(detallePedido);
+
+                    updateTransaccionMontoForPedido(detallePedidoModificado.getPedido().getPedidoId());
+
                     return convertirA_DTO(detallePedidoModificado);
                 })
                 .or(() -> {
@@ -133,9 +143,19 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
     }
 
     @Override
+    @Transactional
     public boolean deleteDetallePedido(Long id) {
-        if (detallePedidoRepositorio.existsById(id)) {
+        Optional<DetallePedido> optionalDetallePedido = detallePedidoRepositorio.findById(id);
+
+        if (optionalDetallePedido.isPresent()) {
+            DetallePedido detallePedidoToDelete = optionalDetallePedido.get();
+            Long pedidoId = detallePedidoToDelete.getPedido().getPedidoId(); // Obtener el ID del Pedido asociado
+
             detallePedidoRepositorio.deleteById(id);
+
+            // Después de eliminar el DetallePedido, actualizar el monto de la Transaccion asociada
+            updateTransaccionMontoForPedido(pedidoId);
+
             return true;
         }
         return false;
@@ -154,7 +174,7 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
                 .map(this::convertirA_DTO);
     }
 
-    @Transactional // Asegurarse de que las operaciones sean atómicas
+    @Transactional
     public DetallePedidoDTO createDetallePedidoForPuesto(Long puestoId, CreateDetallePedidoDTO createDetallePedidoDTO) {
         // 1. Verificar que el Pedido exista y pertenezca al Puesto
         Optional<Pedido> optionalPedido = pedidoRepositorio.findById(createDetallePedidoDTO.getPedidoId());
@@ -169,8 +189,38 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
             throw new RecursoNoEncontradoException("El Pedido con ID " + createDetallePedidoDTO.getPedidoId() + " no pertenece al Puesto con ID " + puestoId + ".");
         }
 
-        // 2. Si las verificaciones son exitosas, crear el detalle de pedido usando el método existente
+
+
+
+
+
+
+        // 2. Si las verificaciones son exitosas, crea el detalle de pedido usando el método existente
         return createDetallePedido(createDetallePedidoDTO);
+    }
+
+    @Transactional
+    private void updateTransaccionMontoForPedido(Long pedidoId) {
+        Optional<Pedido> optionalPedido = pedidoRepositorio.findById(pedidoId);
+        if (optionalPedido.isEmpty()) {
+            // This should ideally not happen if the Pedido was valid when DetallePedido was created/updated/deleted
+            throw new RecursoNoEncontradoException("Pedido con ID " + pedidoId + " no encontrado para actualizar Transaccion.");
+        }
+
+        Pedido pedido = optionalPedido.get();
+        Transaccion transaccion = pedido.getTransaccion();
+
+        if (transaccion == null) {
+            throw new RecursoNoEncontradoException("Transaccion asociada al Pedido con ID " + pedidoId + " no encontrada.");
+        }
+
+        // Calculate the sum of precioTotal for all DetallePedidos linked to this Pedido
+        BigDecimal totalMontoPedido = detallePedidoRepositorio.findByPedido(pedido).stream()
+                .map(DetallePedido::getPrecioTotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        transaccion.setMonto(totalMontoPedido);
+        transaccionRepositorio.save(transaccion);
     }
 
 
@@ -183,6 +233,7 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
 
 
 
-
-
 }
+
+
+
