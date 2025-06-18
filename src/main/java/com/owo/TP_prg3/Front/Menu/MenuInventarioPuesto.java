@@ -106,7 +106,7 @@ public class MenuInventarioPuesto {
         System.out.println("--- FILTRAR Y ORDENAR ITEMS DEL INVENTARIO ---");
 
         System.out.print("Ingrese ID del puesto: ");
-        Long puestoId = Long.valueOf(Escaner.enteroValido(scanner));
+        int puestoId = Escaner.enteroValido(scanner);
 
         System.out.print("Filtrar por categoría (dejar vacío si no aplica): ");
         String categoria = scanner.nextLine();
@@ -176,8 +176,8 @@ public class MenuInventarioPuesto {
     private void agregar() throws IOException, InterruptedException {
         System.out.println("AGREGAR NUEVO INVENTARIO");
         System.out.print("Ingrese cantidad: "); Integer cantidad = Escaner.enteroValido(scanner);
-        System.out.println("Ingrese id del puesto"); Long puestoId=Long.valueOf(Escaner.enteroValido(scanner));
-        System.out.print("Ingrese ID item: "); Long itemId = Long.valueOf(Escaner.enteroValido(scanner));
+        System.out.println("Ingrese id del puesto"); int puestoId=Escaner.enteroValido(scanner);
+        System.out.print("Ingrese ID item: "); int itemId = Escaner.enteroValido(scanner);
         System.out.println("Ingrese la cantidad de stock minimo que desea establecer: "); Integer stockMin=Escaner.enteroValido(scanner);
         System.out.println("Ingrese el precio del item"); BigDecimal precioVenta=BigDecimal.valueOf(Escaner.doubleValido(scanner));
         System.out.println("Ingrese el costo de adquisicion"); BigDecimal costoAdquisicion=BigDecimal.valueOf(Escaner.doubleValido(scanner));
@@ -203,7 +203,7 @@ public class MenuInventarioPuesto {
    ///--------------------------------------PATCH-----------------------------------------------------------------------
     private void modificar() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID del inventario a modificar: ");
-        Long id = Long.valueOf(Escaner.enteroValido(scanner));
+        int id = Escaner.enteroValido(scanner);
         System.out.println();
 
         System.out.print("""
@@ -227,7 +227,7 @@ public class MenuInventarioPuesto {
                 jsonBody = "{\"cantidad\":" +  cantidad + "}" ;
             }
             case 2 -> {
-                Long puestoId = Long.valueOf(Escaner.enteroValido(scanner));
+                int puestoId = Escaner.enteroValido(scanner);
                 jsonBody = "{\"puestoId\":" + puestoId + "}";
             }
             case 3 -> {

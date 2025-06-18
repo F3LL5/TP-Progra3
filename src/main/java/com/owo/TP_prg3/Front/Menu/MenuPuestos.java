@@ -159,8 +159,8 @@ public class MenuPuestos {
         System.out.print("Ingrese ID dueño: ");
         int duenioId = Escaner.enteroValido(scanner);
 
-        System.out.print("Ingrese COMISIÓN (por ejemplo 0.15): ");
-        Double comision = Escaner.porcentaje(scanner);
+      
+        double comision = Escaner.porcentaje(scanner);
 
         CreatePuestoDTO puestoDTO = new CreatePuestoDTO(nombre, (long) duenioId, BigDecimal.valueOf(comision));
         String jsonBody = new ObjectMapper().writeValueAsString(puestoDTO);
