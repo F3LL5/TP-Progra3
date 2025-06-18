@@ -158,7 +158,7 @@ public class MenuPuestos {
         int duenioId = Escaner.enteroValido(scanner);
 
         System.out.print("Ingrese COMISIÓN (por ejemplo 0.15): ");
-        Double comision = Escaner.doubleValido(scanner);
+        Double comision = Escaner.porcentaje(scanner);
 
         CreatePuestoDTO puestoDTO = new CreatePuestoDTO(nombre, (long) duenioId, BigDecimal.valueOf(comision));
         String jsonBody = new ObjectMapper().writeValueAsString(puestoDTO);
@@ -224,7 +224,7 @@ public class MenuPuestos {
             }
             case 3 -> {
                 System.out.print("Ingrese la nueva comisión: ");
-                Double comision = Escaner.doubleValido(scanner);
+                Double comision = Escaner.porcentaje(scanner);
                 updatePuestoDTO.setComision(BigDecimal.valueOf(comision));
                 attributeSelected = true;
             }

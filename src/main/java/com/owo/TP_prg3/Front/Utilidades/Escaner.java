@@ -1,5 +1,7 @@
 package com.owo.TP_prg3.Front.Utilidades;
 
+import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -90,4 +92,19 @@ public abstract class Escaner {
             }
         }
     }
+
+    public static double porcentaje (Scanner scanner){
+        while (true){
+
+            System.out.println("Ingrese el porcentaje de la comision :");
+            double porcentaje=doubleValido(scanner);
+
+                if (porcentaje < 0 || porcentaje > 100) {
+                    throw new IngresoInvalidoException("Número ingresado invalido (0-100).");
+                }else {
+                    return porcentaje;
+                }
+        }
+    }
+
 }
