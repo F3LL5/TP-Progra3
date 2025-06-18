@@ -1,5 +1,6 @@
 package com.owo.TP_prg3.Front.Utilidades;
 
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
@@ -76,13 +77,16 @@ public abstract class Escaner {
             try {
                 LocalDate fecha = fecha(scanner);
 
-                System.out.print("Ingrese horario [hh-MM]: ");
+                System.out.print("Ingrese una hora(00-23): ");
                 int hora = enteroValido(scanner);
+                System.out.println("Ingrese los minutos(00-23):");
                 int minutos = enteroValido(scanner);
 
                 return fecha.atTime(hora,minutos);
             } catch (DateTimeParseException e){
                 System.out.print("Ingrese un formato valido [yyyy-MM-dd] o [hh-MM]: ");
+            }catch (DateTimeException e){
+                System.out.println("Hora o minutos invalidos (00-23)");
             }
         }
     }
