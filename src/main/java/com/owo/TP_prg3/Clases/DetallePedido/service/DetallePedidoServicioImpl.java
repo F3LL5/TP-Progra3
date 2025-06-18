@@ -14,6 +14,7 @@ import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
 import com.owo.TP_prg3.Clases.Pedido.modelo.PedidoRepositorio;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.Transaccion;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.TransaccionRepositorio;
+import com.owo.TP_prg3.Clases.Transaccion.service.TransaccionServicioImpl;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,7 +38,8 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
     private InventarioPuestoRepositorio inventarioPuestoRepositorio;
     @Autowired
     TransaccionRepositorio transaccionRepositorio;
-
+    @Autowired
+    TransaccionServicioImpl transaccionServicio;
 
     private DetallePedidoDTO convertirA_DTO(DetallePedido detallePedido) {
         return new DetallePedidoDTO(
@@ -94,37 +96,52 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
     }
 
     @Override
+    @Transactional
     public DetallePedidoDTO createDetallePedido(CreateDetallePedidoDTO createDetallePedidoDTO) {
+        // Obtener el pedido antes de crear el detalle para obtener el monto de la transacción
+        Optional<Pedido> optionalPedido = pedidoRepositorio.findById(createDetallePedidoDTO.getPedidoId());
+        if (optionalPedido.isEmpty()) {
+            throw new RecursoNoEncontradoException("Pedido con ID " + createDetallePedidoDTO.getPedidoId() + " no encontrado.");
+        }
+        Pedido pedido = optionalPedido.get();
+
+        // Obtener el monto actual de la Transacción ANTES de agregar el nuevo detalle
+        BigDecimal previousMontoTransaccion = BigDecimal.ZERO;
+        if (pedido.getTransaccion() != null) {
+            previousMontoTransaccion = pedido.getTransaccion().getMonto();
+        }
+
         DetallePedido nuevoDetallePedido = convertirA_DetallePedido(createDetallePedidoDTO);
         DetallePedido savedDetallePedido = detallePedidoRepositorio.save(nuevoDetallePedido);
 
-        updateTransaccionMontoForPedido(savedDetallePedido.getPedido().getPedidoId());
+        // Recalcular el monto total del pedido y actualizar la transacción y los saldos
+        updateTransaccionMontoForPedido(savedDetallePedido.getPedido().getPedidoId(), previousMontoTransaccion);
 
         return convertirA_DTO(savedDetallePedido);
     }
 
     @Override
+    @Transactional
     public Optional<DetallePedidoDTO> updateDetallePedido(Long id, UpdateDetallePedidoDTO updateDetallePedidoDTO) {
         return detallePedidoRepositorio.findById(id)
                 .map(detallePedido -> {
-                    if (detallePedido == null) {
-                        throw new RecursoNoEncontradoException("DetallePedido con ID " + id + " no encontrado para actualizar.");
-                    }
+                    if (detallePedido == null) throw new RecursoNoEncontradoException("DetallePedido con ID " + id + " no encontrado para actualizar.");
 
+                    // Obtener el monto anterior de la transacción ANTES de modificar el detalle
+                    BigDecimal montoAnteriorTransaccion = BigDecimal.ZERO;
+                    if (detallePedido.getPedido() != null && detallePedido.getPedido().getTransaccion() != null) {
+                        montoAnteriorTransaccion = detallePedido.getPedido().getTransaccion().getMonto();
+                    }
 
                     if (updateDetallePedidoDTO.getCantidad() != null) {
                         detallePedido.setCantidad(updateDetallePedidoDTO.getCantidad());
 
                         Optional<InventarioPuesto> inventarioItem = inventarioPuestoRepositorio.findAll()
                                 .stream()
-                                .filter(inv ->
-                                        inv.getPuesto().getPuestoId().equals(detallePedido.getPedido().getPuestoId()) &&
-                                                inv.getItemId().equals(detallePedido.getItem().getItem_id()))
+                                .filter(inv -> inv.getPuesto().getPuestoId().equals(detallePedido.getPedido().getPuestoId()) && inv.getItemId().equals(detallePedido.getItem().getItem_id()))
                                 .findFirst();
 
-                        if (inventarioItem.isEmpty()) {
-                            throw new EntityNotFoundException("InventarioPuesto no encontrado para el Item ID: " + detallePedido.getItem().getItem_id() + " y Puesto ID: " + detallePedido.getPedido().getPuestoId());
-                        }
+                        if (inventarioItem.isEmpty()) throw new EntityNotFoundException("InventarioPuesto no encontrado para el Item ID: " + detallePedido.getItem().getItem_id() + " y Puesto ID: " + detallePedido.getPedido().getPuestoId());
 
                         BigDecimal cantidad_BD = new BigDecimal(detallePedido.getCantidad());
                         BigDecimal precioVenta = inventarioItem.get().getPrecioVenta();
@@ -133,13 +150,12 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
 
                     DetallePedido detallePedidoModificado = detallePedidoRepositorio.save(detallePedido);
 
-                    updateTransaccionMontoForPedido(detallePedidoModificado.getPedido().getPedidoId());
+                    // Actualiza el monto y los saldos de la cuenta
+                    updateTransaccionMontoForPedido(detallePedidoModificado.getPedido().getPedidoId(), montoAnteriorTransaccion);
 
                     return convertirA_DTO(detallePedidoModificado);
-                })
-                .or(() -> {
-                    throw new RecursoNoEncontradoException("DetallePedido con ID " + id + " no encontrado para actualizar.");
-                });
+
+                }).or(() -> { throw new RecursoNoEncontradoException("DetallePedido con ID " + id + " no encontrado para actualizar.");});
     }
 
     @Override
@@ -149,12 +165,18 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
 
         if (optionalDetallePedido.isPresent()) {
             DetallePedido detallePedidoToDelete = optionalDetallePedido.get();
-            Long pedidoId = detallePedidoToDelete.getPedido().getPedidoId(); // Obtener el ID del Pedido asociado
+            Long pedidoId = detallePedidoToDelete.getPedido().getPedidoId();
+
+            // Obtener el monto anterior de la transacción ANTES de eliminar el detalle
+            BigDecimal previousMontoTransaccion = BigDecimal.ZERO;
+            if (detallePedidoToDelete.getPedido() != null && detallePedidoToDelete.getPedido().getTransaccion() != null) {
+                previousMontoTransaccion = detallePedidoToDelete.getPedido().getTransaccion().getMonto();
+            }
 
             detallePedidoRepositorio.deleteById(id);
 
-            // Después de eliminar el DetallePedido, actualizar el monto de la Transaccion asociada
-            updateTransaccionMontoForPedido(pedidoId);
+            // Actualiza el monto y los saldos de la cuenta
+            updateTransaccionMontoForPedido(pedidoId, previousMontoTransaccion);
 
             return true;
         }
@@ -179,59 +201,47 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
         // 1. Verificar que el Pedido exista y pertenezca al Puesto
         Optional<Pedido> optionalPedido = pedidoRepositorio.findById(createDetallePedidoDTO.getPedidoId());
 
-        if (optionalPedido.isEmpty()) {
-            throw new RecursoNoEncontradoException("Pedido con ID " + createDetallePedidoDTO.getPedidoId() + " no encontrado.");
-        }
+        if (optionalPedido.isEmpty()) throw new RecursoNoEncontradoException("Pedido con ID " + createDetallePedidoDTO.getPedidoId() + " no encontrado.");
 
         Pedido pedido = optionalPedido.get();
 
-        if (!pedido.getPuestoId().equals(puestoId)) {
-            throw new RecursoNoEncontradoException("El Pedido con ID " + createDetallePedidoDTO.getPedidoId() + " no pertenece al Puesto con ID " + puestoId + ".");
-        }
+        if (!pedido.getPuestoId().equals(puestoId)) throw new RecursoNoEncontradoException("El Pedido con ID " + createDetallePedidoDTO.getPedidoId() + " no pertenece al Puesto con ID " + puestoId + ".");
 
 
-
-
-
-
-
-        // 2. Si las verificaciones son exitosas, crea el detalle de pedido usando el método existente
+        // 2. Si las verificaciones son exitosas, crea el detalle de pedido
         return createDetallePedido(createDetallePedidoDTO);
     }
 
     @Transactional
-    private void updateTransaccionMontoForPedido(Long pedidoId) {
+    private void updateTransaccionMontoForPedido(Long pedidoId, BigDecimal previousMonto) {
         Optional<Pedido> optionalPedido = pedidoRepositorio.findById(pedidoId);
-        if (optionalPedido.isEmpty()) {
-            // This should ideally not happen if the Pedido was valid when DetallePedido was created/updated/deleted
-            throw new RecursoNoEncontradoException("Pedido con ID " + pedidoId + " no encontrado para actualizar Transaccion.");
-        }
+        if (optionalPedido.isEmpty()) throw new RecursoNoEncontradoException("Pedido con ID " + pedidoId + " no encontrado para actualizar Transaccion.");
 
         Pedido pedido = optionalPedido.get();
         Transaccion transaccion = pedido.getTransaccion();
 
         if (transaccion == null) {
+          
             throw new RecursoNoEncontradoException("Transaccion asociada al Pedido con ID " + pedidoId + " no encontrada.");
         }
 
-        // Calculate the sum of precioTotal for all DetallePedidos linked to this Pedido
+        // Calcular la suma de precioTotal para todos los DetallePedidos vinculados a este Pedido
         BigDecimal totalMontoPedido = detallePedidoRepositorio.findByPedido(pedido).stream()
                 .map(DetallePedido::getPrecioTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        // Si el monto no ha cambiado, no hacemos nada para evitar operaciones innecesarias en las cuentas
+        if (totalMontoPedido.compareTo(previousMonto) == 0) {
+            return;
+        }
+
+        // Primero, actualizamos el monto de la Transaccion en la DB
         transaccion.setMonto(totalMontoPedido);
         transaccionRepositorio.save(transaccion);
+
+        // Luego, llamamos al servicio de Transaccion para que ajuste los saldos
+        transaccionServicio.ajustarSaldosPorCambioDeMonto(transaccion.getTransaccionId(), previousMonto, totalMontoPedido);
     }
-
-
-
-
-
-
-
-
-
-
 
 }
 
