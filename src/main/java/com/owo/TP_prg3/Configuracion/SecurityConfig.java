@@ -54,6 +54,16 @@ public class SecurityConfig {
                         .requestMatchers("/api/inventario-puesto/obtenerInvConStockBajo/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers("/api/inventario-puesto/filtrarYordenarItemsInventario*").hasAnyRole("DUENO_PUESTO", "ADMIN")
 
+                        // Ítems generales (/api/items) - DUENO_PUESTO no puede modificar ni eliminar
+                        .requestMatchers(HttpMethod.GET, "/api/items").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/items/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/items/listado").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/items/filtrarYordenar").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/items").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/items/*").hasRole("ADMIN") // Solo ADMIN
+                        .requestMatchers(HttpMethod.PATCH, "/api/items/*").hasRole("ADMIN") // Solo ADMIN
+
+
                         // Cuentas bancarias
                         .requestMatchers("/api/cuentas-bancarias/entidad/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers("/api/cuentas-bancarias/*/entidad/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
@@ -66,12 +76,16 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/transacciones/filtrarYOrdenar*").hasAnyRole("DUENO_PUESTO", "ADMIN")
 
                         // Pedidos
-                        .requestMatchers("/api/pedidos/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
-                        .requestMatchers("/api/pedidos/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/pedidos").hasAnyRole("DUENO_PUESTO", "ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/pedidos/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/api/pedidos/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/pedidos/filtrarYOrdenar*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/pedidos").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/pedidos/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/pedidos/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/pedidos/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        // >>>>>> LA LÍNEA MODIFICADA ESTÁ AQUÍ <<<<<<
+                        .requestMatchers(HttpMethod.POST, "/api/pedidos/createPedidoYtransaccion").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                        .requestMatchers(HttpMethod.DELETE, "/api/pedidos/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/pedidos/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+
 
                         // Detalles de Pedido
                         .requestMatchers("/api/detalles-pedido/pedido/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")

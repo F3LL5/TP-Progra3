@@ -12,8 +12,10 @@ import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.DetallePedidoDTO;
 import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
 import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CuentaBancariaDTO;
+import com.owo.TP_prg3.Clases.Transaccion.modelo.TipoTransaccion;
 import com.owo.TP_prg3.Front.HttpService;
 import com.owo.TP_prg3.Front.Menu.MenuInventarioPuesto;
+import com.owo.TP_prg3.Front.Menu.MenuItem;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 import java.io.IOException;
 import java.net.http.HttpResponse;
@@ -60,6 +62,7 @@ public class MenuDuenoPuesto {
                 case "6" -> gestionarTransaccionesPuesto();
                 case "7" -> gestionarPedidosPuesto();
                 case "8" -> gestionarDetallesPedidoPuesto();
+                case "9" -> gestionarItemsGeneral();
                 case "0" -> System.out.println("Saliendo del menú de Dueño de Puesto.");
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
@@ -72,11 +75,12 @@ public class MenuDuenoPuesto {
                 1. Gestionar Entidades (Clientes y Proveedores de su puesto)
                 2. Gestionar Usuarios (No permitido para Dueños de Puesto)
                 3. Modificar Mi Puesto
-                4. Gestionar Ítems (De su inventario)
+                4. Gestionar inventario
                 5. Ver Detalles de Mi Cuenta Bancaria
                 6. Gestionar Transacciones (De su puesto)
                 7. Gestionar Pedidos (De su puesto)
                 8. Gestionar Detalles de Pedido (De su puesto)
+                9. Gestionar items
                 0. Salir
                 Ingrese una opción:""".formatted(puestoUsuario.getNombre())
         );
@@ -597,16 +601,54 @@ public class MenuDuenoPuesto {
 
     private void agregarPedidoAMiPuesto() throws IOException, InterruptedException {
         System.out.println("\n--- Registrar pedido para su puesto ---");
-        System.out.print("Ingrese el ID de la transacción asociada al pedido: ");
-        int transaccionId = Escaner.enteroValido(scanner);
 
-        String jsonBody = "{" +
-                "\"transaccionId\":" + transaccionId + "," +
-                "\"puestoId\":" + puestoUsuario.getPuestoId() + // Se asocia automáticamente a su puesto
+        Long idDuenio=puestoUsuario.getDuenio().getEntidad_id();
+
+
+
+        String tipoTransaccion = "";
+        boolean bucle = false;
+        do {
+            bucle = false;
+            System.out.println("""
+                    Ingrese el tipo de transaccion:
+                    1.COMPRA
+                    2.VENTA
+                    3.INGRESO
+                    4.EGRESO
+                    """);
+            int n = Escaner.enteroValido(scanner);
+            switch (n) {
+                case 1 -> tipoTransaccion = TipoTransaccion.COMPRA.name();
+                case 2 -> tipoTransaccion = TipoTransaccion.VENTA.name();
+                case 3 -> tipoTransaccion = TipoTransaccion.INGRESO.name();
+                case 4 -> tipoTransaccion = TipoTransaccion.EGRESO.name();
+                default -> {
+                    System.out.println("Opcion no valida. Intente nuevamente...");
+                    bucle = true;
+                }
+            }
+        } while (bucle);
+
+        Long idCuentaOtro = Long.valueOf("0");
+
+        if (TipoTransaccion.COMPRA.name().equals(tipoTransaccion) || TipoTransaccion.VENTA.name().equals(tipoTransaccion)){
+            System.out.println("Ingrese el id de la cuenta cliente/proveedor");
+            idCuentaOtro=Long.valueOf(Escaner.enteroValido(scanner));
+        }
+        System.out.println(puestoUsuario.getPuestoId()+"<---asdasdasdasdasdasd");
+
+        String jsonBody =
+                "{"+
+                    "\"puestoId\":" + puestoUsuario.getPuestoId() +
+                    ",\"tipoTransaccion\":\"" + tipoTransaccion + "\"" +
+                    ",\"idEntidad\":" + idDuenio +
+                    ",\"idCuentaDestino\":" + idCuentaOtro +
                 "}";
+        System.out.println(jsonBody);
+        HttpResponse<String> response = HttpService.realizarPeticion("POST", API_URL_PEDIDOS+"/createPedidoYtransaccion", authHeader, jsonBody);
 
-        HttpResponse<String> response = HttpService.realizarPeticion("POST", API_URL_PEDIDOS, authHeader, jsonBody);
-
+        System.out.println(response+"<--asdasdasd");
         int statusCode = response.statusCode();
         if (statusCode >= 200 && statusCode < 300) {
             System.out.println("Pedido agregado exitosamente a su puesto.");
@@ -817,4 +859,11 @@ public class MenuDuenoPuesto {
             HandlerResponse.handleErrorResponse(statusCode, response.body());
         }
     }
+
+    private void gestionarItemsGeneral() throws IOException, InterruptedException {
+        MenuItem menuItem = new MenuItem(authHeader);
+        menuItem.gestionar();
+    }
+
+
 }

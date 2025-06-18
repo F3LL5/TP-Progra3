@@ -59,4 +59,56 @@ public class TransaccionControlador {
     ) {
         return transaccionServicio.filtrarYOrdenar(tipo_transaccion, sortBy, sortDir);
     }
+
+
+    @GetMapping("/{id}/puesto/{puestoId}")
+    public ResponseEntity<TransaccionDTO> getTransaccionByIdAndPuestoId(@PathVariable Long id, @PathVariable Long puestoId) {
+        TransaccionDTO transaccionDTO = transaccionServicio.getTransaccionByIdAndPuestoId(id, puestoId)
+                .orElse(null);
+        return ResponseEntity.ok(transaccionDTO);
+    }
+
+    @GetMapping("/puesto/{puestoId}/filtrarYOrdenar")
+    public ResponseEntity<List<TransaccionDTO>> filtrarYOrdenarTransaccionesByPuestoId(
+            @PathVariable Long puestoId,
+            @RequestParam(required = false) String tipo_transaccion,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDir
+    ) {
+        List<TransaccionDTO> transacciones = transaccionServicio.filtrarYOrdenarTransaccionesByPuestoId(
+                puestoId, tipo_transaccion, sortBy, sortDir
+        );
+        return ResponseEntity.ok(transacciones);
+    }
+
+    @GetMapping("/puesto/{puestoId}")
+    public ResponseEntity<List<TransaccionDTO>> getTransaccionesByPuestoId(@PathVariable Long puestoId) {
+        List<TransaccionDTO> transacciones = transaccionServicio.getTransaccionesByPuestoId(puestoId);
+        return ResponseEntity.ok(transacciones);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

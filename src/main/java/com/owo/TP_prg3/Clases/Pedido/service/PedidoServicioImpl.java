@@ -1,14 +1,18 @@
 package com.owo.TP_prg3.Clases.Pedido.service;
 
+import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancaria;
+import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancariaRepositorio;
 import com.owo.TP_prg3.Clases.DetallePedido.service.DetallePedidoServicioImpl;
 import com.owo.TP_prg3.Clases.Excepciones.RecursoNoEncontradoException;
 import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.CreatePedidoDTO;
+import com.owo.TP_prg3.Clases.Pedido.dto.CreatePedidoDTO2;
 import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.UpdatePedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
 import com.owo.TP_prg3.Clases.Pedido.modelo.PedidoRepositorio;
 import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
+import com.owo.TP_prg3.Clases.Transaccion.modelo.TipoTransaccion;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.Transaccion;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.TransaccionRepositorio;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityNotFoundException;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +36,8 @@ public class PedidoServicioImpl implements PedidoServicio {
     private PedidoRepositorio pedidoRepositorio;
     @Autowired
     private TransaccionRepositorio transaccionRepositorio;
+    @Autowired
+    private CuentaBancariaRepositorio cuentaBancariaRepositorio;
 
     @Autowired
     private DetallePedidoServicioImpl detallePedidoServicio;
@@ -77,6 +86,56 @@ public class PedidoServicioImpl implements PedidoServicio {
         Pedido savedPedido = pedidoRepositorio.save(pedido);
         return convertirA_DTO(savedPedido);
     }
+
+    @Transactional
+    public PedidoDTO createPedidoYtransaccion(CreatePedidoDTO2 createPedidoDTO2) {
+
+
+
+
+        Transaccion transaccion = new Transaccion();
+        transaccion.setTipo(TipoTransaccion.valueOf(createPedidoDTO2.getTipoTransaccion()));
+        transaccion.setMonto(BigDecimal.ZERO);
+
+        CuentaBancaria cuentaDuenio=cuentaBancariaRepositorio.findAll().stream()
+                .filter(cuentaBancaria -> cuentaBancaria.getEntidad().getEntidad_id().equals(createPedidoDTO2.getIdEntidad()))
+                .findFirst()
+                .orElseThrow();
+
+
+        if(cuentaBancariaRepositorio.findById(createPedidoDTO2.getIdCuentaDestino()).isEmpty() && createPedidoDTO2.getIdCuentaDestino()!= 0) {
+            throw new EntityNotFoundException("Transaccion con ID " + createPedidoDTO2.getIdCuentaDestino() + " no encontrada.");
+        }
+
+
+
+        transaccion.setCuentaOrigen(cuentaDuenio);
+        if (createPedidoDTO2.getIdCuentaDestino() == 0)transaccion.setCuentaDestino(new CuentaBancaria());
+        else transaccion.setCuentaDestino(cuentaBancariaRepositorio.findById(createPedidoDTO2.getIdCuentaDestino()).get());
+        transaccion.setFecha(LocalDateTime.now());
+        Transaccion transaccion1=transaccionRepositorio.save(transaccion);
+
+        Pedido pedido=new Pedido();
+        pedido.setTransaccion(transaccion1);
+        pedido.setPuestoId(Long.valueOf(createPedidoDTO2.getPuestoId()));
+
+
+        Pedido savedPedido = pedidoRepositorio.save(pedido);
+
+        return convertirA_DTO(savedPedido);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
 
     @Override
     @Transactional

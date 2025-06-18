@@ -1,9 +1,11 @@
 package com.owo.TP_prg3.Clases.Pedido.controlador;
 
 import com.owo.TP_prg3.Clases.Pedido.dto.CreatePedidoDTO;
+import com.owo.TP_prg3.Clases.Pedido.dto.CreatePedidoDTO2;
 import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.UpdatePedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.service.PedidoServicioImpl;
+import com.owo.TP_prg3.Clases.Puesto.modelo.Puesto;
 import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,11 @@ public class PedidoControlador {
     @PostMapping
     public PedidoDTO createPedido(@Valid @RequestBody CreatePedidoDTO createPedidoDTO){
         return pedidoServicio.createPedido(createPedidoDTO);
+    }
+    @PostMapping("/createPedidoYtransaccion")
+    public PedidoDTO createPedidoYtransaccion(@Valid @RequestBody CreatePedidoDTO2 createPedidoDTO2){
+
+        return pedidoServicio.createPedidoYtransaccion(createPedidoDTO2);
     }
 
     @DeleteMapping("/{id}")
