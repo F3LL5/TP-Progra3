@@ -14,4 +14,6 @@ public interface PuestoServicio {
     Optional<PuestoDTO> updatePuesto(Long id, UpdatePuestoDTO updatePuestoDTO);
     boolean deletePuesto(Long id);
     List<PuestoDTO> filtrarYOrdenarPorNombre(String nombre, String sortDir);
+
+    Optional<PuestoDTO> getPuestoByDni(int dni);
 }

@@ -18,6 +18,6 @@ public class CreateCuentaBancariaDTO {
     protected Long entidadId;
 
     @NotNull
-    @Positive(message = "El costo debe ser un número positivo.")
+    @Positive(message = "El saldo debe ser un número positivo.")
     protected BigDecimal saldo;
 }

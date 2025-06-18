@@ -1,11 +1,13 @@
 package com.owo.TP_prg3.Clases.Puesto.controlador;
 
+import com.owo.TP_prg3.Clases.Excepciones.RecursoNoEncontradoException;
 import com.owo.TP_prg3.Clases.Puesto.dto.CreatePuestoDTO;
 import com.owo.TP_prg3.Clases.Puesto.dto.PuestoDTO;
 import com.owo.TP_prg3.Clases.Puesto.dto.UpdatePuestoDTO;
 import com.owo.TP_prg3.Clases.Puesto.service.PuestoServicioImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,46 +22,50 @@ public class PuestoControlador {
     private PuestoServicioImpl puestoServicio;
 
     @GetMapping
-    public ResponseEntity<List<PuestoDTO>> getAllPuestos(){
+    public ResponseEntity<List<PuestoDTO>> getAllPuestos() {
         List<PuestoDTO> puestos = puestoServicio.getAllPuestos();
         return ResponseEntity.ok(puestos);
     }
 
     @GetMapping("/{id}")
-    public PuestoDTO getPuestoById(@PathVariable Long id){
-        return puestoServicio.getPuestoById(id).orElse(null);
+    public ResponseEntity<PuestoDTO> getPuestoById(@PathVariable Long id) {
+        return puestoServicio.getPuestoById(id)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Puesto con ID " + id + " no encontrado."));
     }
 
     @PostMapping
-    public ResponseEntity<String> createPuesto(@Valid @RequestBody CreatePuestoDTO createPuestoDTO){
-        try {
-            puestoServicio.createPuesto(createPuestoDTO);
-            return ResponseEntity.ok("Puesto creado exitosamente.");
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<PuestoDTO> createPuesto(@Valid @RequestBody CreatePuestoDTO createPuestoDTO) {
+        PuestoDTO newPuesto = puestoServicio.createPuesto(createPuestoDTO);
+        return new ResponseEntity<>(newPuesto, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")
-    public boolean deletePuesto(@PathVariable Long id){
-        return puestoServicio.deletePuesto(id);
+    public ResponseEntity<Void> deletePuesto(@PathVariable Long id) {
+        puestoServicio.deletePuesto(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}")
-    public Optional<PuestoDTO> updatePuesto(@PathVariable Long id, @Valid @RequestBody UpdatePuestoDTO updatePuestoDTO){
-        return puestoServicio.updatePuesto(id, updatePuestoDTO);
+    public ResponseEntity<PuestoDTO> updatePuesto(@PathVariable Long id, @Valid @RequestBody UpdatePuestoDTO updatePuestoDTO) {
+        PuestoDTO updatedPuesto = puestoServicio.updatePuesto(id, updatePuestoDTO)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Puesto con ID " + id + " no encontrado."));
+        return ResponseEntity.ok(updatedPuesto);
     }
 
     @GetMapping("/filtrarYOrdenarPorNombre")
-    public List<PuestoDTO> ordenarPorNombre(
+    public ResponseEntity<List<PuestoDTO>> ordenarPorNombre(
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) String sortDir
     ) {
-        return puestoServicio.filtrarYOrdenarPorNombre(nombre, sortDir);
+        List<PuestoDTO> puestosFiltrados = puestoServicio.filtrarYOrdenarPorNombre(nombre, sortDir);
+        return ResponseEntity.ok(puestosFiltrados);
     }
 
     @GetMapping("/dni/{dni}")
-    public Optional<PuestoDTO> getPuestoByDni(@PathVariable int dni) {
-        return puestoServicio.getPuestoByDni(dni);
+    public ResponseEntity<PuestoDTO> getPuestoByDni(@PathVariable int dni) {
+        return puestoServicio.getPuestoByDni(dni)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new RecursoNoEncontradoException("No se encontró un puesto para el DNI " + dni + "."));
     }
 }

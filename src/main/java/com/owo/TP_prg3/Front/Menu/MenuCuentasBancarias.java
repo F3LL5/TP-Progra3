@@ -1,19 +1,17 @@
 package com.owo.TP_prg3.Front.Menu;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.jakewharton.fliptables.FlipTableConverters;
+import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CreateCuentaBancariaDTO;
 import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CuentaBancariaDTO;
-import com.owo.TP_prg3.Clases.Entidad.dto.EntidadDTO;
 import com.owo.TP_prg3.Clases.Excepciones.Handler.HandlerResponse;
+import com.owo.TP_prg3.Clases.Item.dto.CreateItemDTO;
 import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
-import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
 import com.owo.TP_prg3.Front.HttpService;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.http.HttpResponse;
 import java.util.*;
 
@@ -67,7 +65,7 @@ public class MenuCuentasBancarias {
     //Metodos
     //GET
     private void obtenerTodas() throws IOException, InterruptedException {
-        System.out.println("\n--- Obteniendo todas las transacciones... ---");
+        System.out.println("\n--- Obteniendo todas las cuentas bancarias... ---");
 
         HttpResponse<String> response = HttpService.realizarPeticion("GET", API_URL, authHeader, null);
         String respuestaJson = response.body();
@@ -77,7 +75,7 @@ public class MenuCuentasBancarias {
         );
 
         if (cuentas.isEmpty()) {
-            System.out.println("No se encontraron transacciones.");
+            System.out.println("No se encontraron cuentas bancarias.");
             return;
         }
 
@@ -111,20 +109,34 @@ public class MenuCuentasBancarias {
         System.out.print("Saldo en la cuenta: ");
         double saldo = Escaner.doubleValido(scanner);
 
+        CreateCuentaBancariaDTO cuentaBancariaDTO = new CreateCuentaBancariaDTO((long) id, BigDecimal.valueOf(saldo));
+        String jsonBody = new ObjectMapper().writeValueAsString(cuentaBancariaDTO);
 
-        String jsonBody = "{" +
-                "\"entidadId\":" + id + ",\n" +
-                "\"saldo\":" + saldo +
-                "}";
+        Optional<Object> result = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody),
+                CuentaBancariaDTO.class,
+                "Cuenta bancaria agregada exitosamente.",
+                "Error al agregar cuenta bancaria."
+        );
 
-        HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
+        result.ifPresent(obj -> {
+            CuentaBancariaDTO cuentaBancaria = (CuentaBancariaDTO) obj;
+            FlipTableHelper.imprimir(List.of(cuentaBancaria));
+        });
     }
 
     //DELETE
     private void eliminar() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID de la cuenta a eliminar: ");
         Integer id = Escaner.enteroValido(scanner);
-        HttpService.realizarPeticion("DELETE", API_URL + "/" + id, authHeader, null);
+        HttpResponse<String> response = HttpService.realizarPeticion("DELETE", API_URL + "/" + id, authHeader, null);
+
+        int statusCode = response.statusCode();
+        if (statusCode == 204) {
+            System.out.println("Cuenta bancaria con ID " + id + " eliminada exitosamente.");
+        } else {
+            HandlerResponse.handleErrorResponse(statusCode, response.body());
+        }
     }
 
 }

@@ -172,7 +172,7 @@ public class MenuItem {
 
         Optional<Object> result = HandlerResponse.handleResponse(
                 HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody),
-                ItemDTO.class, // Clase esperada para el ítem creado
+                ItemDTO.class,
                 "Item agregado exitosamente.",
                 "Error al agregar itemId."
         );

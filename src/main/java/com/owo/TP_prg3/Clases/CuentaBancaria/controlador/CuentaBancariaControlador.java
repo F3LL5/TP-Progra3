@@ -4,8 +4,12 @@ import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CreateCuentaBancariaDTO;
 import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CuentaBancariaDTO;
 import com.owo.TP_prg3.Clases.CuentaBancaria.dto.UpdateCuentaBancariaDTO;
 import com.owo.TP_prg3.Clases.CuentaBancaria.service.CuentaBancariaServicioImpl;
+import com.owo.TP_prg3.Clases.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Clases.Excepciones.RecursoNoEncontradoException;
+import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,38 +30,35 @@ public class CuentaBancariaControlador {
     }
 
     @GetMapping("/{id}")
-    public CuentaBancariaDTO getCuentaBancariaById(@PathVariable Long id){
-        return cuentaBancariaServicio.getCuentaBancariaById(id).orElse(null);
-    }
-
-    @GetMapping("/listado")
-    public String obtenerTodosString(){
-        return cuentaBancariaServicio.listado();
+    public ResponseEntity<CuentaBancariaDTO> getCuentaBancariaById(@PathVariable Long id) {
+        return cuentaBancariaServicio.getCuentaBancariaById(id)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Cuenta bancaria con ID " + id + " no encontrada."));
     }
 
     @PostMapping
-    public ResponseEntity<String> createCuentaBancaria(@Valid @RequestBody CreateCuentaBancariaDTO createCuentaBancariaDTO){
-        try {
-            cuentaBancariaServicio.createCuentaBancaria(createCuentaBancariaDTO);
-            return ResponseEntity.ok("Cuenta bancaria creada exitosamente.");
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<CuentaBancariaDTO> createCuentaBancaria(@Valid @RequestBody CreateCuentaBancariaDTO createCuentaBancariaDTO){
+        CuentaBancariaDTO newCuenta = cuentaBancariaServicio.createCuentaBancaria(createCuentaBancariaDTO);
+        return new ResponseEntity<>(newCuenta, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")
-    public boolean deleteCuentaBancaria(@PathVariable Long id){
-        return cuentaBancariaServicio.deleteCuentaBancaria(id);
+    public ResponseEntity<String> deleteCuentaBancaria(@PathVariable Long id){
+        cuentaBancariaServicio.deleteCuentaBancaria(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}")
-    public Optional<CuentaBancariaDTO> updateCuentaBancaria(@PathVariable Long id, @Valid @RequestBody UpdateCuentaBancariaDTO updateCuentaBancariaDTO){
-        return cuentaBancariaServicio.updateCuentaBancaria(id, updateCuentaBancariaDTO);
+    public ResponseEntity<CuentaBancariaDTO> updateCuentaBancaria(@PathVariable Long id, @Valid @RequestBody UpdateCuentaBancariaDTO updateCuentaBancariaDTO){
+        CuentaBancariaDTO updatedCuenta = cuentaBancariaServicio.updateCuentaBancaria(id, updateCuentaBancariaDTO)
+                .orElse(null);
+        return ResponseEntity.ok(updatedCuenta);
     }
 
     @GetMapping("/entidad/{entidadId}")
     public ResponseEntity<CuentaBancariaDTO> getCuentaBancariaByEntidadId(@PathVariable Long entidadId){
-        CuentaBancariaDTO cuentaBancaria = cuentaBancariaServicio.getCuentaBancariaByEntidadId(entidadId).orElse(null);
-        return ResponseEntity.ok(cuentaBancaria);
+        return cuentaBancariaServicio.getCuentaBancariaByEntidadId(entidadId)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Cuenta bancaria no encontrada para la entidad con ID " + entidadId + "."));
     }
 }
