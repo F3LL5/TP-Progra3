@@ -21,6 +21,7 @@ public class DetallePedidoControlador {
     @Autowired
     private DetallePedidoServicioImpl detallePedidoServicio;
 
+    ///  GET ------------------------------------------------------------------------------------
     @GetMapping
     public ResponseEntity<List<DetallePedidoDTO>> getAllDetallesPedido(){
         List<DetallePedidoDTO> detallesPedido = detallePedidoServicio.getAllDetallesPedido();
@@ -28,23 +29,38 @@ public class DetallePedidoControlador {
     }
 
     @GetMapping("/{id}")
-    public DetallePedidoDTO getDetallePedidoById(@PathVariable Long id){
-        return detallePedidoServicio.getDetallePedidoById(id).orElse(null);
+    public ResponseEntity<DetallePedidoDTO> getDetallePedidoById(@PathVariable Long id){
+        DetallePedidoDTO detallePedidoDTO = detallePedidoServicio.getDetallePedidoById(id)
+                .orElse(null);
+        return ResponseEntity.ok(detallePedidoDTO);
     }
 
+    @GetMapping("/pedido/{pedidoId}/puesto/{puestoId}")
+    public ResponseEntity<List<DetallePedidoDTO>> getDetallesPedidoByPedidoIdAndPuestoId(@PathVariable Long pedidoId, @PathVariable Long puestoId) {
+        List<DetallePedidoDTO> detallesPedido = detallePedidoServicio.getDetallesPedidoByPedidoIdAndPuestoId(pedidoId, puestoId);
+        return ResponseEntity.ok(detallesPedido);
+    }
+
+    ///  POST --------------------------------------------------------------------------------------
     @PostMapping
-    public DetallePedidoDTO createDetallePedido(@Valid @RequestBody CreateDetallePedidoDTO createDetallePedidoDTO){
-        return detallePedidoServicio.createDetallePedido(createDetallePedidoDTO);
+    public ResponseEntity<DetallePedidoDTO> createDetallePedido(@Valid @RequestBody CreateDetallePedidoDTO createDetallePedidoDTO){
+        DetallePedidoDTO newEntidad = detallePedidoServicio.createDetallePedido(createDetallePedidoDTO);
+        return new ResponseEntity<>(newEntidad, HttpStatus.CREATED);
     }
 
+    @PostMapping("/puesto/{puestoId}")
+    public ResponseEntity<DetallePedidoDTO> createDetallePedidoForPuesto(
+            @PathVariable Long puestoId,
+            @Valid @RequestBody CreateDetallePedidoDTO createDetallePedidoDTO) {
+        DetallePedidoDTO newDetallePedido = detallePedidoServicio.createDetallePedidoForPuesto(puestoId, createDetallePedidoDTO);
+        return new ResponseEntity<>(newDetallePedido, HttpStatus.CREATED);
+    }
+
+    ///  DELETE -----------------------------------------------------------------------------------------------------
     @DeleteMapping("/{id}")
-    public boolean deleteDetallePedido(@PathVariable Long id){
-        return detallePedidoServicio.deleteDetallePedido(id);
-    }
-
-    @PatchMapping("/{id}")
-    public Optional<DetallePedidoDTO> updateDetallePedido(@PathVariable Long id, @Valid @RequestBody UpdateDetallePedidoDTO updateDetallePedidoDTO){
-        return detallePedidoServicio.updateDetallePedido(id, updateDetallePedidoDTO);
+    public ResponseEntity<Object> deleteDetallePedido(@PathVariable Long id){
+        detallePedidoServicio.deleteDetallePedido(id);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}/puesto/{puestoId}")
@@ -60,6 +76,8 @@ public class DetallePedidoControlador {
         throw new RecursoNoEncontradoException("DetallePedido con ID " + id + " no encontrado para eliminar.");
     }
 
+
+    ///  PATCH ----------------------------------------------------------------------------------------------------------
     @PatchMapping("/{id}/puesto/{puestoId}")
     public Optional<DetallePedidoDTO> updateDetallePedidoForPuesto(@PathVariable Long id, @PathVariable Long puestoId, @Valid @RequestBody UpdateDetallePedidoDTO updateDetallePedidoDTO){
         // Primero, verifica si el detalle de pedido pertenece al puesto
@@ -70,19 +88,14 @@ public class DetallePedidoControlador {
         return Optional.empty();
     }
 
-    @GetMapping("/pedido/{pedidoId}/puesto/{puestoId}")
-    public ResponseEntity<List<DetallePedidoDTO>> getDetallesPedidoByPedidoIdAndPuestoId(@PathVariable Long pedidoId, @PathVariable Long puestoId) {
-        List<DetallePedidoDTO> detallesPedido = detallePedidoServicio.getDetallesPedidoByPedidoIdAndPuestoId(pedidoId, puestoId);
-        return ResponseEntity.ok(detallesPedido);
+    @PatchMapping("/{id}")
+    public ResponseEntity<DetallePedidoDTO> updateDetallePedido(@PathVariable Long id, @Valid @RequestBody UpdateDetallePedidoDTO updateDetallePedidoDTO){
+        DetallePedidoDTO detallePedidoDTO = detallePedidoServicio.updateDetallePedido(id, updateDetallePedidoDTO)
+                .orElseThrow(null);
+        return ResponseEntity.ok(detallePedidoDTO);
     }
 
-    @PostMapping("/puesto/{puestoId}")
-    public ResponseEntity<DetallePedidoDTO> createDetallePedidoForPuesto(
-            @PathVariable Long puestoId,
-            @Valid @RequestBody CreateDetallePedidoDTO createDetallePedidoDTO) {
-        DetallePedidoDTO newDetallePedido = detallePedidoServicio.createDetallePedidoForPuesto(puestoId, createDetallePedidoDTO);
-        return new ResponseEntity<>(newDetallePedido, HttpStatus.CREATED);
-    }
+
 
 
 
