@@ -117,6 +117,13 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
         // Recalcular el monto total del pedido y actualizar la transacción y los saldos
         updateTransaccionMontoForPedido(savedDetallePedido.getPedido().getPedidoId(), previousMontoTransaccion);
 
+        // NUEVA LÓGICA: Actualizar el stock del inventario del puesto
+        actualizarStockInventarioPuesto(
+                savedDetallePedido.getItem().getItem_id(),
+                savedDetallePedido.getPedido().getPuestoId(),
+                savedDetallePedido.getCantidad()
+        );
+
         return convertirA_DTO(savedDetallePedido);
     }
 
@@ -126,6 +133,9 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
         return detallePedidoRepositorio.findById(id)
                 .map(detallePedido -> {
                     if (detallePedido == null) throw new RecursoNoEncontradoException("DetallePedido con ID " + id + " no encontrado para actualizar.");
+
+                    // Cantidad actual del detalle de pedido antes de la actualización
+                    Integer cantidadAnterior = detallePedido.getCantidad();
 
                     // Obtener el monto anterior de la transacción ANTES de modificar el detalle
                     BigDecimal montoAnteriorTransaccion = BigDecimal.ZERO;
@@ -153,6 +163,16 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
                     // Actualiza el monto y los saldos de la cuenta
                     updateTransaccionMontoForPedido(detallePedidoModificado.getPedido().getPedidoId(), montoAnteriorTransaccion);
 
+                    // NUEVA LÓGICA: Ajustar el stock del inventario del puesto
+                    Integer diferenciaCantidad = detallePedidoModificado.getCantidad() - cantidadAnterior;
+                    if (diferenciaCantidad != 0) {
+                        actualizarStockInventarioPuesto(
+                                detallePedidoModificado.getItem().getItem_id(),
+                                detallePedidoModificado.getPedido().getPuestoId(),
+                                diferenciaCantidad
+                        );
+                    }
+
                     return convertirA_DTO(detallePedidoModificado);
 
                 }).or(() -> { throw new RecursoNoEncontradoException("DetallePedido con ID " + id + " no encontrado para actualizar.");});
@@ -166,6 +186,9 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
         if (optionalDetallePedido.isPresent()) {
             DetallePedido detallePedidoToDelete = optionalDetallePedido.get();
             Long pedidoId = detallePedidoToDelete.getPedido().getPedidoId();
+            Long itemId = detallePedidoToDelete.getItem().getItem_id();
+            Long puestoId = detallePedidoToDelete.getPedido().getPuestoId();
+            Integer cantidadEliminada = detallePedidoToDelete.getCantidad();
 
             // Obtener el monto anterior de la transacción ANTES de eliminar el detalle
             BigDecimal previousMontoTransaccion = BigDecimal.ZERO;
@@ -177,6 +200,13 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
 
             // Actualiza el monto y los saldos de la cuenta
             updateTransaccionMontoForPedido(pedidoId, previousMontoTransaccion);
+
+            // NUEVA LÓGICA: Devolver el stock al inventario del puesto
+            actualizarStockInventarioPuesto(
+                    itemId,
+                    puestoId,
+                    -cantidadEliminada
+            );
 
             return true;
         }
@@ -242,6 +272,37 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
         // Luego, llamamos al servicio de Transaccion para que ajuste los saldos
         transaccionServicio.ajustarSaldosPorCambioDeMonto(transaccion.getTransaccionId(), previousMonto, totalMontoPedido);
     }
+
+    @Transactional
+    private void actualizarStockInventarioPuesto(Long itemId, Long puestoId, Integer cantidadAjuste) {
+        // 1. Encontrar el InventarioPuesto específico para el item y puesto dados.
+        Optional<InventarioPuesto> optionalInventarioPuesto = inventarioPuestoRepositorio.findAll()
+                .stream()
+                .filter(inv ->
+                        inv.getPuesto().getPuestoId().equals(puestoId) &&
+                                inv.getItemId().equals(itemId))
+                .findFirst();
+
+        if (optionalInventarioPuesto.isEmpty()) {
+            throw new EntityNotFoundException("InventarioPuesto no encontrado para el Item ID: " + itemId + " y Puesto ID: " + puestoId);
+        }
+
+        InventarioPuesto inventarioPuesto = optionalInventarioPuesto.get();
+
+        // 2. Ajustar la cantidad del stock.
+        // Si cantidadAjuste es positivo (ej. en creación), se resta del stock.
+        // Si cantidadAjuste es negativo (ej. en eliminación o disminución de pedido), se suma al stock.
+        Integer nuevaCantidad = inventarioPuesto.getCantidad() - cantidadAjuste;
+        if (nuevaCantidad < 0) {
+            throw new IllegalArgumentException("Stock insuficiente para el item ID: " + itemId + " en el puesto ID: " + puestoId);
+        }
+        inventarioPuesto.setCantidad(nuevaCantidad);
+
+        // 3. Guardar el InventarioPuesto actualizado.
+        inventarioPuestoRepositorio.save(inventarioPuesto);
+    }
+
+
 
 }
 
