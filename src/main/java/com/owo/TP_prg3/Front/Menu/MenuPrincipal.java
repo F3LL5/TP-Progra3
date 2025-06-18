@@ -5,7 +5,6 @@ import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
 import com.owo.TP_prg3.Clases.Puesto.modelo.Puesto;
 import com.owo.TP_prg3.Front.Auntenticacion.AuthService;
 import com.owo.TP_prg3.Front.Auntenticacion.UsuarioAutenticado;
-import com.owo.TP_prg3.Front.MenuV2.MenuAdmin;
 import com.owo.TP_prg3.Front.MenuV2.MenuDuenoPuesto;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 

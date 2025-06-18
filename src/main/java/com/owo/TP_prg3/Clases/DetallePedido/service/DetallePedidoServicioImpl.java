@@ -5,12 +5,14 @@ import com.owo.TP_prg3.Clases.DetallePedido.dto.DetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.UpdateDetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedido;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedidoRepositorio;
+import com.owo.TP_prg3.Clases.Excepciones.RecursoNoEncontradoException;
 import com.owo.TP_prg3.Clases.InventarioPuesto.modelo.InventarioPuesto;
 import com.owo.TP_prg3.Clases.InventarioPuesto.modelo.InventarioPuestoRepositorio;
 import com.owo.TP_prg3.Clases.Item.modelo.Item;
 import com.owo.TP_prg3.Clases.Item.modelo.ItemRepositorio;
 import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
 import com.owo.TP_prg3.Clases.Pedido.modelo.PedidoRepositorio;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityNotFoundException;
@@ -98,61 +100,35 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
     public Optional<DetallePedidoDTO> updateDetallePedido(Long id, UpdateDetallePedidoDTO updateDetallePedidoDTO) {
         return detallePedidoRepositorio.findById(id)
                 .map(detallePedido -> {
-                    boolean recalcular = false;
-
-                    // Actualizar el Pedido si se proporciona
-                    if (updateDetallePedidoDTO.getPedidoId() != null) {
-                        pedidoRepositorio.findById(updateDetallePedidoDTO.getPedidoId())
-                                .ifPresentOrElse(
-                                        detallePedido::setPedido,
-                                        () -> { throw new EntityNotFoundException("Pedido con ID " + updateDetallePedidoDTO.getPedidoId() + " no encontrado."); }
-                                );
-                        recalcular = true;
+                    if (detallePedido == null) {
+                        throw new RecursoNoEncontradoException("DetallePedido con ID " + id + " no encontrado para actualizar.");
                     }
 
-                    // Actualizar el Item si se proporciona
-                    if (updateDetallePedidoDTO.getItemId() != null) {
-                        itemRepositorio.findById(updateDetallePedidoDTO.getItemId())
-                                .ifPresentOrElse(
-                                        detallePedido::setItem,
-                                        () -> { throw new EntityNotFoundException("Item con ID " + updateDetallePedidoDTO.getItemId() + " no encontrado."); }
-                                );
-                        recalcular = true;
-                    }
 
-                    // Actualizar la cantidad si se proporciona
                     if (updateDetallePedidoDTO.getCantidad() != null) {
                         detallePedido.setCantidad(updateDetallePedidoDTO.getCantidad());
-                        recalcular = true;
-                    }
-
-                    //Si el usuario modifico los datos del detalle del pedido hace falta recalcular el precio total.
-                    if (recalcular) {
-                        if (detallePedido.getItem() != null || detallePedido.getPedido() != null || detallePedido.getCantidad() == null) {
-                            throw new IllegalStateException("Faltan datos para recalcular el precio total del detalle del pedido.");
-                        }
-                        Long puestoId = detallePedido.getPedido().getPuestoId();
-                        Long itemId = detallePedido.getItem().getItem_id();
 
                         Optional<InventarioPuesto> inventarioItem = inventarioPuestoRepositorio.findAll()
                                 .stream()
-                                .filter(inv -> inv.getPuesto().getPuestoId().equals(puestoId) && inv.getItemId().equals(itemId))
+                                .filter(inv ->
+                                        inv.getPuesto().getPuestoId().equals(detallePedido.getPedido().getPuestoId()) &&
+                                                inv.getItemId().equals(detallePedido.getItem().getItem_id()))
                                 .findFirst();
 
                         if (inventarioItem.isEmpty()) {
-                            throw new EntityNotFoundException("InventarioPuesto no encontrado para el Item ID: " + itemId + " y Puesto ID: " + puestoId + " durante la actualización.");
+                            throw new EntityNotFoundException("InventarioPuesto no encontrado para el Item ID: " + detallePedido.getItem().getItem_id() + " y Puesto ID: " + detallePedido.getPedido().getPuestoId());
                         }
 
                         BigDecimal cantidad_BD = new BigDecimal(detallePedido.getCantidad());
                         BigDecimal precioVenta = inventarioItem.get().getPrecioVenta();
                         detallePedido.setPrecioTotal(cantidad_BD.multiply(precioVenta));
-                    } else if (updateDetallePedidoDTO.getPrecioTotal() != null) {
-                        // Si no se necesita recalcular, pero el DTO trae precioTotal, lo modifico directamente
-                        detallePedido.setPrecioTotal(updateDetallePedidoDTO.getPrecioTotal());
                     }
 
-                    DetallePedido updatedDetallePedido = detallePedidoRepositorio.save(detallePedido);
-                    return convertirA_DTO(updatedDetallePedido);
+                    DetallePedido detallePedidoModificado = detallePedidoRepositorio.save(detallePedido);
+                    return convertirA_DTO(detallePedidoModificado);
+                })
+                .or(() -> {
+                    throw new RecursoNoEncontradoException("DetallePedido con ID " + id + " no encontrado para actualizar.");
                 });
     }
 
@@ -178,7 +154,24 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
                 .map(this::convertirA_DTO);
     }
 
+    @Transactional // Asegurarse de que las operaciones sean atómicas
+    public DetallePedidoDTO createDetallePedidoForPuesto(Long puestoId, CreateDetallePedidoDTO createDetallePedidoDTO) {
+        // 1. Verificar que el Pedido exista y pertenezca al Puesto
+        Optional<Pedido> optionalPedido = pedidoRepositorio.findById(createDetallePedidoDTO.getPedidoId());
 
+        if (optionalPedido.isEmpty()) {
+            throw new RecursoNoEncontradoException("Pedido con ID " + createDetallePedidoDTO.getPedidoId() + " no encontrado.");
+        }
+
+        Pedido pedido = optionalPedido.get();
+
+        if (!pedido.getPuestoId().equals(puestoId)) {
+            throw new RecursoNoEncontradoException("El Pedido con ID " + createDetallePedidoDTO.getPedidoId() + " no pertenece al Puesto con ID " + puestoId + ".");
+        }
+
+        // 2. Si las verificaciones son exitosas, crear el detalle de pedido usando el método existente
+        return createDetallePedido(createDetallePedidoDTO);
+    }
 
 
 

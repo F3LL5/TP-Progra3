@@ -4,8 +4,10 @@ import com.owo.TP_prg3.Clases.DetallePedido.dto.CreateDetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.DetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.UpdateDetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.service.DetallePedidoServicioImpl;
+import com.owo.TP_prg3.Clases.Excepciones.RecursoNoEncontradoException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,13 +48,16 @@ public class DetallePedidoControlador {
     }
 
     @DeleteMapping("/{id}/puesto/{puestoId}")
-    public boolean deleteDetallePedidoForPuesto(@PathVariable Long id, @PathVariable Long puestoId){
+    public Optional<DetallePedidoDTO> deleteDetallePedidoForPuesto(@PathVariable Long id, @PathVariable Long puestoId){
         // Primero, verifica si el detalle de pedido pertenece al puesto
         Optional<DetallePedidoDTO> detalle = detallePedidoServicio.getDetallePedidoByIdAndPuestoId(id, puestoId);
         if (detalle.isPresent()) {
-            return detallePedidoServicio.deleteDetallePedido(id);
+            if(detallePedidoServicio.deleteDetallePedido(id))
+            {
+                return detalle;
+            };
         }
-        return false;
+        throw new RecursoNoEncontradoException("DetallePedido con ID " + id + " no encontrado para eliminar.");
     }
 
     @PatchMapping("/{id}/puesto/{puestoId}")
@@ -71,7 +76,13 @@ public class DetallePedidoControlador {
         return ResponseEntity.ok(detallesPedido);
     }
 
-
+    @PostMapping("/puesto/{puestoId}")
+    public ResponseEntity<DetallePedidoDTO> createDetallePedidoForPuesto(
+            @PathVariable Long puestoId,
+            @Valid @RequestBody CreateDetallePedidoDTO createDetallePedidoDTO) {
+        DetallePedidoDTO newDetallePedido = detallePedidoServicio.createDetallePedidoForPuesto(puestoId, createDetallePedidoDTO);
+        return new ResponseEntity<>(newDetallePedido, HttpStatus.CREATED);
+    }
 
 
 

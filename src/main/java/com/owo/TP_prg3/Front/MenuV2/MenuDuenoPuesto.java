@@ -715,20 +715,18 @@ public class MenuDuenoPuesto {
             System.out.print("""
                     \n--- GESTIÓN DE DETALLES DE PEDIDO (SU PUESTO) ---
                     1. Obtener todos los detalles de pedido de su puesto (por ID de Pedido)
-                    2. Buscar detalle de pedido por ID (en su puesto)
-                    3. Agregar Detalle de Pedido (a un pedido de su puesto)
-                    4. Eliminar Detalle de Pedido (de un pedido de su puesto)
-                    5. Modificar Detalle de Pedido (de un pedido de su puesto)
+                    2. Agregar Detalle de Pedido (a un pedido de su puesto)
+                    3. Eliminar Detalle de Pedido (de un pedido de su puesto)
+                    4. Modificar Detalle de Pedido (de un pedido de su puesto)
                     0. Volver al menú de Dueño de Puesto
                     Ingrese una opción:"""
             );
             opcion = Escaner.stringValido(scanner);
             switch (opcion) {
                 case "1" -> obtenerDetallesPedidoDeMiPuestoPorPedido();
-                case "2" -> buscarDetallePedidoPorIdDeMiPuesto();
-                case "3" -> agregarDetallePedidoAMiPuesto();
-                case "4" -> eliminarDetallePedidoDeMiPuesto();
-                case "5" -> modificarDetallePedidoDeMiPuesto();
+                case "2" -> agregarDetallePedidoAMiPuesto();
+                case "3" -> eliminarDetallePedidoDeMiPuesto();
+                case "4" -> modificarDetallePedidoDeMiPuesto();
                 case "0" -> {}
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
@@ -757,22 +755,6 @@ public class MenuDuenoPuesto {
         });
     }
 
-    private void buscarDetallePedidoPorIdDeMiPuesto() throws IOException, InterruptedException {
-        System.out.print("Ingrese el ID del detalle de pedido a buscar en su puesto: ");
-        Integer id = Escaner.enteroValido(scanner);
-
-        Optional<Object> result = HandlerResponse.handleResponse(
-                HttpService.realizarPeticion("GET", API_URL_DETALLES_PEDIDO + "/" + id + "/puesto/" + puestoUsuario.getPuestoId(), authHeader, null),
-                DetallePedidoDTO.class,
-                "Detalle de pedido encontrado en su puesto:",
-                "No se encontró el detalle de pedido con ID " + id + " en su puesto."
-        );
-
-        result.ifPresent(obj -> {
-            DetallePedidoDTO detalle = (DetallePedidoDTO) obj;
-            System.out.println(FlipTableConverters.fromIterable(List.of(detalle), DetallePedidoDTO.class));
-        });
-    }
 
     private void agregarDetallePedidoAMiPuesto() throws IOException, InterruptedException {
         System.out.println("\n--- Registrar detalle de pedido para un pedido de su puesto ---");
