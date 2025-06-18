@@ -19,11 +19,9 @@ public class CreateTransaccionDTO {
     @Positive(message = "El costo debe ser un número positivo.")
     protected BigDecimal monto;
 
-    @NotNull
     @Positive(message = "El ID de la cuenta origen debe ser un número positivo.")
     protected Long cuentaOrigenId;
 
-    @NotNull
     @Positive(message = "El ID de la cuenta destino debe ser un número positivo.")
     protected Long cuentaDestinoId;
 }
