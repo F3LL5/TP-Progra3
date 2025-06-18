@@ -72,8 +72,9 @@ public class PedidoServicioImpl implements PedidoServicio {
 
     @Override
     public Optional<PedidoDTO> getPedidoById(Long id) {
-        return pedidoRepositorio.findById(id)
-                .map(this::convertirA_DTO);
+        return Optional.of(pedidoRepositorio.findById(id)
+                .map(this::convertirA_DTO)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Pedido con ID " + id + " no encontrado.")));
     }
 
     @Override
@@ -86,10 +87,6 @@ public class PedidoServicioImpl implements PedidoServicio {
 
     @Transactional
     public PedidoDTO createPedidoYtransaccion(CreatePedidoDTO2 createPedidoDTO2) {
-
-
-
-
         Transaccion transaccion = new Transaccion();
         transaccion.setTipo(TipoTransaccion.valueOf(createPedidoDTO2.getTipoTransaccion()));
         transaccion.setMonto(BigDecimal.ZERO);
