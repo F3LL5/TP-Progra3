@@ -4,7 +4,7 @@ use comercio;
 
 create table if not exists items (
 	item_id bigint auto_increment primary key,
-	nombre varchar(100) not null,
+	nombre varchar(100) not null unique,
 	categoria varchar(100) not null
 );
 

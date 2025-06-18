@@ -16,7 +16,7 @@ public class Item {
     @Column(name = "item_id", unique = true)
     protected Long item_id;
 
-    @Column(nullable = false)
+    @Column(name= "nombre" ,unique = true)
     protected String nombre;
 
     @Column(nullable = false)
