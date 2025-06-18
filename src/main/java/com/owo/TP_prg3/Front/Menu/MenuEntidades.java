@@ -181,8 +181,14 @@ public class MenuEntidades {
         String nombre = Escaner.stringValido(scanner);
         System.out.print("Tipo de Entidad: ");
         String tipoEntidad = Escaner.stringValido(scanner);
-        System.out.print("Rol [DUENO_PUESTO, CLIENTE, PROVEEDOR, ADMIN]: ");
-        String rol = Escaner.stringValido(scanner);
+        System.out.print("Rol \n1-CLIENTE \n2-PROVEEDOR \n3-DUENIO : ");
+        int roles = Escaner.enteroValido(scanner);
+        String rol = switch (roles) {
+            case 1 -> "CLIENTE";
+            case 2 -> "PROVEEDOR";
+            case 3-> "DUENIO";
+            default -> null;
+        };
         System.out.print("Edad: ");
         Integer edad = Escaner.enteroValido(scanner);
         System.out.print("DNI: ");
@@ -259,8 +265,14 @@ public class MenuEntidades {
                 attributeSelected = true;
             }
             case 3 -> {
-                System.out.print(" [DUENO_PUESTO, CLIENTE, PROVEEDOR, ADMIN]: ");
-                String rol = Escaner.stringValido(scanner);
+                System.out.print("Rol \n1-CLIENTE \n2-PROVEEDOR \n3-DUENIO : ");
+                int roles = Escaner.enteroValido(scanner);
+                String rol = switch (roles) {
+                    case 1 -> "CLIENTE";
+                    case 2 -> "PROVEEDOR";
+                    case 3-> "DUENIO";
+                    default -> null;
+                };
                 updateEntidadDTO.setRolEntidad(RolEntidad.valueOf(rol));
                 attributeSelected = true;
             }

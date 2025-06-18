@@ -191,8 +191,15 @@ public class MenuTransacciones {
     private void agregar() throws IOException, InterruptedException {
         System.out.println("\n--- Registrar transacción ---");
 
-        System.out.print("Tipo de transacción [COMPRA, VENTA, INGRESO, EGRESO]: ");
-        String tipo = Escaner.stringValido(scanner).toUpperCase();
+        System.out.print("Tipo de transacción :\n1-COMPRA, \n2-VENTA,\n3-INGRESO,\n4-EGRESO]: ");
+        int tipos = Escaner.enteroValido(scanner);
+        String tipo = switch (tipos) {
+            case 1 -> "COMPRA";
+            case 2 -> "VENTA";
+            case 3-> "INGRESO";
+            case 4 -> "EGRESO";
+            default -> null;
+        };
 
         System.out.print("Monto: ");
         BigDecimal monto = BigDecimal.valueOf(Escaner.doubleValido(scanner));
@@ -264,14 +271,24 @@ public class MenuTransacciones {
 
         Integer opcion = Escaner.enteroValido(scanner);
 
-        if (opcion != 0) System.out.print("Ingrese el nuevo valor: ");
+        if (opcion != 0 && opcion !=1) System.out.print("Ingrese el nuevo valor: ");
         UpdateTransaccionDTO updateDTO = new UpdateTransaccionDTO();
         boolean attributeSelected = false;
 
         switch (opcion) {
             case 1 -> {
-                String tipo = Escaner.stringValido(scanner).toUpperCase();
-                updateDTO.setTipo(tipo);
+                System.out.print("Ingrese el nuevo tipo de transacción :\n1-COMPRA, \n2-VENTA,\n3-INGRESO,\n4-EGRESO]: ");
+                int tipos = Escaner.enteroValido(scanner);
+                String tipo = switch (tipos) {
+                    case 1 -> "COMPRA";
+                    case 2 -> "VENTA";
+                    case 3-> "INGRESO";
+                    case 4 -> "EGRESO";
+                    default -> null;
+                };
+
+                String nuevo_tipo = Escaner.stringValido(scanner).toUpperCase();
+                updateDTO.setTipo(nuevo_tipo);
                 attributeSelected = true;
             }
             case 2 -> {
