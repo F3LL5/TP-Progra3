@@ -83,7 +83,7 @@ public class MenuEntidades {
 
     private void buscarPorId() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID de la entidad: ");
-        Long id = Long.valueOf(Escaner.enteroValido(scanner));
+        int id = Escaner.enteroValido(scanner);
 
         Optional<Object> result = HandlerResponse.handleResponse(
                 HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null),
