@@ -1,5 +1,7 @@
 package com.owo.TP_prg3.Clases.Entidad.service;
 
+import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancaria;
+import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancariaRepositorio;
 import com.owo.TP_prg3.Clases.Entidad.dto.CreateEntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.dto.EntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.dto.UpdateEntidadDTO;
@@ -20,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +36,8 @@ public class EntidadServicioImpl implements EntidadServicio {
     private EntidadRepositorio entidadRepositorio;
     @Autowired
     private PedidoRepositorio pedidoRepositorio;
+    @Autowired
+    private CuentaBancariaRepositorio cuentaBancariaRepositorio;
 
     // Conversión
     private EntidadDTO convertirA_DTO(Entidad entidad) {
@@ -56,7 +61,8 @@ public class EntidadServicioImpl implements EntidadServicio {
         return entidad;
     }
 
-    // Métodos
+    /// Métodos ------------------------------------------------------------------------------------------------------------------------------------------------
+    /// GET ------------------------------------------------------------------------------------------------------------------------------------------------
     @Override
     public List<EntidadDTO> getAllEntidades() {
         return entidadRepositorio.findAll()
@@ -72,55 +78,12 @@ public class EntidadServicioImpl implements EntidadServicio {
     }
 
     @Override
-    public EntidadDTO createEntidad(CreateEntidadDTO createEntidadDTO) {
-        Entidad entidad = convertirA_Entidad(createEntidadDTO);
-        Entidad entidadRegistrada = entidadRepositorio.save(entidad);
-        return convertirA_DTO(entidadRegistrada);
-    }
-
-    @Override
-    public Optional<EntidadDTO> updateEntidad(Long id, UpdateEntidadDTO updateEntidadDTO) {
-        return entidadRepositorio.findById(id)
-                .map(entidad -> {
-                    if (entidad == null) {
-                        throw new RecursoNoEncontradoException("Item con ID " + id + " no encontrado para actualizar.");
-                    }
-                    if (updateEntidadDTO.getNombre() != null) entidad.setNombre(updateEntidadDTO.getNombre());
-                    if (updateEntidadDTO.getRolEntidad() != null) entidad.setRolEntidad(updateEntidadDTO.getRolEntidad());
-                    if (updateEntidadDTO.getTipoEntidad() != null) entidad.setTipoEntidad(updateEntidadDTO.getTipoEntidad());
-                    if (updateEntidadDTO.getEdad() != null) entidad.setEdad(updateEntidadDTO.getEdad());
-
-                    if (updateEntidadDTO.getDni() != null) {
-                        Integer nuevoDni = updateEntidadDTO.getDni();
-                        Optional<Entidad> dniYaExiste = entidadRepositorio.findByDni(nuevoDni);
-                        if (dniYaExiste.isPresent()) throw new ConflictoDeDatosException("Ya existe otra entidad registrada con ese DNI.");
-                        entidad.setDni(nuevoDni);
-                    }
-
-                    Entidad entidadModificada = entidadRepositorio.save(entidad);
-                    return convertirA_DTO(entidadModificada);
-                })
-                .or(() -> {
-                    throw new RecursoNoEncontradoException("Item con ID " + id + " no encontrado para actualizar.");
-                });
-    }
-
-    @Override
-    public boolean deleteEntidad(Long id) {
-        if (entidadRepositorio.existsById(id)) {
-            entidadRepositorio.deleteById(id);
-            return true;
-        }
-        throw new RecursoNoEncontradoException("La entidad de ID " + id + " no ha sido encontrada.");
-    }
-
-    @Override
     public Optional<EntidadDTO> findByDni(int dni) {
         Optional<Entidad> optional =
                 entidadRepositorio.findAll()
-                .stream()
-                .filter(entidad -> entidad.getDni() == dni)
-                .findFirst();
+                        .stream()
+                        .filter(entidad -> entidad.getDni() == dni)
+                        .findFirst();
         return optional.map(this::convertirA_DTO);
     }
 
@@ -203,35 +166,6 @@ public class EntidadServicioImpl implements EntidadServicio {
         return Optional.empty();
     }
 
-    // Agregar Entidad para un Puesto específico
-    @Transactional
-    public EntidadDTO createEntidadForPuesto(Long puestoId, CreateEntidadDTO createEntidadDTO) {
-        if (createEntidadDTO.getRolEntidad() != RolEntidad.CLIENTE && createEntidadDTO.getRolEntidad() != RolEntidad.PROVEEDOR) {
-            throw new IngresoInvalidoException("Solo se pueden crear entidades con rol CLIENTE o PROVEEDOR para un puesto.");
-        }
-        return createEntidad(createEntidadDTO);
-    }
-
-    // Eliminar Entidad de un Puesto específico
-    @Transactional
-    public boolean deleteEntidadFromPuesto(Long id, Long puestoId) {
-        Optional<EntidadDTO> entidad = getEntidadByIdAndPuestoId(id, puestoId);
-        if (entidad.isPresent()) {
-            return deleteEntidad(id);
-        }
-        throw new RecursoNoEncontradoException("La entidad con ID " + id + " no fue encontrada o no está asociada al puesto " + puestoId + " para ser eliminada.");
-    }
-
-    // Modificar Entidad de un Puesto específico
-    @Transactional
-    public Optional<EntidadDTO> updateEntidadForPuesto(Long id, Long puestoId, UpdateEntidadDTO updateEntidadDTO) {
-        Optional<EntidadDTO> entidad = getEntidadByIdAndPuestoId(id, puestoId);
-        if (entidad.isPresent()) {
-            return updateEntidad(id, updateEntidadDTO);
-        }
-        throw new RecursoNoEncontradoException("La entidad con ID " + id + " no fue encontrada o no está asociada al puesto " + puestoId + " para ser modificada.");
-    }
-
     // Filtrar Clientes con pedidos de un puesto específico
     public List<EntidadDTO> getClientesConPedidosByPuestoId(Long puestoId) {
         List<Pedido> pedidosDePuesto = pedidoRepositorio.findAll().stream()
@@ -248,4 +182,104 @@ public class EntidadServicioImpl implements EntidadServicio {
                 .map(this::convertirA_DTO)
                 .collect(Collectors.toList());
     }
+
+    /// POST ------------------------------------------------------------------------------------------------------------------------------------------------
+
+    // Agregar Entidad para un Puesto específico
+    @Transactional
+    public EntidadDTO createEntidadForPuesto(Long puestoId, CreateEntidadDTO createEntidadDTO) {
+        if (createEntidadDTO.getRolEntidad() != RolEntidad.CLIENTE && createEntidadDTO.getRolEntidad() != RolEntidad.PROVEEDOR) {
+            throw new IngresoInvalidoException("Solo se pueden crear entidades con rol CLIENTE o PROVEEDOR para un puesto.");
+        }
+        Entidad entidad = convertirA_Entidad(createEntidadDTO);
+        Entidad entidadRegistrada = entidadRepositorio.save(entidad);
+        return convertirA_DTO(entidadRegistrada);
+    }
+    @Transactional
+    public EntidadDTO createEntidadYCuentaBancaria(Long puestoId, CreateEntidadDTO createEntidadDTO) {
+        if (createEntidadDTO.getRolEntidad() != RolEntidad.CLIENTE && createEntidadDTO.getRolEntidad() != RolEntidad.PROVEEDOR) {
+            throw new IngresoInvalidoException("Solo se pueden crear entidades con rol CLIENTE o PROVEEDOR para un puesto.");
+        }
+        Entidad entidad = convertirA_Entidad(createEntidadDTO);
+        Entidad entidadRegistrada = entidadRepositorio.save(entidad);
+
+        //Creamos una cuenta bancaria automaticamente con un saldo random para agilizar el sistema
+        if (entidadRegistrada.getEdad() >= 18) { // Solo si la entidad es mayor de edad
+            CuentaBancaria cuentaBancaria = new CuentaBancaria();
+            cuentaBancaria.setEntidad(entidadRegistrada);
+            // Saldo random: 10,000 * (número aleatorio entre 1 y 10)
+            double num = (int)(Math.random() * 10) + 1; // Número aleatorio entre 1 y 10
+            cuentaBancaria.setSaldo(BigDecimal.valueOf(num * 10000.0));
+            cuentaBancariaRepositorio.save(cuentaBancaria);
+        }
+
+        return convertirA_DTO(entidadRegistrada);
+    }
+
+    @Override
+    public EntidadDTO createEntidad(CreateEntidadDTO createEntidadDTO) {
+        Entidad entidad = convertirA_Entidad(createEntidadDTO);
+        Entidad entidadRegistrada = entidadRepositorio.save(entidad);
+        return convertirA_DTO(entidadRegistrada);
+    }
+
+    /// PATCH ------------------------------------------------------------------------------------------------------------------------------------------------
+    @Override
+    public Optional<EntidadDTO> updateEntidad(Long id, UpdateEntidadDTO updateEntidadDTO) {
+        return entidadRepositorio.findById(id)
+                .map(entidad -> {
+                    if (entidad == null) {
+                        throw new RecursoNoEncontradoException("Item con ID " + id + " no encontrado para actualizar.");
+                    }
+                    if (updateEntidadDTO.getNombre() != null) entidad.setNombre(updateEntidadDTO.getNombre());
+                    if (updateEntidadDTO.getRolEntidad() != null) entidad.setRolEntidad(updateEntidadDTO.getRolEntidad());
+                    if (updateEntidadDTO.getTipoEntidad() != null) entidad.setTipoEntidad(updateEntidadDTO.getTipoEntidad());
+                    if (updateEntidadDTO.getEdad() != null) entidad.setEdad(updateEntidadDTO.getEdad());
+
+                    if (updateEntidadDTO.getDni() != null) {
+                        Integer nuevoDni = updateEntidadDTO.getDni();
+                        Optional<Entidad> dniYaExiste = entidadRepositorio.findByDni(nuevoDni);
+                        if (dniYaExiste.isPresent()) throw new ConflictoDeDatosException("Ya existe otra entidad registrada con ese DNI.");
+                        entidad.setDni(nuevoDni);
+                    }
+
+                    Entidad entidadModificada = entidadRepositorio.save(entidad);
+                    return convertirA_DTO(entidadModificada);
+                })
+                .or(() -> {
+                    throw new RecursoNoEncontradoException("Item con ID " + id + " no encontrado para actualizar.");
+                });
+    }
+
+    // Modificar Entidad de un Puesto específico
+    @Transactional
+    public Optional<EntidadDTO> updateEntidadForPuesto(Long id, Long puestoId, UpdateEntidadDTO updateEntidadDTO) {
+        Optional<EntidadDTO> entidad = getEntidadByIdAndPuestoId(id, puestoId);
+        if (entidad.isPresent()) {
+            return updateEntidad(id, updateEntidadDTO);
+        }
+        throw new RecursoNoEncontradoException("La entidad con ID " + id + " no fue encontrada o no está asociada al puesto " + puestoId + " para ser modificada.");
+    }
+
+    /// DELETE ------------------------------------------------------------------------------------------------------------------------------------------------
+
+    @Override
+    public boolean deleteEntidad(Long id) {
+        if (entidadRepositorio.existsById(id)) {
+            entidadRepositorio.deleteById(id);
+            return true;
+        }
+        throw new RecursoNoEncontradoException("La entidad de ID " + id + " no ha sido encontrada.");
+    }
+
+    // Eliminar Entidad de un Puesto específico
+    @Transactional
+    public boolean deleteEntidadFromPuesto(Long id, Long puestoId) {
+        Optional<EntidadDTO> entidad = getEntidadByIdAndPuestoId(id, puestoId);
+        if (entidad.isPresent()) {
+            return deleteEntidad(id);
+        }
+        throw new RecursoNoEncontradoException("La entidad con ID " + id + " no fue encontrada o no está asociada al puesto " + puestoId + " para ser eliminada.");
+    }
+
 }

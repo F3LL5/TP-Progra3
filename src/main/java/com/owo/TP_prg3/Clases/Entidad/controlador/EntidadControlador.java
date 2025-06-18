@@ -19,6 +19,9 @@ public class EntidadControlador {
     @Autowired
     private EntidadServicioImpl entidadServicio;
 
+
+    /// GET ------------------------------------------------------------------------------------------------------------------------------------------------
+
     @GetMapping
     public ResponseEntity<List<EntidadDTO>> getAllEntidades(){
         List<EntidadDTO> entidades = entidadServicio.getAllEntidades();
@@ -39,31 +42,10 @@ public class EntidadControlador {
         return ResponseEntity.ok(entidadDTO);
     }
 
-    @PostMapping
-    public ResponseEntity<EntidadDTO> createEntidad(@Valid @RequestBody CreateEntidadDTO createEntidadDTO){
-        EntidadDTO newEntidad = entidadServicio.createEntidad(createEntidadDTO);
-        return new ResponseEntity<>(newEntidad, HttpStatus.CREATED);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteItem(@PathVariable Long id) {
-        entidadServicio.deleteEntidad(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<UpdateEntidadDTO> updateEntidad(@PathVariable Long id, @Valid @RequestBody UpdateEntidadDTO updateEntidadDTO){
-        EntidadDTO entidadDTO = entidadServicio.updateEntidad(id, updateEntidadDTO)
-                .orElse(null);
-        return ResponseEntity.ok(updateEntidadDTO);
-    }
-
     @GetMapping("/filtrarYOrdenar")
     public ResponseEntity<List<EntidadDTO>> filtrarYOrdenar(
-            @RequestParam(required = false) Long puestoId,
-            @RequestParam(required = false) String rol_entidad,
-            @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false) String sortDir
+            @RequestParam(required = false) Long puestoId, @RequestParam(required = false) String rol_entidad,
+            @RequestParam(required = false) String sortBy, @RequestParam(required = false) String sortDir
     ) {
         List<EntidadDTO> entidades = entidadServicio.filtrarYOrdenar(puestoId,rol_entidad, sortBy, sortDir);
         return ResponseEntity.ok(entidades);
@@ -83,11 +65,42 @@ public class EntidadControlador {
         return ResponseEntity.ok(entidadDTO);
     }
 
+    // Filtrar Clientes con pedidos de un puesto específico
+    @GetMapping("/clientesConPedidosPuesto/{puestoId}")
+    public ResponseEntity<List<EntidadDTO>> getClientesConPedidosByPuestoId(@PathVariable Long puestoId) {
+        List<EntidadDTO> clientes = entidadServicio.getClientesConPedidosByPuestoId(puestoId);
+        return ResponseEntity.ok(clientes);
+    }
+
+    /// POST ------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+    @PostMapping
+    public ResponseEntity<EntidadDTO> createEntidad(@Valid @RequestBody CreateEntidadDTO createEntidadDTO){
+        EntidadDTO newEntidad = entidadServicio.createEntidad(createEntidadDTO);
+        return new ResponseEntity<>(newEntidad, HttpStatus.CREATED);
+    }
+
     // Agregar Entidad para un Puesto específico (asumiendo que el DTO solo tiene los datos de la entidad)
     @PostMapping("/puesto/{puestoId}")
     public ResponseEntity<EntidadDTO> createEntidadForPuesto(@PathVariable Long puestoId, @Valid @RequestBody CreateEntidadDTO createEntidadDTO){
         EntidadDTO newEntidad = entidadServicio.createEntidadForPuesto(puestoId, createEntidadDTO);
         return new ResponseEntity<>(newEntidad, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/puesto/{puestoId}/v2")
+    public ResponseEntity<EntidadDTO> createEntidadYCuentaBancaria(@PathVariable Long puestoId, @Valid @RequestBody CreateEntidadDTO createEntidadDTO){
+        EntidadDTO newEntidad = entidadServicio.createEntidadYCuentaBancaria(puestoId, createEntidadDTO);
+        return new ResponseEntity<>(newEntidad, HttpStatus.CREATED);
+    }
+
+
+    /// DELETE ------------------------------------------------------------------------------------------------------------------------------------------------
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteItem(@PathVariable Long id) {
+        entidadServicio.deleteEntidad(id);
+        return ResponseEntity.noContent().build();
     }
 
     // Eliminar Entidad de un Puesto específico
@@ -97,6 +110,16 @@ public class EntidadControlador {
         return ResponseEntity.noContent().build();
     }
 
+
+    /// PATCH ------------------------------------------------------------------------------------------------------------------------------------------------
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<UpdateEntidadDTO> updateEntidad(@PathVariable Long id, @Valid @RequestBody UpdateEntidadDTO updateEntidadDTO){
+        EntidadDTO entidadDTO = entidadServicio.updateEntidad(id, updateEntidadDTO)
+                .orElse(null);
+        return ResponseEntity.ok(updateEntidadDTO);
+    }
+
     // Modificar Entidad de un Puesto específico
     @PatchMapping("/{id}/puesto/{puestoId}")
     public ResponseEntity<EntidadDTO> updateEntidadForPuesto(@PathVariable Long id, @PathVariable Long puestoId, @Valid @RequestBody UpdateEntidadDTO updateEntidadDTO){
@@ -104,15 +127,5 @@ public class EntidadControlador {
                 .orElse(null);
         return ResponseEntity.ok(entidadDTO);
     }
-
-    // Filtrar Clientes con pedidos de un puesto específico
-    @GetMapping("/clientesConPedidosPuesto/{puestoId}")
-    public ResponseEntity<List<EntidadDTO>> getClientesConPedidosByPuestoId(@PathVariable Long puestoId) {
-        List<EntidadDTO> clientes = entidadServicio.getClientesConPedidosByPuestoId(puestoId);
-        return ResponseEntity.ok(clientes);
-    }
-
-
-
 
 }

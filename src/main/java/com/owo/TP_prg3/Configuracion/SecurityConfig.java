@@ -39,6 +39,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/entidades/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers("/api/entidades/clientesConPedidosPuesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/entidades/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/entidades/puesto/*/v2").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/entidades/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/entidades/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/entidades/dni/*").hasAnyRole("DUENO_PUESTO", "ADMIN")

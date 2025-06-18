@@ -17,6 +17,8 @@ import com.owo.TP_prg3.Front.HttpService;
 import com.owo.TP_prg3.Front.Menu.MenuInventarioPuesto;
 import com.owo.TP_prg3.Front.Menu.MenuItem;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
+import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;
+
 import java.io.IOException;
 import java.net.http.HttpResponse;
 import java.util.*;
@@ -101,6 +103,7 @@ public class MenuDuenoPuesto {
                     1. Obtener todas las entidades (Clientes/Proveedores de su puesto)
                     2. Buscar entidad por ID (en su puesto)
                     3. Agregar Entidad (para su puesto)
+                    3.1 Agregar Entidad (Cuenta bancaria automatica)
                     4. Eliminar Entidad (de su puesto)
                     5. Modificar Entidad (de su puesto)
                     6. Filtrar y Ordenar Entidades (de su puesto)
@@ -113,6 +116,7 @@ public class MenuDuenoPuesto {
                 case "1" -> obtenerEntidadesDeMiPuesto();
                 case "2" -> buscarEntidadPorIdDeMiPuesto();
                 case "3" -> agregarEntidadAMiPuesto();
+                case "3.1" -> agregarEntidadAMiPuesto2();
                 case "4" -> eliminarEntidadDeMiPuesto();
                 case "5" -> modificarEntidadDeMiPuesto();
                 case "6" -> filtrarYOrdenarEntidadesDeMiPuesto();
@@ -125,15 +129,35 @@ public class MenuDuenoPuesto {
 
     // Métodos para gestionar entidades de su puesto
     private void obtenerEntidadesDeMiPuesto() throws IOException, InterruptedException {
-        System.out.println("\n--- Obteniendo entidades (Clientes/Proveedores) de su puesto... ---");
+        String rol1 = "CLIENTE";
+        String rol2 = "PROVEEDOR";
+
+        // Construcción de la URL
         Optional<Object> result = HandlerResponse.handleResponse(
-                HttpService.realizarPeticion("GET", API_URL_ENTIDADES + "/puesto/" + puestoUsuario.getPuestoId(), authHeader, null),
+                HttpService.realizarPeticion("GET", API_URL_ENTIDADES + "/filtrarYOrdenar?rol_entidad="  + rol1 , authHeader, null),
+                EntidadDTO.class,
+                "Entidades de su puesto obtenidas exitosamente.",
+                "No se pudieron obtener las entidades de su puesto."
+        );
+        //Y otra tabla para los proveedores
+        Optional<Object> result2 = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("GET", API_URL_ENTIDADES + "/filtrarYOrdenar?rol_entidad=" + rol2, authHeader, null),
                 EntidadDTO.class,
                 "Entidades de su puesto obtenidas exitosamente.",
                 "No se pudieron obtener las entidades de su puesto."
         );
 
+        System.out.println("\n--- Obteniendo entidades (Clientes/Proveedores) ---");
         result.ifPresent(obj -> {
+            List<EntidadDTO> entidades = (List<EntidadDTO>) obj;
+            if (!entidades.isEmpty()) {
+                System.out.println(FlipTableConverters.fromIterable(entidades, EntidadDTO.class));
+            } else {
+                System.out.println("No se encontraron entidades para su puesto.");
+            }
+        });
+
+        result2.ifPresent(obj -> {
             List<EntidadDTO> entidades = (List<EntidadDTO>) obj;
             if (!entidades.isEmpty()) {
                 System.out.println(FlipTableConverters.fromIterable(entidades, EntidadDTO.class));
@@ -178,6 +202,34 @@ public class MenuDuenoPuesto {
 
         Optional<Object> result = HandlerResponse.handleResponse(
                 HttpService.realizarPeticion("POST", API_URL_ENTIDADES + "/puesto/" + puestoUsuario.getPuestoId(), authHeader, jsonBody),
+                EntidadDTO.class,
+                "Entidad agregada exitosamente a su puesto.",
+                "Error al agregar entidad a su puesto."
+        );
+
+        result.ifPresent(obj -> {
+            EntidadDTO entidadDTO = (EntidadDTO) obj;
+            System.out.println(FlipTableConverters.fromIterable(List.of(entidadDTO), EntidadDTO.class));
+        });
+    }
+    private void agregarEntidadAMiPuesto2() throws IOException, InterruptedException {
+        System.out.println("\n--- Agregar nueva entidad para su puesto ---");
+        System.out.print("Nombre: ");
+        String nombre = Escaner.stringValido(scanner);
+        System.out.print("Tipo de Entidad: ");
+        String tipoEntidad = Escaner.stringValido(scanner);
+        System.out.print("Rol [CLIENTE, PROVEEDOR]: ");
+        String rol = Escaner.stringValido(scanner);
+        System.out.print("Edad: ");
+        Integer edad = Escaner.enteroValido(scanner);
+        System.out.print("DNI: ");
+        Integer dni = Escaner.enteroValido(scanner);
+
+        CreateEntidadDTO createEntidadDTO = new CreateEntidadDTO(nombre, RolEntidad.valueOf(rol), tipoEntidad, edad, dni);
+        String jsonBody = mapper.writeValueAsString(createEntidadDTO);
+
+        Optional<Object> result = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("POST", API_URL_ENTIDADES + "/puesto/" + puestoUsuario.getPuestoId() + "/v2", authHeader, jsonBody),
                 EntidadDTO.class,
                 "Entidad agregada exitosamente a su puesto.",
                 "Error al agregar entidad a su puesto."
