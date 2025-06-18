@@ -44,7 +44,7 @@ public class TransaccionServicioImpl implements TransaccionServicio {
         return new TransaccionDTO(
                 transaccion.getTransaccionId(),
                 transaccion.getTipo().name(),
-                transaccion.getFecha(),
+                transaccion.getFecha().toString(),
                 transaccion.getMonto(),
                 transaccion.getCuentaOrigen() != null ? transaccion.getCuentaOrigen().getCuentaBancariaId() : null,
                 transaccion.getCuentaDestino() != null ? transaccion.getCuentaDestino().getCuentaBancariaId() : null

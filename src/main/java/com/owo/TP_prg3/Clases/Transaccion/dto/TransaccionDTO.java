@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class TransaccionDTO {
     protected Long transaccionId;
     protected String tipo;
-    protected LocalDateTime fecha;
+    protected String fecha;
     protected BigDecimal monto;
     protected Long cuentaOrigenId;
     protected Long cuentaDestinoId;

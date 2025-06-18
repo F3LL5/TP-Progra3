@@ -80,9 +80,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/pedidos/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/pedidos/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/pedidos/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
-                        // >>>>>> LA LÍNEA MODIFICADA ESTÁ AQUÍ <<<<<<
+
+
                         .requestMatchers(HttpMethod.POST, "/api/pedidos/createPedidoYtransaccion").hasAnyRole("DUENO_PUESTO", "ADMIN")
-                        // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
                         .requestMatchers(HttpMethod.DELETE, "/api/pedidos/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/pedidos/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
 
@@ -93,7 +94,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/detalles-pedido/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/detalles-pedido/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/detalles-pedido/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
-
+                        .requestMatchers(HttpMethod.GET, "/api/detalles-pedido/pedido/{pedidoId}/puesto/{puestoId}").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         // ADMIN: acceso total a cualquier otro endpoint bajo /api/**
                         .requestMatchers("/api/**").hasRole("ADMIN")
 

@@ -177,4 +177,19 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
                 .filter(detalle -> detalle.getPedido() != null && detalle.getPedido().getPuestoId().equals(puestoId))
                 .map(this::convertirA_DTO);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

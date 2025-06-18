@@ -111,4 +111,8 @@ public class EntidadControlador {
         List<EntidadDTO> clientes = entidadServicio.getClientesConPedidosByPuestoId(puestoId);
         return ResponseEntity.ok(clientes);
     }
+
+
+
+
 }

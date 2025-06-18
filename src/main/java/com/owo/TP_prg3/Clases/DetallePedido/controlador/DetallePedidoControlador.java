@@ -64,4 +64,23 @@ public class DetallePedidoControlador {
         }
         return Optional.empty();
     }
+
+    @GetMapping("/pedido/{pedidoId}/puesto/{puestoId}")
+    public ResponseEntity<List<DetallePedidoDTO>> getDetallesPedidoByPedidoIdAndPuestoId(@PathVariable Long pedidoId, @PathVariable Long puestoId) {
+        List<DetallePedidoDTO> detallesPedido = detallePedidoServicio.getDetallesPedidoByPedidoIdAndPuestoId(pedidoId, puestoId);
+        return ResponseEntity.ok(detallesPedido);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
