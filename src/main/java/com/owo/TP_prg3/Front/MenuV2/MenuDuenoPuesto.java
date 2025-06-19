@@ -10,6 +10,7 @@ import com.owo.TP_prg3.Clases.Entidad.dto.EntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.dto.UpdateEntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.modelo.RolEntidad;
 import com.owo.TP_prg3.Clases.InventarioPuesto.dto.InventarioPuestoDTO;
+import com.owo.TP_prg3.Clases.InventarioPuesto.dto.UpdateInventarioPuestoDTO;
 import com.owo.TP_prg3.Excepciones.Handler.HandlerResponse;
 import com.owo.TP_prg3.Clases.Puesto.modelo.Puesto;
 import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
@@ -29,7 +30,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 public class MenuDuenoPuesto {
-    ///--------------------------------------ATRIBUTOS------------------------------------------------------------------
+
     private static final String API_URL_ENTIDADES = "http://localhost:8080/api/entidades";
     private static final String API_URL_INVENTARIO_PUESTO = "http://localhost:8080/api/inventario-puesto";
     private static final String API_URL_PEDIDOS = "http://localhost:8080/api/pedidos";
@@ -38,19 +39,18 @@ public class MenuDuenoPuesto {
     private static final String API_URL_CUENTAS_BANCARIAS = "http://localhost:8080/api/cuentas-bancarias";
     private static final String API_URL_PUESTOS = "http://localhost:8080/api/puestos";
 
+
     private final String authHeader;
     private final Scanner scanner = new Scanner(System.in);
     private final Puesto puestoUsuario;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    ///----------------------------------CONSTRUCTOR--------------------------------------------------------------------
     public MenuDuenoPuesto(String authHeader, Puesto puestoUsuario) {
         this.authHeader = authHeader;
         this.puestoUsuario = puestoUsuario;
         HandlerResponse.setObjectMapper(new ObjectMapper());
     }
 
-    ///---------------------------------MENU----------------------------------------------------------------------------
     public void gestionar() throws IOException, InterruptedException {
         if (puestoUsuario == null) {
             System.out.println("No tiene un puesto asignado. No puede acceder al menú de Dueño de Puesto.");
@@ -134,7 +134,7 @@ public class MenuDuenoPuesto {
         } while (!opcion.equals("0"));
     }
 
-    /// ------------------------------ENTIDAD DE SU PUESTO--------------------------------------------------------------
+    // Métodos para gestionar entidades de su puesto
     private void obtenerEntidadesDeMiPuesto() throws IOException, InterruptedException {
         String rol1 = "CLIENTE";
         String rol2 = "PROVEEDOR";
@@ -448,7 +448,10 @@ public class MenuDuenoPuesto {
     }
 
 
-    /// --------------------------------METODOS INVENTARIO--------------------------------------------------------------
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    /// INVENTARIO
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     private void gestionarInventarioPuesto() throws IOException, InterruptedException {
         String opcion;
         do {
@@ -472,7 +475,7 @@ public class MenuDuenoPuesto {
                 case "2" -> buscarInventarioPorIdDeMiPuesto();
                 case "3" -> agregarInventarioPorPuesto();
                 case "4" -> eliminarInventarioPorPuesto();
-                case "5" -> modificarInventarioPorPuesto();
+                case "5" -> modificarInventarioPuesto();
                 case "6" -> mostrarProductosEnStock();
                 case "7" -> mostrarProductosEnStockBajo();
                 case "8" -> filtrarYordenarItemsInventario();
@@ -588,7 +591,7 @@ public class MenuDuenoPuesto {
         });
     }
 
-    ///-------------------------------------POST DEL PUESTO-------------------------------------------------------------
+    /// POST
     private void agregarInventarioPorPuesto() throws IOException, InterruptedException {
         System.out.println("AGREGAR NUEVO INVENTARIO");
         System.out.print("Ingrese cantidad: ");
@@ -621,7 +624,7 @@ public class MenuDuenoPuesto {
         }
     }
 
-    ///-------------------------------------DELETE DEL PUESTO-----------------------------------------------------------
+    /// DELETE
     private void eliminarInventarioPorPuesto() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID del inventario a eliminar de su puesto: ");
         Integer id = Escaner.enteroValido(scanner);
@@ -635,60 +638,83 @@ public class MenuDuenoPuesto {
         }
     }
 
-    ///--------------------------------------PATCH DEL PUESTO-----------------------------------------------------------
-    private void modificarInventarioPorPuesto() throws IOException, InterruptedException {
+    ///PATCH
+    private void modificarInventarioPuesto() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID del inventario a modificar en su puesto: ");
         Long id = Long.valueOf(Escaner.enteroValido(scanner));
-        System.out.println();
 
-        System.out.print("""
-            ATRIBUTO A MODIFICAR:
-            1. Cantidad
-            2. Puesto
-            3. Item
-            4. Stock Minimo
-            5. Precio de venta
-            6. Costo adquisicion
-            0. Cancelar
-            Ingrese una opción:"""
-        );
-        Integer opcion = Escaner.enteroValido(scanner);
-
-        if (opcion != 0) System.out.print("Ingrese el nuevo valor: ");
-        String jsonBody = "";
-        switch (opcion) {
-            case 1 -> {
-                Integer cantidad = Escaner.enteroValido(scanner);
-                jsonBody = "{\"cantidad\":" + cantidad + "}";
-            }
-            case 2 -> {
-                // Si se permite cambiar el puesto de un inventario, el backend debería manejarlo.
-                // En este caso, el endpoint específico de puesto lo restringiría.
-                Long puestoIdNuevo = Long.valueOf(Escaner.enteroValido(scanner));
-                jsonBody = "{\"puestoId\":" + puestoIdNuevo + "}";
-            }
-            case 3 -> {
-                int itemId = Escaner.enteroValido(scanner);
-                jsonBody = "{\"itemId\":" + itemId + "}";
-            }
-            case 4 -> {
-                Integer stockMin = Escaner.enteroValido(scanner);
-                jsonBody = "{\"stockMin\":" + stockMin + "}";
-            }
-            case 5 -> {
-                BigDecimal precioVenta = BigDecimal.valueOf(Escaner.doubleValido(scanner));
-                jsonBody = "{\"precioVenta\":" + precioVenta + "}";
-            }
-            case 6 -> {
-                BigDecimal costoAdquisicion = BigDecimal.valueOf(Escaner.doubleValido(scanner));
-                jsonBody = "{\"costoAdquisicion\":" + costoAdquisicion + "}";
-            }
-            default -> {
-                System.out.println("Opcion no válida.");
-                return;
-            }
+        // Obtener el inventario existente para obtener los valores actuales
+        HttpResponse<String> responseGet = HttpService.realizarPeticion("GET", API_URL_INVENTARIO_PUESTO + "/" + id + "/puesto/" + puestoUsuario.getPuestoId(), authHeader, "");
+        if (responseGet.statusCode() != 200) {
+            HandlerResponse.handleErrorResponse(responseGet.statusCode(), responseGet.body());
+            return;
         }
-        // Modificado: Ahora se envía el puestoId en la URL para modificar un inventario específico del puesto
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule()); // Para manejar tipos de fecha/hora si existen
+        InventarioPuestoDTO inventarioExistente = mapper.readValue(responseGet.body(), InventarioPuestoDTO.class);
+
+        System.out.println("Peticion:\"" + API_URL_INVENTARIO_PUESTO + "/" + id + "/puesto/" + puestoUsuario.getPuestoId() + "\"");
+        System.out.println("Código de estado: " + responseGet.statusCode() + " " + (responseGet.statusCode() == 200 ? "OK" : "Error"));
+        System.out.println("Cuerpo de la respuesta:");
+        System.out.println(responseGet.body());
+
+        System.out.println("\nATRIBUTO A MODIFICAR:");
+        System.out.println("1. Cantidad");
+        System.out.println("2. Puesto"); // Este campo no debería ser modificable directamente aquí
+        System.out.println("3. Item");   // Este campo no debería ser modificable directamente aquí
+        System.out.println("4. Stock Minimo");
+        System.out.println("5. Precio de venta");
+        System.out.println("6. Costo adquisicion");
+        System.out.println("0. Cancelar");
+        System.out.print("Ingrese una opción: ");
+        int opcion = Escaner.enteroValido(scanner);
+        if (opcion == 0) return;
+
+        System.out.print("Ingrese el nuevo valor: ");
+        String valorNuevo = scanner.nextLine();
+
+        UpdateInventarioPuestoDTO updateDTO = new UpdateInventarioPuestoDTO();
+        String jsonBody = "";
+
+        try {
+            switch (opcion) {
+                case 1 -> { // Cantidad
+                    updateDTO.setCantidad(Integer.parseInt(valorNuevo));
+                }
+                case 2 -> { // Puesto (No se recomienda modificar el puesto de esta forma, pero si se hiciera, se necesitaría el ID del puesto)
+                    // Aquí necesitarías validar que el nuevo valor sea un ID de puesto válido.
+                    // updateDTO.setPuestoId(Long.parseLong(valorNuevo));
+                    System.out.println("No se permite modificar el Puesto directamente desde aquí.");
+                    return;
+                }
+                case 3 -> { // Item (No se recomienda modificar el item de esta forma, pero si se hiciera, se necesitaría el ID del item)
+                    // Aquí necesitarías validar que el nuevo valor sea un ID de item válido.
+                    // updateDTO.setItemId(Long.parseLong(valorNuevo));
+                    System.out.println("No se permite modificar el Item directamente desde aquí.");
+                    return;
+                }
+                case 4 -> { // Stock Minimo
+                    updateDTO.setStockMin(Integer.parseInt(valorNuevo));
+                }
+                case 5 -> { // Precio de venta
+                    updateDTO.setPrecioVenta(new BigDecimal(valorNuevo));
+                }
+                case 6 -> { // Costo adquisicion
+                    updateDTO.setCostoAdquisicion(new BigDecimal(valorNuevo));
+                }
+                default -> {
+                    System.out.println("Opción no válida.");
+                    return;
+                }
+            }
+            // Convertir el DTO a JSON. @JsonInclude(JsonInclude.Include.NON_NULL) se encargará de incluir solo los campos no nulos.
+            jsonBody = mapper.writeValueAsString(updateDTO);
+
+        } catch (NumberFormatException e) {
+            System.out.println("Error: El valor ingresado no es un número válido para la opción seleccionada.");
+            return;
+        }
+
         HttpResponse<String> response = HttpService.realizarPeticion("PATCH", API_URL_INVENTARIO_PUESTO + "/" + id + "/puesto/" + puestoUsuario.getPuestoId(), authHeader, jsonBody);
 
         int statusCode = response.statusCode();
@@ -699,7 +725,8 @@ public class MenuDuenoPuesto {
         }
     }
 
-    ///--------------------------------------METODOS DE STOCK-----------------------------------------------------------
+
+    /// METODOS DE STOCK
     private void mostrarProductosEnStock() throws IOException, InterruptedException {
         Long id = puestoUsuario.getPuestoId();
 
@@ -765,7 +792,10 @@ public class MenuDuenoPuesto {
     }
 
 
-    /// -------------------------------------CUENTA BANCARIA------------------------------------------------------------
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    /// CUENTA BANCARIA
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     private void verMiCuentaBancaria() throws IOException, InterruptedException {
         System.out.println("\n--- Visualizando detalles de su cuenta bancaria ---");
         if (puestoUsuario != null && puestoUsuario.getDuenio().getEntidad_id() != null) {
@@ -785,7 +815,9 @@ public class MenuDuenoPuesto {
         }
     }
 
-    /// ------------------------------------TRANSACCIONES---------------------------------------------------------------
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    /// TRANSACCIONES
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     private void gestionarTransaccionesPuesto() throws IOException, InterruptedException {
         String opcion;
@@ -809,7 +841,7 @@ public class MenuDuenoPuesto {
         } while (!opcion.equals("0"));
     }
 
-    ///-----------------------METODOS PARA GESTIONAR TRANSACCIONES DE SU PUESTO----------------------------------------
+    // Métodos para gestionar transacciones de su puesto
     private void obtenerTransaccionesDeMiPuesto() throws IOException, InterruptedException {
         System.out.println("\n--- Obteniendo transacciones de su puesto... ---");
         Optional<Object> result = HandlerResponse.handleResponse(
@@ -893,9 +925,10 @@ public class MenuDuenoPuesto {
         });
     }
 
-    ///--------------------Gestiona los pedidos del puesto del dueño.---------------------------------------------------
-    ///-----------Incluye obtener todos, buscar por ID, agregar, eliminar y modificar.----------------------------------
-
+    /*
+     Gestiona los pedidos del puesto del dueño.
+     Incluye obtener todos, buscar por ID, agregar, eliminar y modificar.
+    */
     private void gestionarPedidosPuesto() throws IOException, InterruptedException {
         String opcion;
         do {
@@ -922,7 +955,7 @@ public class MenuDuenoPuesto {
         } while (!opcion.equals("0"));
     }
 
-    ///-------------------------Métodos para gestionar pedidos de su puesto---------------------------------------------
+    // Métodos para gestionar pedidos de su puesto
     private void obtenerPedidosDeMiPuesto() throws IOException, InterruptedException {
         System.out.println("\n--- Obteniendo todos los pedidos de su puesto... ---");
         Optional<Object> result = HandlerResponse.handleResponse(
@@ -1168,9 +1201,10 @@ public class MenuDuenoPuesto {
         System.out.println(FlipTableConverters.fromIterable(transacciones, TransaccionDTO.class));
     }
 
-
-    ///--------------------GESTINONA LOS DETALLES DE PEDIDOS DEL PUESTO-------------------------------------------------
-    ///------------------Incluye obtener todos, buscar por ID, agregar, eliminar y modificar.---------------------------
+    /*
+     Gestiona los detalles de pedido del puesto del dueño.
+     Incluye obtener todos, buscar por ID, agregar, eliminar y modificar.
+    */
     private void gestionarDetallesPedidoPuesto() throws IOException, InterruptedException {
         String opcion;
         do {
@@ -1195,7 +1229,7 @@ public class MenuDuenoPuesto {
         } while (!opcion.equals("0"));
     }
 
-    ///-----------------------Métodos para gestionar detalles de pedido de su puesto------------------------------------
+    // Métodos para gestionar detalles de pedido de su puesto
     private void obtenerDetallesPedidoDeMiPuestoPorPedido() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID del pedido del cual desea ver los detalles (de su puesto): ");
         Integer pedidoId = Escaner.enteroValido(scanner);
@@ -1216,6 +1250,7 @@ public class MenuDuenoPuesto {
             }
         });
     }
+
 
     private void agregarDetallePedidoAMiPuesto() throws IOException, InterruptedException {
         System.out.println("\n--- Registrar detalle de pedido para un pedido de su puesto ---");
@@ -1307,4 +1342,6 @@ public class MenuDuenoPuesto {
         MenuItem menuItem = new MenuItem(authHeader);
         menuItem.gestionar();
     }
+
+
 }
