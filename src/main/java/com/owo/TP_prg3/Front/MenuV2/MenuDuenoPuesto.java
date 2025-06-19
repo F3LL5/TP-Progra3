@@ -431,10 +431,10 @@ public class MenuDuenoPuesto {
             System.out.println("Opción no válida.");
             return;
         }
-
-        System.out.print("Ingrese el nuevo valor: ");
+        
         switch (opcion){
             case 1 -> {
+                System.out.print("Ingrese el nuevo valor: ");
                 String nombre = Escaner.stringValido(scanner);
                 jsonBody = "{\"nombre\":\"" +  nombre + "\"}" ;
             }
