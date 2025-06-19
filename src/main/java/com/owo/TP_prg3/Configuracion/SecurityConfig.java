@@ -77,6 +77,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/transacciones/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/transacciones/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/transacciones/filtrarYOrdenar*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/transacciones/puesto/*/filtrarYOrdenar*").hasAnyRole("DUENO_PUESTO", "ADMIN")
 
                         // Pedidos
                         .requestMatchers(HttpMethod.GET, "/api/pedidos").hasAnyRole("DUENO_PUESTO", "ADMIN")
