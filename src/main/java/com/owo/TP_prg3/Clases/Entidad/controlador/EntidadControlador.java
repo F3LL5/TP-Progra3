@@ -57,14 +57,6 @@ public class EntidadControlador {
         return ResponseEntity.ok(entidades);
     }
 
-    // Buscar entidad por ID y Puesto ID
-    @GetMapping("/{id}/puesto/{puestoId}")
-    public ResponseEntity<EntidadDTO> getEntidadByIdAndPuestoId(@PathVariable Long id, @PathVariable Long puestoId) {
-        EntidadDTO entidadDTO = entidadServicio.getEntidadByIdAndPuestoId(id, puestoId)
-                .orElse(null);
-        return ResponseEntity.ok(entidadDTO);
-    }
-
     // Filtrar Clientes con pedidos de un puesto específico
     @GetMapping("/clientesConPedidosPuesto/{puestoId}")
     public ResponseEntity<List<EntidadDTO>> getClientesConPedidosByPuestoId(@PathVariable Long puestoId) {

@@ -108,26 +108,24 @@ public class MenuDuenoPuesto {
             System.out.print("""
                     \n--- GESTIÓN DE ENTIDADES (SU PUESTO) ---
                     1. Obtener todas los clientes y proveedores del mercado
-                    2. Buscar entidad por ID (en su puesto)
-                    3. Agregar Entidad (para su puesto)
-                    3.1 Agregar Entidad (Cuenta bancaria automatica)
-                    4. Eliminar Entidad (de su puesto)
-                    5. Modificar Entidad (de su puesto)
-                    6. Filtrar y Ordenar Entidades (de su puesto)
-                    7. Filtrar Clientes con pedidos de su puesto
+                    2. Agregar Entidad
+                    2.1 Agregar Entidad (Cuenta bancaria automatica)
+                    3. Eliminar Entidad
+                    4. Modificar Entidad
+                    5. Filtrar y Ordenar Entidades
+                    6. Filtrar Clientes con pedidos del puesto
                     0. Volver al menú de Dueño de Puesto
                     Ingrese una opción:"""
             );
             opcion = Escaner.stringValido(scanner);
             switch (opcion) {
                 case "1" -> obtenerEntidadesDeMiPuesto();
-                case "2" -> buscarEntidadPorIdDeMiPuesto();
-                case "3" -> agregarEntidadAMiPuesto();
-                case "3.1" -> agregarEntidadAMiPuesto2();
-                case "4" -> eliminarEntidadDeMiPuesto();
-                case "5" -> modificarEntidadDeMiPuesto();
-                case "6" -> filtrarYOrdenarEntidadesDeMiPuesto();
-                case "7" -> filtrarClientesConPedidosDeMiPuesto();
+                case "2" -> agregarEntidadAMiPuesto();
+                case "2.1" -> agregarEntidadAMiPuesto2();
+                case "3" -> eliminarEntidadDeMiPuesto();
+                case "4" -> modificarEntidadDeMiPuesto();
+                case "5" -> filtrarYOrdenarEntidadesDeMiPuesto();
+                case "6" -> filtrarClientesConPedidosDeMiPuesto();
                 case "0" -> {}
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
@@ -171,23 +169,6 @@ public class MenuDuenoPuesto {
             } else {
                 System.out.println("No se encontraron entidades para su puesto.");
             }
-        });
-    }
-
-    private void buscarEntidadPorIdDeMiPuesto() throws IOException, InterruptedException {
-        System.out.print("Ingrese el ID de la entidad a buscar en su puesto: ");
-        Integer id = Escaner.enteroValido(scanner);
-
-        Optional<Object> result = HandlerResponse.handleResponse(
-                HttpService.realizarPeticion("GET", API_URL_ENTIDADES + "/" + id + "/puesto/" + puestoUsuario.getPuestoId(), authHeader, null),
-                EntidadDTO.class,
-                "Entidad encontrada en su puesto:",
-                "No se encontró la entidad con ID " + id + " en su puesto."
-        );
-
-        result.ifPresent(obj -> {
-            EntidadDTO entidad = (EntidadDTO) obj;
-            System.out.println(FlipTableConverters.fromIterable(List.of(entidad), EntidadDTO.class));
         });
     }
 
