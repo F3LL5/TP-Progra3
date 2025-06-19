@@ -107,7 +107,7 @@ public class MenuDuenoPuesto {
         do {
             System.out.print("""
                     \n--- GESTIÓN DE ENTIDADES (SU PUESTO) ---
-                    1. Obtener todas los clientes y proveedores del mercado
+                    1. Obtener todos los clientes y proveedores
                     2. Agregar Entidad
                     2.1 Agregar Entidad (Cuenta bancaria automatica)
                     3. Eliminar Entidad
@@ -321,11 +321,18 @@ public class MenuDuenoPuesto {
     }
 
     private void filtrarYOrdenarEntidadesDeMiPuesto() throws IOException, InterruptedException {
-        System.out.println("--- Filtrar y ordenar entidades de su puesto ---");
-
-        System.out.print("Filtrar por ROL (CLIENTE, PROVEEDOR) o dejar vacío: ");
-        String rol = scanner.nextLine().trim();
-        if (rol.isBlank()) rol = null;
+        System.out.println("--- Filtrar y ordenar entidades del mercado ---");
+        boolean bucle = false;
+        String rol = "";
+        do {
+            System.out.print("Filtrar por ROL (1. CLIENTE, 2.PROVEEDOR): ");
+            int opcion = Escaner.enteroValido(scanner);
+            switch (opcion) {
+                case 1 -> rol = "CLIENTE";
+                case 2 -> rol = "PROVEEDOR";
+                default -> bucle = true;
+            };
+        } while (bucle);
 
         System.out.print("Ordenar por 'nombre', 'edad', 'dni' o 'tipoEntidad' (dejar vacío si no aplica): ");
         String orden = scanner.nextLine().trim();
@@ -338,7 +345,7 @@ public class MenuDuenoPuesto {
             if (direccion.isBlank()) direccion = null;
         }
 
-        StringBuilder urlBuilder = new StringBuilder(API_URL_ENTIDADES + "/puesto/" + puestoUsuario.getPuestoId() + "/filtrarYOrdenar?");
+        StringBuilder urlBuilder = new StringBuilder(API_URL_ENTIDADES  + "/filtrarYOrdenar?");
         if (rol != null) urlBuilder.append("rol_entidad=").append(rol).append("&");
         if (orden != null) urlBuilder.append("sortBy=").append(orden).append("&");
         if (direccion != null) urlBuilder.append("sortDir=").append(direccion);

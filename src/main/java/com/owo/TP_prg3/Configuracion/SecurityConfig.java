@@ -44,6 +44,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/api/entidades/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/entidades/dni/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/entidades/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/entidades/filtrarYOrdenar*").hasAnyRole("DUENO_PUESTO", "ADMIN")
 
                         // Inventario
                         .requestMatchers(HttpMethod.GET, "/api/inventario-puesto").hasAnyRole("DUENO_PUESTO", "ADMIN")
@@ -82,10 +83,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/pedidos/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/pedidos/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/pedidos/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
-
-
                         .requestMatchers(HttpMethod.POST, "/api/pedidos/createPedidoYtransaccion").hasAnyRole("DUENO_PUESTO", "ADMIN")
-
                         .requestMatchers(HttpMethod.DELETE, "/api/pedidos/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/pedidos/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
 
@@ -97,8 +95,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/detalles-pedido/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/detalles-pedido/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/detalles-pedido/pedido/{pedidoId}/puesto/{puestoId}").hasAnyRole("DUENO_PUESTO", "ADMIN")
-
-
 
 
                         // ADMIN: acceso total a cualquier otro endpoint bajo /api/**
