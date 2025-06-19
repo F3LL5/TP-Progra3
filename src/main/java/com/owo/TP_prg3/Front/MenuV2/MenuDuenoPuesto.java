@@ -431,7 +431,6 @@ public class MenuDuenoPuesto {
             System.out.println("Opción no válida.");
             return;
         }
-        
         switch (opcion){
             case 1 -> {
                 System.out.print("Ingrese el nuevo valor: ");
@@ -925,7 +924,7 @@ public class MenuDuenoPuesto {
         result.ifPresent(obj -> {
             List<TransaccionDTO> transacciones = (List<TransaccionDTO>) obj;
             if (!transacciones.isEmpty()) {
-                FlipTableHelper.imprimir(List.of(transacciones));
+                FlipTableHelper.imprimir(transacciones);
             } else {
                 System.out.println("No se encontraron transacciones con esos filtros para su puesto.");
             }
