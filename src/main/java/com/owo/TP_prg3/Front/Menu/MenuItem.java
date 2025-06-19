@@ -155,7 +155,7 @@ public class MenuItem {
         result.ifPresent(obj -> {
             List<ItemDTO> items = (List<ItemDTO>) obj;
             if (!items.isEmpty()) {
-                FlipTableHelper.imprimir(List.of(items));
+                FlipTableHelper.imprimir(items);
             } else {
                 System.out.println("No se encontraron resultados.");
             }
