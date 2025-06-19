@@ -35,7 +35,6 @@ public class MenuUsuarios {
                     \n--- MENÚ DE GESTIÓN DE USUARIOS ---
                     1. Crear nuevo usuario para una entidad existente
                     2. Listar todos los usuarios.
-                    
                     0. Volver al menú principal
                     Ingrese una opción:""");
             opcion = Escaner.stringValido(scanner);
@@ -43,8 +42,7 @@ public class MenuUsuarios {
             switch (opcion) {
                 case "1" -> crearUsuario();
                 case "2" -> obtenerTodos();
-                case "0" -> {
-                }
+                case "0" -> {}
                 default -> System.out.println("Opción no válida.");
             }
             Escaner.pausa(scanner);
@@ -80,7 +78,7 @@ public class MenuUsuarios {
         System.out.print("Ingrese la contraseña para el nuevo usuario: ");
         String password = Escaner.stringValido(scanner);
 
-        // El backend se encargará de buscar la entidad, verificar su tipo y asignar el rol.
+        // El backend se va a encargar de buscar la entidad, verificar su tipo y asignar el rol.
         String jsonBody = String.format("{\"dni\":%d, \"password\":\"%s\"}", dni, password);
 
         HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);

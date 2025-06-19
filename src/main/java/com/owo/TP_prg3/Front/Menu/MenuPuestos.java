@@ -42,8 +42,7 @@ public class MenuPuestos {
                     MenuHistorial_Duenio auditoria = new MenuHistorial_Duenio(authHeader);
                     auditoria.gestionar();
                 }
-                case "0" -> {
-                }
+                case "0" -> {}
                 default -> System.out.println("OPCIÓN INVÁLIDA. VUELVA A INTENTAR");
             }
             if (!opcion.equals("0")) Escaner.pausa(scanner);

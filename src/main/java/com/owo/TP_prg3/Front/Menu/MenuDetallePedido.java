@@ -48,11 +48,10 @@ public class MenuDetallePedido {
                 case "4" -> eliminar();
                 case "5" -> modificar();
                 case "6" -> calcularTotalVentaPedido();
-
                 case "0" -> {} // Salir
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
-            Escaner.pausa(scanner);
+            if (!opcion.equals("0")) Escaner.pausa(scanner);
         } while (!opcion.equals("0"));
     }
     private void mostrarMenu() {
@@ -65,7 +64,6 @@ public class MenuDetallePedido {
                 4. Eliminar
                 5. Modificar
                 6. Calcular el Total de la venta
-                
                 0. Salir
                 Ingrese la opción:""");
     }
@@ -184,7 +182,6 @@ public class MenuDetallePedido {
                 1. ID del pedido
                 2. ID del itemId
                 3. Cantidad
-                
                 0. Cancelar
                 Ingrese una opcion:""");
         Integer opcion = Escaner.enteroValido(scanner);

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jakewharton.fliptables.FlipTable;
-import com.jakewharton.fliptables.FlipTableConverters;
 import com.owo.TP_prg3.Clases.Entidad.dto.CreateEntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.dto.EntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.dto.UpdateEntidadDTO;
@@ -19,7 +18,6 @@ import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
 import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CuentaBancariaDTO;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.TipoTransaccion;
 import com.owo.TP_prg3.Front.HttpService;
-import com.owo.TP_prg3.Front.Menu.MenuInventarioPuesto;
 import com.owo.TP_prg3.Front.Menu.MenuItem;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;
@@ -75,34 +73,32 @@ public class MenuDuenoPuesto {
                 case "0" -> System.out.println("Saliendo del menú de Dueño de Puesto.");
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
-            Escaner.pausa(scanner);
+            if (!opcion.equals("0")) Escaner.pausa(scanner);
         } while (!opcion.equals("0"));
     }
 
     private void mostrarMenuDueñoPuesto() {
-        System.out.print("""
-                \n--- MENÚ DE DUEÑO DE PUESTO (Puesto: %s) ---
-                1. Gestionar Entidades (Clientes y Proveedores de su puesto)
-                2. Gestionar Usuarios (No permitido para Dueños de Puesto)
-                3. Modificar Mi Puesto
-                4. Gestionar inventario de mi puesto
-                5. Ver Detalles de Mi Cuenta Bancaria
-                6. Gestionar Transacciones (De su puesto)
-                7. Gestionar Pedidos (De su puesto)
-                8. Gestionar Detalles de Pedido (De su puesto)
-                9. Gestionar items
-                0. Salir
-                Ingrese una opción:""".formatted(puestoUsuario.getNombre())
-        );
+        System.out.printf("""
+        \n--- MENÚ DE DUEÑO DE PUESTO (Puesto: %s) ---
+        1. Gestionar Entidades (Clientes y Proveedores de su puesto)
+        2. Gestionar Usuarios (No permitido para Dueños de Puesto)
+        3. Modificar Mi Puesto
+        4. Gestionar inventario de mi puesto
+        5. Ver Detalles de Mi Cuenta Bancaria
+        6. Gestionar Transacciones (De su puesto)
+        7. Gestionar Pedidos (De su puesto)
+        8. Gestionar Detalles de Pedido (De su puesto)
+        9. Gestionar items
+        0. Salir
+        Ingrese una opción:""", puestoUsuario.getNombre());
     }
 
     // --- Métodos de gestión específicos para Dueño de Puesto ---
 
-    /*
-     Gestiona entidades de tipo Cliente y Proveedor vinculadas a su puesto.
-     Incluye obtener todos, buscar por ID, agregar, eliminar y modificar.
-     También permite filtrar clientes que tengan un pedido de su puesto.
-    */
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    /// ENTIDADES
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     private void gestionarEntidadesPuesto() throws IOException, InterruptedException {
         String opcion;
         do {
@@ -130,6 +126,7 @@ public class MenuDuenoPuesto {
                 case "0" -> {}
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
+            if (!opcion.equals("0")) Escaner.pausa(scanner);
         } while (!opcion.equals("0"));
     }
 
@@ -153,28 +150,28 @@ public class MenuDuenoPuesto {
                 "No se pudieron obtener las entidades de su puesto."
         );
 
-        System.out.println("\n--- Obteniendo entidades (Clientes/Proveedores) ---");
+        System.out.println("\n--- Obteniendo entidades (Clientes) ---");
         result.ifPresent(obj -> {
             List<EntidadDTO> entidades = (List<EntidadDTO>) obj;
             if (!entidades.isEmpty()) {
                 FlipTableHelper.imprimir(entidades);
             } else {
-                System.out.println("No se encontraron entidades para su puesto.");
+                System.out.println("No se encontraron clientes.");
             }
         });
-
+        System.out.println("\n--- Obteniendo entidades (Proveedores) ---");
         result2.ifPresent(obj -> {
             List<EntidadDTO> entidades = (List<EntidadDTO>) obj;
             if (!entidades.isEmpty()) {
                 FlipTableHelper.imprimir(entidades);
             } else {
-                System.out.println("No se encontraron entidades para su puesto.");
+                System.out.println("No se encontraron proveedores.");
             }
         });
     }
 
     private void agregarEntidadAMiPuesto() throws IOException, InterruptedException {
-        System.out.println("\n--- Agregar nueva entidad para su puesto ---");
+        System.out.println("\n--- Agregar un cliente/proveedor ---");
         System.out.print("Nombre: ");
         String nombre = Escaner.stringValido(scanner);
         System.out.print("Tipo de Entidad: ");
@@ -374,7 +371,6 @@ public class MenuDuenoPuesto {
             finalUrl = finalUrl.substring(0, finalUrl.length() - 1);
         }
 
-        System.out.println("\n-> Consultando " + finalUrl);
         Optional<Object> result = HandlerResponse.handleResponse(
                 HttpService.realizarPeticion("GET", finalUrl, authHeader, null),
                 EntidadDTO.class,
@@ -413,8 +409,6 @@ public class MenuDuenoPuesto {
 
     private void modificarMiPuesto() throws IOException, InterruptedException {
         System.out.print("--- Modificar Mi Puesto ---");
-        System.out.println();
-
         System.out.print("""
             ATRIBUTO A MODIFICAR:
             1. Nombre
@@ -442,7 +436,6 @@ public class MenuDuenoPuesto {
                 jsonBody = "{\"comision\":" + comision + "}";
             }
         }
-        System.out.println(jsonBody);
         HttpResponse<String> response = HttpService.realizarPeticion("PATCH", API_URL_PUESTOS + "/" + puestoUsuario.getPuestoId(), authHeader, jsonBody);
 
         int statusCode = response.statusCode();
@@ -488,6 +481,7 @@ public class MenuDuenoPuesto {
                 case "0" -> {}
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
+            if (!opcion.equals("0")) Escaner.pausa(scanner);
         } while (!opcion.equals("0"));
     }
 
@@ -537,7 +531,7 @@ public class MenuDuenoPuesto {
         String categoria = scanner.nextLine();
         if (categoria.isBlank()) categoria = null;
 
-        System.out.println("""
+        System.out.print("""
         ORDENAR POR:
         [1] NOMBRE
         [2] PRECIO VENTA
@@ -554,7 +548,7 @@ public class MenuDuenoPuesto {
             default -> null;
         };
 
-        System.out.println("""
+        System.out.print("""
         DIRECCIÓN DE ORDEN:
         [1] ASCENDENTE
         [2] DESCENDENTE
@@ -577,8 +571,6 @@ public class MenuDuenoPuesto {
         if (finalUrl.endsWith("&") || finalUrl.endsWith("?")) {
             finalUrl = finalUrl.substring(0, finalUrl.length() - 1);
         }
-
-        System.out.println("\n-> Consultando " + finalUrl);
 
         Optional<Object> result = HandlerResponse.handleResponse(
                 HttpService.realizarPeticion("GET", finalUrl, authHeader, null),
@@ -605,11 +597,11 @@ public class MenuDuenoPuesto {
         Long puestoId = puestoUsuario.getPuestoId();
         System.out.print("Ingrese ID item: ");
         Long itemId = Long.valueOf(Escaner.enteroValido(scanner));
-        System.out.println("Ingrese la cantidad de stock minimo que desea establecer: ");
+        System.out.print("Ingrese la cantidad de stock minimo que desea establecer: ");
         Integer stockMin = Escaner.enteroValido(scanner);
-        System.out.println("Ingrese el precio del item");
+        System.out.print("Ingrese el precio de venta del item");
         BigDecimal precioVenta = BigDecimal.valueOf(Escaner.doubleValido(scanner));
-        System.out.println("Ingrese el costo de adquisicion");
+        System.out.print("Ingrese el costo de adquisicion");
         BigDecimal costoAdquisicion = BigDecimal.valueOf(Escaner.doubleValido(scanner));
 
         String jsonBody = "{" +
@@ -660,14 +652,10 @@ public class MenuDuenoPuesto {
         InventarioPuestoDTO inventarioExistente = mapper.readValue(responseGet.body(), InventarioPuestoDTO.class);
 
         System.out.println("Peticion:\"" + API_URL_INVENTARIO_PUESTO + "/" + id + "/puesto/" + puestoUsuario.getPuestoId() + "\"");
-        System.out.println("Código de estado: " + responseGet.statusCode() + " " + (responseGet.statusCode() == 200 ? "OK" : "Error"));
-        System.out.println("Cuerpo de la respuesta:");
-        System.out.println(responseGet.body());
-
         System.out.println("\nATRIBUTO A MODIFICAR:");
         System.out.println("1. Cantidad");
-        System.out.println("2. Puesto"); // Este campo no debería ser modificable directamente aquí
-        System.out.println("3. Item");   // Este campo no debería ser modificable directamente aquí
+        System.out.println("2. Puesto");
+        System.out.println("3. Item");
         System.out.println("4. Stock Minimo");
         System.out.println("5. Precio de venta");
         System.out.println("6. Costo adquisicion");
@@ -684,36 +672,14 @@ public class MenuDuenoPuesto {
 
         try {
             switch (opcion) {
-                case 1 -> { // Cantidad
-                    updateDTO.setCantidad(Integer.parseInt(valorNuevo));
-                }
-                case 2 -> { // Puesto (No se recomienda modificar el puesto de esta forma, pero si se hiciera, se necesitaría el ID del puesto)
-                    // Aquí necesitarías validar que el nuevo valor sea un ID de puesto válido.
-                    // updateDTO.setPuestoId(Long.parseLong(valorNuevo));
-                    System.out.println("No se permite modificar el Puesto directamente desde aquí.");
-                    return;
-                }
-                case 3 -> { // Item (No se recomienda modificar el item de esta forma, pero si se hiciera, se necesitaría el ID del item)
-                    // Aquí necesitarías validar que el nuevo valor sea un ID de item válido.
-                    // updateDTO.setItemId(Long.parseLong(valorNuevo));
-                    System.out.println("No se permite modificar el Item directamente desde aquí.");
-                    return;
-                }
-                case 4 -> { // Stock Minimo
-                    updateDTO.setStockMin(Integer.parseInt(valorNuevo));
-                }
-                case 5 -> { // Precio de venta
-                    updateDTO.setPrecioVenta(new BigDecimal(valorNuevo));
-                }
-                case 6 -> { // Costo adquisicion
-                    updateDTO.setCostoAdquisicion(new BigDecimal(valorNuevo));
-                }
-                default -> {
-                    System.out.println("Opción no válida.");
-                    return;
-                }
+                case 1 -> updateDTO.setCantidad(Integer.parseInt(valorNuevo));
+                case 2 -> System.out.println("No se permite modificar el Puesto directamente desde aquí.");
+                case 3 -> System.out.println("No se permite modificar el Item directamente desde aquí.");
+                case 4 -> updateDTO.setStockMin(Integer.parseInt(valorNuevo));
+                case 5 -> updateDTO.setPrecioVenta(new BigDecimal(valorNuevo));
+                case 6 -> updateDTO.setCostoAdquisicion(new BigDecimal(valorNuevo));
+                default -> System.out.println("Opción no válida.");
             }
-            // Convertir el DTO a JSON. @JsonInclude(JsonInclude.Include.NON_NULL) se encargará de incluir solo los campos no nulos.
             jsonBody = mapper.writeValueAsString(updateDTO);
 
         } catch (NumberFormatException e) {
@@ -746,8 +712,6 @@ public class MenuDuenoPuesto {
 
         String respuestaJson = response.body();
 
-        // Deserializar JSON a lista de Map<String, Object>
-        // Se usa 'this.mapper' para usar la instancia de la clase
         List<Map<String, Object>> stock = this.mapper.readValue(
                 respuestaJson,
                 new TypeReference<List<Map<String, Object>>>() {
@@ -844,6 +808,7 @@ public class MenuDuenoPuesto {
                 case "0" -> {}
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
+            if (!opcion.equals("0")) Escaner.pausa(scanner);
         } while (!opcion.equals("0"));
     }
 
@@ -912,8 +877,6 @@ public class MenuDuenoPuesto {
             finalUrl = finalUrl.substring(0, finalUrl.length() - 1);
         }
 
-        System.out.println("\n-> Consultando " + finalUrl);
-
         Optional<Object> result = HandlerResponse.handleResponse(
                 HttpService.realizarPeticion("GET", finalUrl, authHeader, null),
                 TransaccionDTO.class,
@@ -958,6 +921,7 @@ public class MenuDuenoPuesto {
                 case "0" -> {}
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
+            if (!opcion.equals("0")) Escaner.pausa(scanner);
         } while (!opcion.equals("0"));
     }
 
@@ -1009,13 +973,13 @@ public class MenuDuenoPuesto {
         boolean bucle = false;
         do {
             bucle = false;
-            System.out.println("""
+            System.out.print("""
                     Ingrese el tipo de transaccion:
                     1.COMPRA
                     2.VENTA
                     3.INGRESO
                     4.EGRESO
-                    """);
+                    Ingrese una opcion:""");
             int n = Escaner.enteroValido(scanner);
             switch (n) {
                 case 1 -> tipoTransaccion = TipoTransaccion.COMPRA.name();
@@ -1035,7 +999,6 @@ public class MenuDuenoPuesto {
             System.out.println("Ingrese el id de la cuenta cliente/proveedor");
             idCuentaOtro=Long.valueOf(Escaner.enteroValido(scanner));
         }
-        System.out.println(puestoUsuario.getPuestoId()+"<---asdasdasdasdasdasd");
 
         String jsonBody =
                 "{"+
@@ -1044,10 +1007,8 @@ public class MenuDuenoPuesto {
                     ",\"idEntidad\":" + idDuenio +
                     ",\"idCuentaDestino\":" + idCuentaOtro +
                 "}";
-        System.out.println(jsonBody);
         HttpResponse<String> response = HttpService.realizarPeticion("POST", API_URL_PEDIDOS+"/createPedidoYtransaccion", authHeader, jsonBody);
 
-        System.out.println(response+"<--asdasdasd");
         int statusCode = response.statusCode();
         if (statusCode >= 200 && statusCode < 300) {
             System.out.println("Pedido agregado exitosamente a su puesto.");
@@ -1107,7 +1068,7 @@ public class MenuDuenoPuesto {
     private void filtrarYOrdenarPedido() throws IOException, InterruptedException {
         System.out.println("--- FILTRAR Y ORDENAR PEDIDOS ---");
 
-        System.out.println("""
+        System.out.print("""
             TIPO DE TRANSACCIÓN:
             [1] COMPRA
             [2] VENTA
@@ -1126,7 +1087,7 @@ public class MenuDuenoPuesto {
 
         LocalDate fechaMin;
         LocalDate fechaMax;
-        System.out.println("""
+        System.out.print("""
             FILTRADO POR FECHAS:
             [1] ESTABLECER FECHA MAX
             [0] SIN FILTRO FECHA MAX
@@ -1136,7 +1097,7 @@ public class MenuDuenoPuesto {
             case 1 -> fechaMin = Escaner.fecha(scanner);
             default -> fechaMin = null;
         };
-        System.out.println("""
+        System.out.print("""
             FILTRADO POR FECHAS:
             [1] ESTABLECER FECHA MIN
             [0] SIN FILTRO FECHA MIN
@@ -1147,7 +1108,7 @@ public class MenuDuenoPuesto {
             default -> fechaMax = null;
         };
 
-        System.out.println("""
+        System.out.print("""
         ORDENAR POR:
         [1] FECHA
         [2] MONTO
@@ -1164,7 +1125,7 @@ public class MenuDuenoPuesto {
             default -> null;
         };
 
-        System.out.println("""
+        System.out.print("""
         DIRECCIÓN DE ORDEN:
         [1] ASCENDENTE
         [2] DESCENDENTE
@@ -1188,8 +1149,6 @@ public class MenuDuenoPuesto {
         if (finalUrl.endsWith("&") || finalUrl.endsWith("?")) {
             finalUrl = finalUrl.substring(0, finalUrl.length() - 1);
         }
-
-        System.out.println("\n-> Consultando " + finalUrl);
 
         HttpResponse<String> response = HttpService.realizarPeticion("GET", finalUrl, authHeader, null);
         String respuestaJson = response.body();
@@ -1232,6 +1191,7 @@ public class MenuDuenoPuesto {
                 case "0" -> {}
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
+            if (!opcion.equals("0")) Escaner.pausa(scanner);
         } while (!opcion.equals("0"));
     }
 

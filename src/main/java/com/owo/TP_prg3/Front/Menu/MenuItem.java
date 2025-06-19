@@ -37,9 +37,7 @@ public class MenuItem {
                 case "3" -> agregar();
                 case "4" -> eliminar();
                 case "5" -> modificar();
-
-                case "1.3" -> filtrarYordenar();
-
+                case "6" -> filtrarYordenar();
                 case "0" -> {} // Salir
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
@@ -56,9 +54,7 @@ public class MenuItem {
                 3. Agregar
                 4. Eliminar
                 5. Modificar
-
-                1.3 filtrarYordenar
-
+                6. filtrarYordenar
                 0. Salir
                 Ingrese la opción:""");
     }
@@ -109,7 +105,7 @@ public class MenuItem {
         String categoria = scanner.nextLine();
         if (categoria.isBlank()) categoria = null;
 
-        System.out.println("""
+        System.out.print("""
         ORDENAR POR:
         [1] NOMBRE
         [0] SIN ORDENAMIENTO
@@ -120,7 +116,7 @@ public class MenuItem {
             default -> null;
         };
 
-        System.out.println("""
+        System.out.print("""
         DIRECCIÓN DE ORDEN:
         [1] ASCENDENTE
         [2] DESCENDENTE
@@ -142,8 +138,6 @@ public class MenuItem {
         if (finalUrl.endsWith("&") || finalUrl.endsWith("?")) {
             finalUrl = finalUrl.substring(0, finalUrl.length() - 1);
         }
-
-        System.out.println("\n-> Consultando " + finalUrl);
 
         Optional<Object> result = HandlerResponse.handleResponse(
                 HttpService.realizarPeticion("GET", finalUrl, authHeader, null),

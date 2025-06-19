@@ -55,7 +55,7 @@ public class MenuEntidades {
                 5. Modificar
                 6. Ordenar y Filtrar
                 0. Salir
-                Ingrese la opción: """);
+                Ingrese la opción:""");
     }
 
     /// ---------------------------------------METODOS------------------------------------------------------------------
@@ -101,7 +101,7 @@ public class MenuEntidades {
     private void filtrarYOrdenar() throws IOException, InterruptedException {
         System.out.println("--- FILTRAR Y ORDENAR ENTIDADES ---");
 
-        System.out.println("""
+        System.out.print("""
         TIPO DE ENTIDAD:
         [1] DUEÑO DE PUESTO
         [2] CLIENTE
@@ -117,7 +117,7 @@ public class MenuEntidades {
             default -> null;
         };
 
-        System.out.println("""
+        System.out.print("""
         ORDENAR POR:
         [1] NOMBRE
         [2] EDAD
@@ -134,7 +134,7 @@ public class MenuEntidades {
             default -> null;
         };
 
-        System.out.println("""
+        System.out.print("""
         DIRECCIÓN DE ORDEN:
         [1] ASCENDENTE
         [2] DESCENDENTE
@@ -158,7 +158,6 @@ public class MenuEntidades {
             finalUrl = finalUrl.substring(0, finalUrl.length() - 1);
         }
 
-        System.out.println("\n-> Consultando " + finalUrl);
         Optional<Object> result = HandlerResponse.handleResponse(
                 HttpService.realizarPeticion("GET", finalUrl, authHeader, null),
                 EntidadDTO.class,

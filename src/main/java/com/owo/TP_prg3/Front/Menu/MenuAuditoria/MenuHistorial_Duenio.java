@@ -33,7 +33,6 @@ public class MenuHistorial_Duenio {
             switch (opcion) {
                 case "1" -> obtenerTodas();
                 case "2" -> buscarPorId();
-
                 case "0" -> {} // Salir
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
@@ -47,7 +46,6 @@ public class MenuHistorial_Duenio {
                 OPCIONES:
                 1. Obtener todos
                 2. Buscar por id
-                
                 0. Salir
                 Ingrese la opción:""");
     }

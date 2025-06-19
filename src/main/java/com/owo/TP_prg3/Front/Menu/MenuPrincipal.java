@@ -71,7 +71,6 @@ public class MenuPrincipal {
                         7. Gestionar Inventario de puestos
                         8. Gestionar Pedidos
                         9. Gestionar Detalles de pedido
-                        
                         0. Salir
                         Ingrese una opción:""");
                 opcion = Escaner.stringValido(scanner);

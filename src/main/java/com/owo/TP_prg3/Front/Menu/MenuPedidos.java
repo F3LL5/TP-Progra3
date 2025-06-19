@@ -48,7 +48,6 @@ public class MenuPedidos {
                 case "4" -> eliminar();
                 case "5" -> modificar();
                 case "6" -> filtrarYOrdenar();
-
                 case "0" -> {} // Salir
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
@@ -66,7 +65,6 @@ public class MenuPedidos {
                 4. Eliminar
                 5. Modificar
                 6. Filtrar y Ordenar VENTAS, COMPRAS, INGRESOS Y EGRESOS
-                
                 0. Salir
                 Ingrese la opción:""");
     }
@@ -113,7 +111,7 @@ public class MenuPedidos {
     private void filtrarYOrdenar() throws IOException, InterruptedException {
         System.out.println("--- FILTRAR Y ORDENAR PEDIDOS ---");
 
-        System.out.println("""
+        System.out.print("""
             TIPO DE TRANSACCIÓN:
             [1] COMPRA
             [2] VENTA
@@ -130,7 +128,7 @@ public class MenuPedidos {
             default -> null;
         };
 
-        System.out.println("""
+        System.out.print("""
         ORDENAR POR:
         [1] FECHA
         [2] MONTO
@@ -147,7 +145,7 @@ public class MenuPedidos {
             default -> null;
         };
 
-        System.out.println("""
+        System.out.print("""
         DIRECCIÓN DE ORDEN:
         [1] ASCENDENTE
         [2] DESCENDENTE
@@ -169,8 +167,6 @@ public class MenuPedidos {
         if (finalUrl.endsWith("&") || finalUrl.endsWith("?")) {
             finalUrl = finalUrl.substring(0, finalUrl.length() - 1);
         }
-
-        System.out.println("\n-> Consultando " + finalUrl);
 
         Optional<Object> result = HandlerResponse.handleResponse(
                 HttpService.realizarPeticion("GET", finalUrl, authHeader, null),

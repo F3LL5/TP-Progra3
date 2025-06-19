@@ -54,8 +54,6 @@ public class MenuCuentasBancarias {
                 2. Buscar por id
                 3. Agregar
                 4. Eliminar
-                
-                
                 0. Salir
                 Ingrese la opción:""");
     }

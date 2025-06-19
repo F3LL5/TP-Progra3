@@ -52,7 +52,7 @@ public class MenuInventarioPuesto {
     }
 
     private void mostrar_menu() {
-        System.out.println("""
+        System.out.print("""
                 --- MENÚ DE GESTIÓN DE INVENTARIO DE PUESTOS ---
                 OPCIONES:
                 1. Obtener todos los inventarios
@@ -63,7 +63,6 @@ public class MenuInventarioPuesto {
                 6. Mostrar productos en stock
                 7. Mostrar productos en stock bajo
                 8. Filtrar y ordenar inventario de puesto
-                //agregar mostrar todos los inv del puesto
                 0. Salir
                 INGRESE LA OPCIÓN QUE DESEE:""");
     }
@@ -118,7 +117,7 @@ public class MenuInventarioPuesto {
         String categoria = scanner.nextLine();
         if (categoria.isBlank()) categoria = null;
 
-        System.out.println("""
+        System.out.print("""
         ORDENAR POR:
         [1] NOMBRE
         [2] PRECIO VENTA
@@ -135,7 +134,7 @@ public class MenuInventarioPuesto {
             default -> null;
         };
 
-        System.out.println("""
+        System.out.print("""
         DIRECCIÓN DE ORDEN:
         [1] ASCENDENTE
         [2] DESCENDENTE
@@ -159,8 +158,6 @@ public class MenuInventarioPuesto {
             finalUrl = finalUrl.substring(0, finalUrl.length() - 1);
         }
 
-        System.out.println("\n-> Consultando " + finalUrl);
-
         Optional<Object> result = handleResponse(
                 HttpService.realizarPeticion("GET", finalUrl, authHeader, null),
                 InventarioPuestoDTO.class,
@@ -182,11 +179,11 @@ public class MenuInventarioPuesto {
     private void agregar() throws IOException, InterruptedException {
         System.out.println("AGREGAR NUEVO INVENTARIO");
         System.out.print("Ingrese cantidad: "); Integer cantidad = Escaner.enteroValido(scanner);
-        System.out.println("Ingrese id del puesto"); int puestoId=Escaner.enteroValido(scanner);
+        System.out.print("Ingrese id del puesto"); int puestoId=Escaner.enteroValido(scanner);
         System.out.print("Ingrese ID item: "); int itemId = Escaner.enteroValido(scanner);
-        System.out.println("Ingrese la cantidad de stock minimo que desea establecer: "); Integer stockMin=Escaner.enteroValido(scanner);
-        System.out.println("Ingrese el precio del item"); BigDecimal precioVenta=BigDecimal.valueOf(Escaner.doubleValido(scanner));
-        System.out.println("Ingrese el costo de adquisicion"); BigDecimal costoAdquisicion=BigDecimal.valueOf(Escaner.doubleValido(scanner));
+        System.out.print("Ingrese la cantidad de stock minimo que desea establecer: "); Integer stockMin=Escaner.enteroValido(scanner);
+        System.out.print("Ingrese el precio del item"); BigDecimal precioVenta=BigDecimal.valueOf(Escaner.doubleValido(scanner));
+        System.out.print("Ingrese el costo de adquisicion"); BigDecimal costoAdquisicion=BigDecimal.valueOf(Escaner.doubleValido(scanner));
 
         String jsonBody = "{" +
                 "\"cantidad\":" +cantidad + "," +
@@ -264,7 +261,7 @@ public class MenuInventarioPuesto {
 
     ///--------------------------------METODOS DE STOCK-----------------------------------------------------------------
     private void mostrarProductosEnStock() throws IOException, InterruptedException {
-        System.out.println("Ingrese id de puesto");
+        System.out.print("Ingrese id de puesto");
         Integer id = Escaner.enteroValido(scanner);
 
         // Realizar la petición HTTP
@@ -305,7 +302,7 @@ public class MenuInventarioPuesto {
     }
 
     private void mostrarProductosEnStockBajo() throws IOException, InterruptedException {
-        System.out.println("Ingrese id de puesto");
+        System.out.print("Ingrese id de puesto");
         Integer id = Escaner.enteroValido(scanner);
 
         HttpResponse<String> response = HttpService.realizarPeticion("GET", API_URL + "/obtenerInvConStockBajo/" + id, authHeader, null);
