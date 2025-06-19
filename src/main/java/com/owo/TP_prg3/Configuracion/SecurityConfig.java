@@ -46,15 +46,16 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/entidades/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
 
                         // Inventario
-                        .requestMatchers("/api/inventario-puesto/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
-                        .requestMatchers("/api/inventario-puesto/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/inventario-puesto").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/inventario-puesto/{id}").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/inventario-puesto/puesto/{id}").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/inventario-puesto/item/{id}").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/inventario-puesto").hasAnyRole("DUENO_PUESTO", "ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/inventario-puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/api/inventario-puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
-                        .requestMatchers("/api/inventario-puesto/obtenerInvConStock/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
-                        .requestMatchers("/api/inventario-puesto/obtenerInvConStockBajo/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
-                        .requestMatchers("/api/inventario-puesto/filtrarYordenarItemsInventario*").hasAnyRole("DUENO_PUESTO", "ADMIN")
-
+                        .requestMatchers(HttpMethod.DELETE, "/api/inventario-puesto/{id}").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/inventario-puesto/{id}/puesto/{puestoId}").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/inventario-puesto/{id}").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/inventario-puesto/{id}/puesto/{puestoId}").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/inventario-puesto/{id}/puesto/{puestoId}").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         // Ítems generales (/api/items) - DUENO_PUESTO no puede modificar ni eliminar
                         .requestMatchers(HttpMethod.GET, "/api/items").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/items/*").hasAnyRole("DUENO_PUESTO", "ADMIN")

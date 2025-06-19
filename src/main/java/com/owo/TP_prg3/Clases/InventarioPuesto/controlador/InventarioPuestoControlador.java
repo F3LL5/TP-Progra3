@@ -80,8 +80,8 @@ public class InventarioPuestoControlador {
         return inventarioPuestoServicio.deleteInventarioPuesto(id);
     }
 
-    @DeleteMapping("/{id}/puesto/{puestoId}") // Modificado: Ahora requiere el puestoId en la URL
-    public boolean deleteInventarioPuesto(@PathVariable Long id, @PathVariable Long puestoId){ // Modificado: Recibe puestoId
+    @DeleteMapping("/{id}/puesto/{puestoId}")
+    public boolean deleteInventarioPuesto(@PathVariable Long id, @PathVariable Long puestoId){
         return inventarioPuestoServicio.deleteInventarioPuesto(id, puestoId);
     }
 
@@ -92,7 +92,7 @@ public class InventarioPuestoControlador {
         return inventarioPuestoServicio.updateInventarioPuesto(id, updateInventarioPuestoDTO);
     }
 
-    @PatchMapping("/{id}/puesto/{puestoId}") // Modificado: Ahora requiere el puestoId en la URL
+    @PatchMapping("/{id}/puesto/{puestoId}")
     public Optional<InventarioPuestoDTO> updateInventarioPuesto(@PathVariable Long id, @PathVariable Long puestoId, @Valid @RequestBody UpdateInventarioPuestoDTO updateInventarioPuestoDTO){ // Modificado: Recibe puestoId
         return inventarioPuestoServicio.updateInventarioPuesto(id, puestoId, updateInventarioPuestoDTO);
     }
