@@ -22,6 +22,7 @@ import com.owo.TP_prg3.Front.HttpService;
 import com.owo.TP_prg3.Front.Menu.MenuInventarioPuesto;
 import com.owo.TP_prg3.Front.Menu.MenuItem;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
+import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -156,7 +157,7 @@ public class MenuDuenoPuesto {
         result.ifPresent(obj -> {
             List<EntidadDTO> entidades = (List<EntidadDTO>) obj;
             if (!entidades.isEmpty()) {
-                System.out.println(FlipTableConverters.fromIterable(entidades, EntidadDTO.class));
+                FlipTableHelper.imprimir(entidades);
             } else {
                 System.out.println("No se encontraron entidades para su puesto.");
             }
