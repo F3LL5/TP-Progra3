@@ -169,7 +169,7 @@ public class MenuEntidades {
         result.ifPresent(obj -> {
             List<EntidadDTO> entidades = (List<EntidadDTO>) obj;
             if (!entidades.isEmpty()) {
-                FlipTableHelper.imprimir(List.of(entidades));
+                FlipTableHelper.imprimir(entidades);
             } else {
                 System.out.println("No se encontraron resultados.");
             }
