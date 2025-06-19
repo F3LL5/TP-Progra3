@@ -107,7 +107,7 @@ public class MenuDuenoPuesto {
         do {
             System.out.print("""
                     \n--- GESTIÓN DE ENTIDADES (SU PUESTO) ---
-                    1. Obtener todas las entidades (Clientes/Proveedores de su puesto)
+                    1. Obtener todas los clientes y proveedores del mercado
                     2. Buscar entidad por ID (en su puesto)
                     3. Agregar Entidad (para su puesto)
                     3.1 Agregar Entidad (Cuenta bancaria automatica)
