@@ -165,6 +165,20 @@ public class EntidadServicioImpl implements EntidadServicio {
                 .collect(Collectors.toList());
     }
 
+    // Buscar entidad por ID y Puesto ID
+    public Optional<EntidadDTO> getEntidadByIdAndPuestoId(Long id, Long puestoId) {
+        Optional<EntidadDTO> entidad = getEntidadById(id);
+
+        if (entidad.isPresent()) {
+            boolean isAssociated = getEntidadesByPuestoId(puestoId).stream()
+                    .anyMatch(e -> e.getEntidad_id().equals(id));
+            if (isAssociated) {
+                return entidad;
+            }
+        }
+        return Optional.empty();
+    }
+
     /// POST ------------------------------------------------------------------------------------------------------------------------------------------------
 
     // Agregar Entidad para un Puesto específico
