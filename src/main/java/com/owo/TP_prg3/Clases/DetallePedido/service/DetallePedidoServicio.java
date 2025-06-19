@@ -4,6 +4,7 @@ import com.owo.TP_prg3.Clases.DetallePedido.dto.CreateDetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.DetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.UpdateDetallePedidoDTO;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,4 +14,5 @@ public interface DetallePedidoServicio {
     DetallePedidoDTO createDetallePedido(CreateDetallePedidoDTO createDetallePedidoDTO);
     Optional<DetallePedidoDTO> updateDetallePedido(Long id, UpdateDetallePedidoDTO updateDetallePedidoDTO);
     boolean deleteDetallePedido(Long id);
+    BigDecimal calcularTotalVenta(Long pedidoId);
 }

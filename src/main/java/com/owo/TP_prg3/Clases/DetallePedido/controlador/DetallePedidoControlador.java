@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,6 +40,12 @@ public class DetallePedidoControlador {
     public ResponseEntity<List<DetallePedidoDTO>> getDetallesPedidoByPedidoIdAndPuestoId(@PathVariable Long pedidoId, @PathVariable Long puestoId) {
         List<DetallePedidoDTO> detallesPedido = detallePedidoServicio.getDetallesPedidoByPedidoIdAndPuestoId(pedidoId, puestoId);
         return ResponseEntity.ok(detallesPedido);
+    }
+
+    @GetMapping("/{pedidoId}/total-venta")
+    public ResponseEntity<BigDecimal> getTotalSalesForPedido(@PathVariable Long pedidoId) {
+        BigDecimal totalVenta = detallePedidoServicio.calcularTotalVenta(pedidoId);
+        return ResponseEntity.ok(totalVenta);
     }
 
     ///  POST --------------------------------------------------------------------------------------

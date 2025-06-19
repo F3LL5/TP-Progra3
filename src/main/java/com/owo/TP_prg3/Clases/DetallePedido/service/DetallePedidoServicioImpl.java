@@ -329,6 +329,19 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
         inventarioPuestoRepositorio.save(inventarioPuesto);
     }
 
+    @Override
+    public BigDecimal calcularTotalVenta(Long pedidoId) {
+        Optional<Pedido> optionalPedido = pedidoRepositorio.findById(pedidoId);
+        if (optionalPedido.isEmpty()) {
+            throw new RecursoNoEncontradoException("Pedido con ID " + pedidoId + " no encontrado.");
+        }
+
+        Pedido pedido = optionalPedido.get();
+        return detallePedidoRepositorio.findByPedido(pedido).stream()
+                .map(DetallePedido::getPrecioTotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
 
 
 }

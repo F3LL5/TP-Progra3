@@ -18,6 +18,7 @@ import com.owo.TP_prg3.Front.Utilidades.Escaner;
 import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.http.HttpResponse;
 import java.util.*;
 
@@ -46,6 +47,7 @@ public class MenuDetallePedido {
                 case "3" -> agregar();
                 case "4" -> eliminar();
                 case "5" -> modificar();
+                case "6" -> calcularTotalVentaPedido();
 
                 case "0" -> {} // Salir
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
@@ -62,6 +64,7 @@ public class MenuDetallePedido {
                 3. Agregar
                 4. Eliminar
                 5. Modificar
+                6. Calcular el Total de la venta
                 
                 0. Salir
                 Ingrese la opción:""");
@@ -104,6 +107,26 @@ public class MenuDetallePedido {
         result.ifPresent(obj -> {
             DetallePedidoDTO detalle = (DetallePedidoDTO) obj;
             FlipTableHelper.imprimir(List.of(detalle));
+        });
+    }
+
+    private void calcularTotalVentaPedido() throws IOException, InterruptedException {
+        System.out.print("Ingrese el ID del Pedido para calcular el total de venta: ");
+        Integer pedidoId = Escaner.enteroValido(scanner);
+
+        String url = API_URL + "/" + pedidoId + "/total-venta";
+
+        Optional<Object> result = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("GET", url, authHeader, null),
+                BigDecimal.class,
+                "Total de Venta obtenido exitosamente para el Pedido " + pedidoId,
+                "Error al obtener el total de venta para el Pedido " + pedidoId
+        );
+
+        result.ifPresent(obj -> {
+            if (obj instanceof BigDecimal totalVenta) {
+                System.out.println("Total de Venta para el Pedido " + pedidoId + ": $" + totalVenta);
+            }
         });
     }
 
