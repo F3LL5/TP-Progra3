@@ -5,7 +5,6 @@ import com.owo.TP_prg3.Excepciones.Handler.HandlerResponse;
 import com.owo.TP_prg3.Clases.Item.dto.CreateItemDTO;
 import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import com.owo.TP_prg3.Clases.Item.dto.UpdateItemDTO;
-import com.owo.TP_prg3.Front.Menu.MenuAuditoria.MenuHistorial_InventarioCosto;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 import com.owo.TP_prg3.Front.HttpService;
 import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;
@@ -40,11 +39,6 @@ public class MenuItem {
                 case "5" -> modificar();
 
                 case "1.3" -> filtrarYordenar();
-
-                case "6" -> {
-                    MenuHistorial_InventarioCosto auditoria = new MenuHistorial_InventarioCosto(authHeader);
-                    auditoria.gestionar();
-                }
 
                 case "0" -> {} // Salir
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
