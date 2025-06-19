@@ -206,9 +206,9 @@ public class MenuTransacciones {
 
         switch (tipo) {
             case "COMPRA", "VENTA" -> {
-                System.out.print("ID de la cuenta comprador: ");
-                cuentaOrigenId = Escaner.enteroValido(scanner).longValue();
                 System.out.print("ID de la cuenta vendedor: ");
+                cuentaOrigenId = Escaner.enteroValido(scanner).longValue();
+                System.out.print("ID de la cuenta comprador: ");
                 cuentaDestinoId = Escaner.enteroValido(scanner).longValue();
             }
             case "INGRESO", "EGRESO" -> {
