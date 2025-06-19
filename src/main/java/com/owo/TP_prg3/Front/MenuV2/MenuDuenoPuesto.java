@@ -439,7 +439,7 @@ public class MenuDuenoPuesto {
                 jsonBody = "{\"nombre\":\"" +  nombre + "\"}" ;
             }
             case 2 -> {
-                double comision = Escaner.doubleValido(scanner);
+                double comision = Escaner.porcentaje(scanner);
                 jsonBody = "{\"comision\":" + comision + "}";
             }
         }
