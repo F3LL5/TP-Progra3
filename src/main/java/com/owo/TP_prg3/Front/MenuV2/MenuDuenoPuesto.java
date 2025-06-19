@@ -178,8 +178,17 @@ public class MenuDuenoPuesto {
         String nombre = Escaner.stringValido(scanner);
         System.out.print("Tipo de Entidad: ");
         String tipoEntidad = Escaner.stringValido(scanner);
-        System.out.print("Rol [CLIENTE, PROVEEDOR]: ");
-        String rol = Escaner.stringValido(scanner);
+        boolean bucle = false;
+        String rol = "";
+        do {
+            System.out.print("Filtrar por ROL (1. CLIENTE, 2.PROVEEDOR): ");
+            int opcion = Escaner.enteroValido(scanner);
+            switch (opcion) {
+                case 1 -> rol = "CLIENTE";
+                case 2 -> rol = "PROVEEDOR";
+                default -> bucle = true;
+            };
+        } while (bucle);
         System.out.print("Edad: ");
         Integer edad = Escaner.enteroValido(scanner);
         System.out.print("DNI: ");
@@ -206,8 +215,17 @@ public class MenuDuenoPuesto {
         String nombre = Escaner.stringValido(scanner);
         System.out.print("Tipo de Entidad: ");
         String tipoEntidad = Escaner.stringValido(scanner);
-        System.out.print("Rol [CLIENTE, PROVEEDOR]: ");
-        String rol = Escaner.stringValido(scanner);
+        boolean bucle = false;
+        String rol = "";
+        do {
+            System.out.print("Filtrar por ROL (1. CLIENTE, 2.PROVEEDOR): ");
+            int opcion = Escaner.enteroValido(scanner);
+            switch (opcion) {
+                case 1 -> rol = "CLIENTE";
+                case 2 -> rol = "PROVEEDOR";
+                default -> bucle = true;
+            };
+        } while (bucle);
         System.out.print("Edad: ");
         Integer edad = Escaner.enteroValido(scanner);
         System.out.print("DNI: ");
