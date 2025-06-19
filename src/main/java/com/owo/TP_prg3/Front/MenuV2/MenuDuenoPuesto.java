@@ -166,7 +166,7 @@ public class MenuDuenoPuesto {
         result2.ifPresent(obj -> {
             List<EntidadDTO> entidades = (List<EntidadDTO>) obj;
             if (!entidades.isEmpty()) {
-                System.out.println(FlipTableConverters.fromIterable(entidades, EntidadDTO.class));
+                FlipTableHelper.imprimir(entidades);
             } else {
                 System.out.println("No se encontraron entidades para su puesto.");
             }
@@ -207,7 +207,7 @@ public class MenuDuenoPuesto {
 
         result.ifPresent(obj -> {
             EntidadDTO entidadDTO = (EntidadDTO) obj;
-            System.out.println(FlipTableConverters.fromIterable(List.of(entidadDTO), EntidadDTO.class));
+            FlipTableHelper.imprimir(List.of(entidadDTO));
         });
     }
     private void agregarEntidadAMiPuesto2() throws IOException, InterruptedException {
@@ -244,7 +244,7 @@ public class MenuDuenoPuesto {
 
         result.ifPresent(obj -> {
             EntidadDTO entidadDTO = (EntidadDTO) obj;
-            System.out.println(FlipTableConverters.fromIterable(List.of(entidadDTO), EntidadDTO.class));
+            FlipTableHelper.imprimir(List.of(entidadDTO));;
         });
     }
 
@@ -335,7 +335,7 @@ public class MenuDuenoPuesto {
 
         result.ifPresent(obj -> {
             EntidadDTO entidad = (EntidadDTO) obj;
-            System.out.println(FlipTableConverters.fromIterable(List.of(entidad), EntidadDTO.class));
+            FlipTableHelper.imprimir(List.of(entidad));;
         });
     }
 
@@ -385,7 +385,7 @@ public class MenuDuenoPuesto {
         result.ifPresent(obj -> {
             List<EntidadDTO> entidades = (List<EntidadDTO>) obj;
             if (!entidades.isEmpty()) {
-                System.out.println(FlipTableConverters.fromIterable(entidades, EntidadDTO.class));
+                FlipTableHelper.imprimir(entidades);
             } else {
                 System.out.println("No se encontraron resultados.");
             }
@@ -404,7 +404,7 @@ public class MenuDuenoPuesto {
         result.ifPresent(obj -> {
             List<EntidadDTO> clientes = (List<EntidadDTO>) obj;
             if (!clientes.isEmpty()) {
-                System.out.println(FlipTableConverters.fromIterable(clientes, EntidadDTO.class));
+                FlipTableHelper.imprimir(clientes);
             } else {
                 System.out.println("No se encontraron clientes con pedidos para su puesto.");
             }
@@ -505,7 +505,7 @@ public class MenuDuenoPuesto {
         result.ifPresent(obj -> {
             List<InventarioPuestoDTO> items = (List<InventarioPuestoDTO>) obj;
             if (!items.isEmpty()) {
-                System.out.println(FlipTableConverters.fromIterable(items, InventarioPuestoDTO.class));
+                FlipTableHelper.imprimir(items);
             } else {
                 System.out.println("No se encontraron ítems en el inventario de su puesto.");
             }
@@ -525,7 +525,7 @@ public class MenuDuenoPuesto {
 
         result.ifPresent(obj -> {
             InventarioPuestoDTO item = (InventarioPuestoDTO) obj;
-            System.out.println(FlipTableConverters.fromIterable(List.of(item), InventarioPuestoDTO.class));
+            FlipTableHelper.imprimir(List.of(item));;
         });
     }
 
@@ -591,7 +591,7 @@ public class MenuDuenoPuesto {
         result.ifPresent(obj -> {
             List<InventarioPuestoDTO> inventarios = (List<InventarioPuestoDTO>) obj;
             if (!inventarios.isEmpty()) {
-                System.out.println(FlipTableConverters.fromIterable(inventarios, InventarioPuestoDTO.class));
+                FlipTableHelper.imprimir(List.of(inventarios));;
             } else {
                 System.out.println("No se encontraron resultados.");
             }
@@ -815,7 +815,7 @@ public class MenuDuenoPuesto {
 
             result.ifPresent(obj -> {
                 CuentaBancariaDTO cuenta = (CuentaBancariaDTO) obj;
-                System.out.println(FlipTableConverters.fromIterable(List.of(cuenta), CuentaBancariaDTO.class));
+                FlipTableHelper.imprimir(List.of(cuenta));;
             });
         } else {
             System.out.println("No se encontró una entidad dueña asociada a su puesto para visualizar la cuenta bancaria.");
@@ -861,7 +861,7 @@ public class MenuDuenoPuesto {
         result.ifPresent(obj -> {
             List<TransaccionDTO> transacciones = (List<TransaccionDTO>) obj;
             if (!transacciones.isEmpty()) {
-                System.out.println(FlipTableConverters.fromIterable(transacciones, TransaccionDTO.class));
+                FlipTableHelper.imprimir(transacciones);
             } else {
                 System.out.println("No se encontraron transacciones para su puesto.");
             }
@@ -881,7 +881,7 @@ public class MenuDuenoPuesto {
 
         result.ifPresent(obj -> {
             TransaccionDTO transaccion = (TransaccionDTO) obj;
-            System.out.println(FlipTableConverters.fromIterable(List.of(transaccion), TransaccionDTO.class));
+            FlipTableHelper.imprimir(List.of(transaccion));;
         });
     }
 
@@ -925,7 +925,7 @@ public class MenuDuenoPuesto {
         result.ifPresent(obj -> {
             List<TransaccionDTO> transacciones = (List<TransaccionDTO>) obj;
             if (!transacciones.isEmpty()) {
-                System.out.println(FlipTableConverters.fromIterable(transacciones, TransaccionDTO.class));
+                FlipTableHelper.imprimir(List.of(transacciones));
             } else {
                 System.out.println("No se encontraron transacciones con esos filtros para su puesto.");
             }
@@ -975,7 +975,7 @@ public class MenuDuenoPuesto {
         result.ifPresent(obj -> {
             List<PedidoDTO> pedidos = (List<PedidoDTO>) obj;
             if (!pedidos.isEmpty()) {
-                System.out.println(FlipTableConverters.fromIterable(pedidos, PedidoDTO.class));
+                FlipTableHelper.imprimir(pedidos);
             } else {
                 System.out.println("No se encontraron pedidos para su puesto.");
             }
@@ -995,7 +995,7 @@ public class MenuDuenoPuesto {
 
         result.ifPresent(obj -> {
             PedidoDTO pedido = (PedidoDTO) obj;
-            System.out.println(FlipTableConverters.fromIterable(List.of(pedido), PedidoDTO.class));
+            FlipTableHelper.imprimir(List.of(pedido));;
         });
     }
 
@@ -1205,7 +1205,7 @@ public class MenuDuenoPuesto {
             return;
         }
 
-        System.out.println(FlipTableConverters.fromIterable(transacciones, TransaccionDTO.class));
+        FlipTableHelper.imprimir(transacciones);
     }
 
     /*
@@ -1251,7 +1251,7 @@ public class MenuDuenoPuesto {
         result.ifPresent(obj -> {
             List<DetallePedidoDTO> detalles = (List<DetallePedidoDTO>) obj;
             if (!detalles.isEmpty()) {
-                System.out.println(FlipTableConverters.fromIterable(detalles, DetallePedidoDTO.class));
+                FlipTableHelper.imprimir(detalles);
             } else {
                 System.out.println("No se encontraron detalles de pedido para el pedido " + pedidoId + " de su puesto.");
             }
