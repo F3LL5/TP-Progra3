@@ -3,6 +3,7 @@ package com.owo.TP_prg3.Clases.Pedido.service;
 import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancaria;
 import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancariaRepositorio;
 import com.owo.TP_prg3.Clases.DetallePedido.service.DetallePedidoServicioImpl;
+import com.owo.TP_prg3.Clases.Puesto.modelo.PuestoRepositorio;
 import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
 import com.owo.TP_prg3.Clases.Pedido.dto.CreatePedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.CreatePedidoDTO2;
@@ -16,7 +17,6 @@ import com.owo.TP_prg3.Clases.Transaccion.modelo.TransaccionRepositorio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import jakarta.persistence.EntityNotFoundException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -37,6 +37,8 @@ public class PedidoServicioImpl implements PedidoServicio {
     private TransaccionRepositorio transaccionRepositorio;
     @Autowired
     private CuentaBancariaRepositorio cuentaBancariaRepositorio;
+    @Autowired
+    private PuestoRepositorio puestoRepositorio;
 
     @Autowired
     private DetallePedidoServicioImpl detallePedidoServicio;
@@ -50,16 +52,22 @@ public class PedidoServicioImpl implements PedidoServicio {
         );
     }
 
-    private Pedido convertirA_Pedido(CreatePedidoDTO createPedidoDTO){
+    private Pedido convertirA_Pedido(CreatePedidoDTO createPedidoDTO) {
         Pedido pedido = new Pedido();
 
         transaccionRepositorio.findById(createPedidoDTO.getTransaccionId())
                 .ifPresentOrElse(
                         pedido::setTransaccion,
-                        () -> { throw new EntityNotFoundException("Transaccion con ID " + createPedidoDTO.getTransaccionId() + " no encontrada."); }
+                        () -> {
+                            throw new RecursoNoEncontradoException("Transacción con ID " + createPedidoDTO.getTransaccionId() + " no encontrada.");
+                        }
                 );
 
-        pedido.setPuestoId(createPedidoDTO.getPuestoId());
+        Long puestoId = createPedidoDTO.getPuestoId();
+        if (!puestoRepositorio.existsById(puestoId))
+            throw new RecursoNoEncontradoException("Puesto con ID " + puestoId + " no encontrado.");
+
+        pedido.setPuestoId(puestoId);
 
         return pedido;
     }
@@ -98,12 +106,9 @@ public class PedidoServicioImpl implements PedidoServicio {
                 .findFirst()
                 .orElseThrow();
 
-
         if(cuentaBancariaRepositorio.findById(createPedidoDTO2.getIdCuentaDestino()).isEmpty() && createPedidoDTO2.getIdCuentaDestino()!= 0) {
-            throw new EntityNotFoundException("Transaccion con ID " + createPedidoDTO2.getIdCuentaDestino() + " no encontrada.");
+            throw new RecursoNoEncontradoException("Transaccion con ID " + createPedidoDTO2.getIdCuentaDestino() + " no encontrada.");
         }
-
-
 
         transaccion.setCuentaOrigen(cuentaDuenio);
         if (createPedidoDTO2.getIdCuentaDestino() == 0)transaccion.setCuentaDestino(new CuentaBancaria());
@@ -122,18 +127,6 @@ public class PedidoServicioImpl implements PedidoServicio {
         return convertirA_DTO(savedPedido);
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
     @Override
     @Transactional
     public Optional<PedidoDTO> updatePedido(Long id, UpdatePedidoDTO updatePedidoDTO) {
@@ -143,7 +136,7 @@ public class PedidoServicioImpl implements PedidoServicio {
                         transaccionRepositorio
                                 .findById(updatePedidoDTO.getTransaccionId())
                                 .ifPresentOrElse( pedido::setTransaccion, () -> {
-                                    throw new EntityNotFoundException("Transaccion con ID " + updatePedidoDTO.getTransaccionId() + " no encontrada.");
+                                    throw new RecursoNoEncontradoException("Transaccion con ID " + updatePedidoDTO.getTransaccionId() + " no encontrada.");
                                 });
                     }
                     if (updatePedidoDTO.getPuestoId() != null) {
@@ -152,16 +145,17 @@ public class PedidoServicioImpl implements PedidoServicio {
 
                     Pedido updatedPedido = pedidoRepositorio.save(pedido);
                     return convertirA_DTO(updatedPedido);
+                }).or(() -> {throw new RecursoNoEncontradoException("Pedido con ID " + id + " no encontrado.");
                 });
     }
 
     @Override
     public boolean deletePedido(Long id) {
-        if (pedidoRepositorio.existsById(id)) {
-            pedidoRepositorio.deleteById(id);
-            return true;
-        }
-        return false;
+        if (!pedidoRepositorio.existsById(id))
+            throw new RecursoNoEncontradoException("Pedido con ID " + id + " no encontrado para eliminar.");
+
+        pedidoRepositorio.deleteById(id);
+        return true;
     }
 
     @Override
@@ -268,7 +262,7 @@ public class PedidoServicioImpl implements PedidoServicio {
                         transaccionRepositorio
                                 .findById(updatePedidoDTO.getTransaccionId())
                                 .ifPresentOrElse( pedido::setTransaccion, () -> {
-                                    throw new EntityNotFoundException("Transaccion con ID " + updatePedidoDTO.getTransaccionId() + " no encontrada.");
+                                    throw new RecursoNoEncontradoException("Transaccion con ID " + updatePedidoDTO.getTransaccionId() + " no encontrada.");
                                 });
                     }
 

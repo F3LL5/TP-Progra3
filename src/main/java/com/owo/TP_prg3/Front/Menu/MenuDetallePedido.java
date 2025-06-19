@@ -79,7 +79,7 @@ public class MenuDetallePedido {
                 HttpService.realizarPeticion("GET", API_URL, authHeader, null),
                 DetallePedidoDTO.class,
                 "Detalles de pedidos obtenidos exitosamente.",
-                "No se pudieron obtener los items."
+                "No se pudieron obtener los pedidos."
         );
 
         result.ifPresent(obj -> {

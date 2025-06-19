@@ -3,18 +3,24 @@ package com.owo.TP_prg3.Front.Menu;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jakewharton.fliptables.FlipTableConverters;
+import com.owo.TP_prg3.Clases.DetallePedido.dto.DetallePedidoDTO;
 import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
+import com.owo.TP_prg3.Clases.Pedido.dto.CreatePedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
+import com.owo.TP_prg3.Clases.Pedido.dto.UpdatePedidoDTO;
 import com.owo.TP_prg3.Clases.Puesto.dto.PuestoDTO;
 import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
+import com.owo.TP_prg3.Excepciones.Handler.HandlerResponse;
 import com.owo.TP_prg3.Front.HttpService;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
+import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;
 
 import java.io.IOException;
 import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class MenuPedidos {
@@ -24,7 +30,10 @@ public class MenuPedidos {
     private final Scanner scanner = new Scanner(System.in);
 
     ///----------------------------------CONSTRUCTOR--------------------------------------------------------------------
-    public MenuPedidos(String authHeader) {this.authHeader = authHeader;}
+    public MenuPedidos(String authHeader) {
+        this.authHeader = authHeader;
+        HandlerResponse.setObjectMapper(new ObjectMapper());
+    }
 
     ///-------------------------------------MENU------------------------------------------------------------------------
     public void gestionar() throws IOException, InterruptedException {
@@ -66,25 +75,39 @@ public class MenuPedidos {
     ///--------------------------------------GET------------------------------------------------------------------------
     private void obtenerTodas() throws IOException, InterruptedException {
         System.out.println("\n--- Obteniendo todas los pedido... ---");
-        HttpResponse<String> response =  HttpService.realizarPeticion("GET", API_URL, authHeader, null);
-        String respuestaJson = response.body();
-        ObjectMapper mapper = new ObjectMapper();
-        List<PedidoDTO> pedidos = Arrays.asList(mapper.readValue(respuestaJson, PedidoDTO[].class));
+        Optional<Object> result = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("GET", API_URL, authHeader, null),
+                PedidoDTO.class,
+                "Pedidos obtenidos exitosamente.",
+                "No se pudieron obtener los pedidos."
+        );
 
-        System.out.println(FlipTableConverters.fromIterable(pedidos, PedidoDTO.class));
+        result.ifPresent(obj -> {
+            List<PedidoDTO> detalles = (List<PedidoDTO>) obj;
+            if (!detalles.isEmpty()) {
+                FlipTableHelper.imprimir(detalles);
+            } else {
+                System.out.println("No se encontraron resultados.");
+            }
+        });
+
     }
 
     private void buscarPorId() throws IOException, InterruptedException {
-        System.out.print("Ingrese el ID de la entidad: ");
+        System.out.print("Ingrese el ID del pedido: ");
         Integer id = Escaner.enteroValido(scanner);
-        HttpResponse<String> response =   HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null);
-        String respuestaJson = response.body();
 
-        ObjectMapper mapper = new ObjectMapper();
-        PedidoDTO pedido= mapper.readValue(respuestaJson, PedidoDTO.class);
+        Optional<Object> result = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null),
+                PedidoDTO.class,
+                "Pedido encontrado:",
+                "No se encontró el pedido con ID " + id + "."
+        );
 
-        System.out.println(FlipTableConverters.fromIterable(List.of(pedido), PedidoDTO.class));
-
+        result.ifPresent(obj -> {
+            PedidoDTO pedidoDTO = (PedidoDTO) obj;
+            FlipTableHelper.imprimir(List.of(pedidoDTO));
+        });
     }
 
     private void filtrarYOrdenar() throws IOException, InterruptedException {
@@ -149,20 +172,21 @@ public class MenuPedidos {
 
         System.out.println("\n-> Consultando " + finalUrl);
 
-        HttpResponse<String> response = HttpService.realizarPeticion("GET", finalUrl, authHeader, null);
-        String respuestaJson = response.body();
+        Optional<Object> result = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("GET", finalUrl, authHeader, null),
+                PedidoDTO.class,
+                "Pedidos filtrados y ordenados exitosamente.",
+                "No se pudieron filtrar/ordenar los pedidos."
+        );
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule()); // Soporte para LocalDateTime
-
-        List<TransaccionDTO> transacciones = Arrays.asList(mapper.readValue(respuestaJson, TransaccionDTO[].class));
-
-        if (transacciones.isEmpty()) {
-            System.out.println("No se encontraron transacciones con esos filtros.");
-            return;
-        }
-
-        System.out.println(FlipTableConverters.fromIterable(transacciones, TransaccionDTO.class));
+        result.ifPresent(obj -> {
+            List<PedidoDTO> pedidoDTOS = (List<PedidoDTO>) obj;
+            if (!pedidoDTOS.isEmpty()) {
+                FlipTableHelper.imprimir(pedidoDTOS);
+            } else {
+                System.out.println("No se encontraron resultados.");
+            }
+        });
     }
 
     ///-------------------------------------POST------------------------------------------------------------------------
@@ -175,20 +199,34 @@ public class MenuPedidos {
         System.out.print("Ingrese el id del puesto: ");
         int puestoId = Escaner.enteroValido(scanner);
 
-        String jsonBody =
-                   "{" +
-                       "\"transaccionId\":" + transaccionId  +
-                       ",\"puestoId\":" + puestoId  +
-                   "}";
+        CreatePedidoDTO createPedido = new CreatePedidoDTO((long) transaccionId, (long) puestoId);
+        String jsonBody = new ObjectMapper().writeValueAsString(createPedido);
 
-        HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
+        Optional<Object> result = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody),
+                PedidoDTO.class,
+                "Pedido agregado exitosamente.",
+                "Error al agregar pedido."
+        );
+
+        result.ifPresent(obj -> {
+            PedidoDTO pedidoDTO = (PedidoDTO) obj;
+            FlipTableHelper.imprimir(List.of(pedidoDTO));
+        });
     }
 
     ///------------------------------------DELETE-----------------------------------------------------------------------
     private void eliminar() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID del pedido a eliminar: ");
         Integer id = Escaner.enteroValido(scanner);
-        HttpService.realizarPeticion("DELETE", API_URL + "/" + id, authHeader, null);
+        HttpResponse<String> response = HttpService.realizarPeticion("DELETE", API_URL + "/" + id, authHeader, null);
+
+        int statusCode = response.statusCode();
+        if (statusCode == 204) {
+            System.out.println("Pedido con ID " + id + " eliminado exitosamente.");
+        } else {
+            HandlerResponse.handleErrorResponse(statusCode, response.body());
+        }
     }
 
     ///-------------------------------------PATCH-----------------------------------------------------------------------
@@ -206,24 +244,50 @@ public class MenuPedidos {
         Integer opcion = Escaner.enteroValido(scanner);
         if (opcion != 0 ) System.out.print("Ingrese el nuevo valor: ");
 
-        String jsonBody = "";
-        switch (opcion){
+        UpdatePedidoDTO updateDTO = new UpdatePedidoDTO();
+        boolean attributeSelected = false;
+
+        switch (opcion) {
             case 1 -> {
-                int transaccionId = Escaner.enteroValido(scanner);
-                jsonBody = "{\"transaccionId\":"  + transaccionId + "}";
+                System.out.print("Ingrese el nuevo ID de la transacción: ");
+                Integer transaccionId = Escaner.enteroValido(scanner);
+                updateDTO.setTransaccionId(Long.valueOf(transaccionId));
+                attributeSelected = true;
             }
             case 2 -> {
-                int puestoId = Escaner.enteroValido(scanner);
-                jsonBody = "{\"puestoId\":"  + puestoId + "}";
+                System.out.print("Ingrese el nuevo ID del puesto: ");
+                Integer puestoId = Escaner.enteroValido(scanner);
+                updateDTO.setPuestoId(Long.valueOf(puestoId));
+                attributeSelected = true;
             }
-            case 0 -> {}
+            case 0 -> {
+                System.out.println("Modificación cancelada.");
+                return;
+            }
             default -> {
-                System.out.println("Opcion no valida.");
+                System.out.println("Opción no válida.");
                 return;
             }
         }
 
-        HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody);
+        if (!attributeSelected) {
+            System.out.println("No se seleccionó ningún atributo para modificar.");
+            return;
+        }
+
+        String jsonBody = new ObjectMapper().writeValueAsString(updateDTO);
+
+        Optional<Object> result = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody),
+                PedidoDTO.class,
+                "Pedido modificado exitosamente.",
+                "Error al modificar el pedido."
+        );
+
+        result.ifPresent(obj -> {
+            PedidoDTO pedido = (PedidoDTO) obj;
+            FlipTableHelper.imprimir(List.of(pedido));
+        });
     }
 
 }

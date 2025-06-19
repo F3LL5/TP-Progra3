@@ -74,7 +74,8 @@ public class CuentaBancariaServicioImpl implements CuentaBancariaServicio {
             throw new ConflictoDeDatosException("La entidades menores de edad NO pueden tener cuentas bancarias");
         }
 
-        Optional<CuentaBancariaDTO> existe = getAllCuentasBancarias().stream().filter(cuenta -> cuenta.getEntidadId() == createCuentaBancariaDTO.getEntidadId()).findFirst();
+        Optional<CuentaBancariaDTO> existe = getAllCuentasBancarias().stream()
+                .filter(cuenta -> cuenta.getEntidadId() == createCuentaBancariaDTO.getEntidadId()).findFirst();
         if (existe.isPresent()) {
             throw new ConflictoDeDatosException("Entidad de dicho ID ya posee una cuenta bancaria.");
         }
