@@ -82,7 +82,7 @@ public class MenuPuestos {
     }
 
     private void buscar_x_id() throws IOException, InterruptedException {
-        System.out.println("INGRESE ID DEL PUESTO: ");
+        System.out.print("INGRESE ID DEL PUESTO: ");
         String id = Escaner.stringValido(scanner);
         HttpResponse<String> response = HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null);
 
@@ -180,7 +180,7 @@ public class MenuPuestos {
 
     ///----------------------------------DELETE-------------------------------------------------------------------------
     private void eliminar() throws IOException, InterruptedException {
-        System.out.println("Ingrese ID del puesto que desea eliminar: ");
+        System.out.print("Ingrese ID del puesto que desea eliminar: ");
         String id = Escaner.stringValido(scanner);
         HttpResponse<String> response = HttpService.realizarPeticion("DELETE", API_URL + "/" + id, authHeader, null);
 
