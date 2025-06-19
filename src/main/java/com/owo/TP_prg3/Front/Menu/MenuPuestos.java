@@ -98,7 +98,7 @@ public class MenuPuestos {
     }
 
     private void filtrarYOrdenar() throws IOException, InterruptedException {
-        System.out.println("""
+        System.out.print("""
         ORDENAR POR:
         [1] NOMBRE
         [0] SIN ORDENAMIENTO
@@ -109,7 +109,7 @@ public class MenuPuestos {
             default -> null;
         };
 
-        System.out.println("""
+        System.out.print("""
         DIRECCIÓN DE ORDEN:
         [1] ASCENDENTE
         [2] DESCENDENTE

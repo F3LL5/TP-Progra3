@@ -96,7 +96,7 @@ public abstract class Escaner {
     public static double porcentaje (Scanner scanner){
         while (true){
 
-            System.out.println("Ingrese el porcentaje de la comision(0-100):");
+            System.out.print("Ingrese el porcentaje de la comision(0-100):");
             double porcentaje=doubleValido(scanner);
             double porcentajeFinal=porcentaje/100;
 
