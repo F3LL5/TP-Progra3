@@ -79,15 +79,6 @@ create table if not exists detalles_pedido (
 	on update cascade
 );
 
-create table if not exists inventario_costo_historial (
-    id bigInt AUTO_INCREMENT PRIMARY KEY,
-    inventario_id bigInt,
-    costo_anterior DECIMAL(10,2),
-    costo_nuevo DECIMAL(10,2),
-    fecha_cambio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    foreign key(inventario_id) references inventario_puesto(inventario_id)
-);
-
 create table historial_cambio_duenio (
     id bigInt primary key auto_increment,
     puesto_id bigInt not null,
@@ -98,19 +89,6 @@ create table historial_cambio_duenio (
     foreign key (duenio_anterior_id) references entidades(entidad_id),
     foreign key (duenio_nuevo_id) references entidades(entidad_id)
 );
-
-DELIMITER //
-CREATE TRIGGER trg_inventario_costo_adquisicion_update
-BEFORE UPDATE ON inventario_puesto
-FOR EACH ROW
-BEGIN
-    IF OLD.costo_adquisicion <> NEW.costo_adquisicion THEN
-        INSERT INTO inventario_costo_historial (inventario_id, costo_anterior, costo_nuevo, fecha_cambio)
-        VALUES (OLD.inventario_id, OLD.costo_adquisicion, NEW.costo_adquisicion, now());
-    END IF;
-END;
-//
-DELIMITER ;
 
 DELIMITER //
 CREATE TRIGGER trigger_cambio_duenio
@@ -133,12 +111,3 @@ BEGIN
 END;
 //
 DELIMITER ;
-
-
-insert into entidades(nombre,tipo_entidad,rol,edad,dni) values 
-	( "Player", "Player", "ADMIN", 19, 1 ),
-	( "NPC1", "NPC", "DUENO_PUESTO", 20, 2 ),
-	( "NPC1", "NPC", "DUENO_PUESTO", 20, 3 );
-    
-insert into puestos(nombre,duenio_id,comision) values
-	( "Puesto1", 3, 0.2 );

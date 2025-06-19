@@ -48,7 +48,7 @@ public class MenuTransacciones {
                 case "0" -> {} // Salir
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
-            Escaner.pausa(scanner);
+            if (!opcion.equals("0")) Escaner.pausa(scanner);
         } while (!opcion.equals("0"));
     }
 

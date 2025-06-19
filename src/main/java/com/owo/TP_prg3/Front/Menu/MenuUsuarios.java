@@ -79,7 +79,6 @@ public class MenuUsuarios {
         // El backend se encargará de buscar la entidad, verificar su tipo y asignar el rol.
         String jsonBody = String.format("{\"dni\":%d, \"password\":\"%s\"}", dni, password);
 
-        System.out.println("\n→ Consultando(no se olviden de sacar esto por favor): " + jsonBody);
         HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody);
     }
     ///--------------------------MÉTODOS AUXILIARES - HANDLERS DE ERROR Y SUCCESS---------------------------------------

@@ -41,20 +41,6 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
         // Asignar el itemId directamente desde la entidad
         dto.setItemId(inventarioPuesto.getItemId());
 
-        // NOTA IMPORTANTE: Si quieres el nombre del Item en el DTO,
-        // y tu entidad InventarioPuesto NO tiene una relación @ManyToOne Item item;,
-        // tendrás que cargar el Item por su ID aquí (lo cual puede ser ineficiente)
-        // o replantear el diseño de tu entidad InventarioPuesto para incluir la relación.
-        // Por ahora, se elimina la línea que intentaba obtener el nombre del Item
-        // de una relación inexistente para evitar errores.
-        // Si necesitas el nombre del Item, deberías:
-        // Item item = itemRepositorio.findById(inventarioPuesto.getItemId()).orElse(null);
-        // if (item != null) {
-        //     dto.setNombreItem(item.getNombre());
-        // }
-        // Pero esto añadiría una consulta a la base de datos por cada InventarioPuesto.
-        // Considera agregar un @ManyToOne Item item a tu entidad InventarioPuesto.
-
         dto.setCantidad(inventarioPuesto.getCantidad());
         dto.setCostoAdquisicion(inventarioPuesto.getCostoAdquisicion());
         dto.setPrecioVenta(inventarioPuesto.getPrecioVenta());

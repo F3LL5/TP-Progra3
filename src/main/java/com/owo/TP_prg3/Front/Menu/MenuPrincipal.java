@@ -24,10 +24,9 @@ public class MenuPrincipal {
         //Te obliga a inicair sesion para poder salir del bucle
         while (usuario == null) {
             Map<String, Object> datosUsuario = authService.iniciarSesion();
-            usuario = (UsuarioAutenticado) datosUsuario.get("usuario");
 
             if(datosUsuario!=null){
-
+                usuario = (UsuarioAutenticado) datosUsuario.get("usuario");
 
                 //Se asigna el puesto si tiene
                 if (datosUsuario.get("puesto") != null) {
@@ -118,7 +117,7 @@ public class MenuPrincipal {
                     case "0" -> System.out.println("Saliendo del programa.");
                     default -> System.out.println("Opción no válida.");
                 }
-                Escaner.pausa(scanner);
+                if (!opcion.equals("0")) Escaner.pausa(scanner);
             } while (!opcion.equals("0"));
         }
     }
