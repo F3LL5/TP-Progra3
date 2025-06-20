@@ -116,7 +116,6 @@ public class MenuPrincipal {
                     case "0" -> System.out.println("Saliendo del programa.");
                     default -> System.out.println("Opción no válida.");
                 }
-                if (!opcion.equals("0")) Escaner.pausa(scanner);
             } while (!opcion.equals("0"));
         }
     }

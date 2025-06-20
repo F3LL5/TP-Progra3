@@ -54,10 +54,10 @@ public class PuestoControlador {
 
     @GetMapping("/filtrarYOrdenarPorNombre")
     public ResponseEntity<List<PuestoDTO>> ordenarPorNombre(
-            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDir
     ) {
-        List<PuestoDTO> puestosFiltrados = puestoServicio.filtrarYOrdenarPorNombre(nombre, sortDir);
+        List<PuestoDTO> puestosFiltrados = puestoServicio.filtrarYOrdenarPorNombre(sortBy,sortDir);
         return ResponseEntity.ok(puestosFiltrados);
     }
 

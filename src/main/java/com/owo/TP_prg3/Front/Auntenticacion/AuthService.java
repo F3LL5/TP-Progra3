@@ -27,11 +27,6 @@ public class AuthService {
     @Getter
     private String authHeader = null;
 
-    /**
-     * Solicita DNI y contraseña, intenta autenticar contra el endpoint de perfil.
-     * Si la autenticación es exitosa, también intenta obtener el puesto asociado al DNI.
-     * @return Un objeto UsuarioPuesto si es exitoso (puede contener un Puesto nulo si no se encuentra), de lo contrario null.
-     */
     public Map<String, Object> iniciarSesion() throws IOException, InterruptedException {
         System.out.println("\n--- INICIO DE SESIÓN ---");
         System.out.print("DNI: ");

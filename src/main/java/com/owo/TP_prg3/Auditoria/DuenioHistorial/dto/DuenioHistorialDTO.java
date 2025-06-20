@@ -13,5 +13,5 @@ public class DuenioHistorialDTO {
     protected Long puesto_id;
     protected Long duenio_anterior_id;
     protected Long duenio_nuevo_id;
-    protected LocalDate fecha_cambio;
+    protected String fecha_cambio;
 }

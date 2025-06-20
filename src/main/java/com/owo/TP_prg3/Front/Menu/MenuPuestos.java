@@ -59,7 +59,7 @@ public class MenuPuestos {
                 3. Agregar puesto
                 4. Eliminar puesto
                 5. Modificar puesto
-                6. Filtrar y Ordenar por NOMBRE de puesto
+                6. Ordenar por puesto
                 7. Historial de Duenios
                 0. Salir
                 INGRESE LA OPCIÓN QUE DESEE:""");
@@ -100,11 +100,13 @@ public class MenuPuestos {
         System.out.print("""
         ORDENAR POR:
         [1] NOMBRE
+        [1] COMISION
         [0] SIN ORDENAMIENTO
         Opción:""");
         int by = Escaner.enteroValido(scanner);
         String sortBy = switch (by) {
             case 1 -> "nombre";
+            case 2 -> "comision";
             default -> null;
         };
 
@@ -122,7 +124,7 @@ public class MenuPuestos {
         };
 
         StringBuilder urlBuilder = new StringBuilder(API_URL + "/filtrarYOrdenarPorNombre?");
-        if (sortBy != null) urlBuilder.append("nombre=").append(sortBy).append("&");
+        if (sortBy != null) urlBuilder.append("sortBy=").append(sortBy).append("&");
         if (sortDir != null) urlBuilder.append("sortDir=").append(sortDir);
 
         String finalUrl = urlBuilder.toString();

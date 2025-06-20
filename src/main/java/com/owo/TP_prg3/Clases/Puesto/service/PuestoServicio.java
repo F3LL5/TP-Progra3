@@ -13,7 +13,7 @@ public interface PuestoServicio {
     PuestoDTO createPuesto(CreatePuestoDTO createPuestoDTO);
     Optional<PuestoDTO> updatePuesto(Long id, UpdatePuestoDTO updatePuestoDTO);
     boolean deletePuesto(Long id);
-    List<PuestoDTO> filtrarYOrdenarPorNombre(String nombre, String sortDir);
+    List<PuestoDTO> filtrarYOrdenarPorNombre(String sortBy, String sortDir);
 
     Optional<PuestoDTO> getPuestoByDni(int dni);
 }

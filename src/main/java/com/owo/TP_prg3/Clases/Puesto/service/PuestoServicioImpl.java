@@ -1,5 +1,6 @@
 package com.owo.TP_prg3.Clases.Puesto.service;
 
+import com.owo.TP_prg3.Clases.Entidad.dto.EntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
 import com.owo.TP_prg3.Excepciones.ConflictoDeDatosException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
@@ -137,18 +138,28 @@ public class PuestoServicioImpl implements PuestoServicio {
     }
 
     @Override
-    public List<PuestoDTO> filtrarYOrdenarPorNombre(String nombre, String sortDir) {
+    public List<PuestoDTO> filtrarYOrdenarPorNombre(String sortBy, String sortDir) {
         List<PuestoDTO> allPuestos = getAllPuestos();
         Stream<PuestoDTO> puestoDTOStream = allPuestos.stream();
 
-        if (nombre != null && !nombre.isEmpty()) {
-            puestoDTOStream = puestoDTOStream.filter(puesto -> puesto.getNombre().equalsIgnoreCase(nombre));
+        if (sortDir != null && !sortDir.equalsIgnoreCase("asc") && !sortDir.equalsIgnoreCase("desc")) {
+            throw new IngresoInvalidoException("La dirección de ordenamiento debe ser 'asc' o 'desc'.");
         }
 
-        Comparator<PuestoDTO> comparator = Comparator.comparing(PuestoDTO::getNombre);
-        if ("desc".equalsIgnoreCase(sortDir)) {
-            comparator = comparator.reversed();
+        Comparator<PuestoDTO> comparator = null;
+        if(sortBy != null) {
+            switch (sortBy.toLowerCase()) {
+                case "nombre" -> comparator = Comparator.comparing(PuestoDTO::getNombre);
+                case "comision" -> comparator = Comparator.comparing(PuestoDTO::getComision);
+                default -> throw new RuntimeException("Dicho criterio NO existe.");
+            }
         }
+        if(comparator != null) {
+            if ("desc".equalsIgnoreCase(sortDir)) comparator = comparator.reversed();
+        } else {
+            comparator = Comparator.comparing(PuestoDTO::getPuestoId);
+        }
+        puestoDTOStream = puestoDTOStream.sorted(comparator);
 
         return puestoDTOStream.sorted(comparator).toList();
     }

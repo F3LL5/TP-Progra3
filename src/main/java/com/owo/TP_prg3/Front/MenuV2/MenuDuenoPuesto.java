@@ -30,6 +30,8 @@ import java.util.*;
 
 public class MenuDuenoPuesto {
 
+    /// RECOMENDACIÓN: PARA PODER LEER BIEN ESTA CLASE RECOMIENDO APRETAR CLICK DERECHO, FOLDING, COLLAPSE ALL. E ir expandiendo el metodo que desee leer
+
     private static final String API_URL_ENTIDADES = "http://localhost:8080/api/entidades";
     private static final String API_URL_INVENTARIO_PUESTO = "http://localhost:8080/api/inventario-puesto";
     private static final String API_URL_PEDIDOS = "http://localhost:8080/api/pedidos";
@@ -93,8 +95,6 @@ public class MenuDuenoPuesto {
         Ingrese una opción:""", puestoUsuario.getNombre());
     }
 
-    // --- Métodos de gestión específicos para Dueño de Puesto ---
-
     /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     /// ENTIDADES
     /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -130,7 +130,6 @@ public class MenuDuenoPuesto {
         } while (!opcion.equals("0"));
     }
 
-    // Métodos para gestionar entidades de su puesto
     private void obtenerEntidadesDeMiPuesto() throws IOException, InterruptedException {
         String rol1 = "CLIENTE";
         String rol2 = "PROVEEDOR";
@@ -207,6 +206,7 @@ public class MenuDuenoPuesto {
             FlipTableHelper.imprimir(List.of(entidadDTO));
         });
     }
+
     private void agregarEntidadAMiPuesto2() throws IOException, InterruptedException {
         System.out.println("\n--- Agregar nueva entidad para su puesto ---");
         System.out.print("Nombre: ");
@@ -451,6 +451,7 @@ public class MenuDuenoPuesto {
     /// INVENTARIO
     /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+    /// GET
     private void gestionarInventarioPuesto() throws IOException, InterruptedException {
         String opcion;
         do {
@@ -697,7 +698,6 @@ public class MenuDuenoPuesto {
         }
     }
 
-
     /// METODOS DE STOCK
     private void mostrarProductosEnStock() throws IOException, InterruptedException {
         Long id = puestoUsuario.getPuestoId();
@@ -812,7 +812,6 @@ public class MenuDuenoPuesto {
         } while (!opcion.equals("0"));
     }
 
-    // Métodos para gestionar transacciones de su puesto
     private void obtenerTransaccionesDeMiPuesto() throws IOException, InterruptedException {
         System.out.println("\n--- Obteniendo transacciones de su puesto... ---");
         Optional<Object> result = HandlerResponse.handleResponse(
@@ -894,10 +893,10 @@ public class MenuDuenoPuesto {
         });
     }
 
-    /*
-     Gestiona los pedidos del puesto del dueño.
-     Incluye obtener todos, buscar por ID, agregar, eliminar y modificar.
-    */
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    /// PEDIDOS
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     private void gestionarPedidosPuesto() throws IOException, InterruptedException {
         String opcion;
         do {
@@ -925,7 +924,6 @@ public class MenuDuenoPuesto {
         } while (!opcion.equals("0"));
     }
 
-    // Métodos para gestionar pedidos de su puesto
     private void obtenerPedidosDeMiPuesto() throws IOException, InterruptedException {
         System.out.println("\n--- Obteniendo todos los pedidos de su puesto... ---");
         Optional<Object> result = HandlerResponse.handleResponse(
@@ -1166,10 +1164,10 @@ public class MenuDuenoPuesto {
         FlipTableHelper.imprimir(transacciones);
     }
 
-    /*
-     Gestiona los detalles de pedido del puesto del dueño.
-     Incluye obtener todos, buscar por ID, agregar, eliminar y modificar.
-    */
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    /// DETALLES DE PEDIDO
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     private void gestionarDetallesPedidoPuesto() throws IOException, InterruptedException {
         String opcion;
         do {
@@ -1195,7 +1193,6 @@ public class MenuDuenoPuesto {
         } while (!opcion.equals("0"));
     }
 
-    // Métodos para gestionar detalles de pedido de su puesto
     private void obtenerDetallesPedidoDeMiPuestoPorPedido() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID del pedido del cual desea ver los detalles (de su puesto): ");
         Integer pedidoId = Escaner.enteroValido(scanner);
@@ -1216,7 +1213,6 @@ public class MenuDuenoPuesto {
             }
         });
     }
-
 
     private void agregarDetallePedidoAMiPuesto() throws IOException, InterruptedException {
         System.out.println("\n--- Registrar detalle de pedido para un pedido de su puesto ---");
@@ -1303,6 +1299,10 @@ public class MenuDuenoPuesto {
             HandlerResponse.handleErrorResponse(statusCode, response.body());
         }
     }
+
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    /// ITEMS
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     private void gestionarItemsGeneral() throws IOException, InterruptedException {
         MenuItem menuItem = new MenuItem(authHeader);

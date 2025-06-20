@@ -21,7 +21,7 @@ public class DuenioHistorialServiciolmpl implements DuenioHistorialServicio{
                 duenioHistorial.getPuesto_id(),
                 duenioHistorial.getDuenio_anterior_id(),
                 duenioHistorial.getDuenio_nuevo_id(),
-                duenioHistorial.getFecha_cambio()
+                duenioHistorial.getFecha_cambio().toString()
         );
     }
 

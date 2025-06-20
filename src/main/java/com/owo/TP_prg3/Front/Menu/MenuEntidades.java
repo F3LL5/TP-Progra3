@@ -268,7 +268,7 @@ public class MenuEntidades {
                 attributeSelected = true;
             }
             case 3 -> {
-                System.out.print("Rol \n1-CLIENTE \n2-PROVEEDOR \n3-DUENIO : \n4-ADMIN");
+                System.out.print("Rol \n1-CLIENTE \n2-PROVEEDOR \n3-DUENIO \n4-ADMIN \n Ingrese una opción: ");
                 int roles = Escaner.enteroValido(scanner);
                 String rol = switch (roles) {
                     case 1 -> "CLIENTE";
