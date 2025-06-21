@@ -202,9 +202,6 @@ public class PedidoServicioImpl implements PedidoServicio {
                                     .anyMatch( t -> t.getTransaccionId().equals(pedido.getTransaccionId())));
         }
 
-        // Si se ingresa un rango de fechas, por ej antes de diciembre y desp de abril.
-        // Primero filtra las mayores de abril y desp las menores de diciembre.
-        // No al mismo tiempo por si desea solo poner un min y un max individualmente
 
         ///  ORDENAMIENTO
         if (sortBy != null) {

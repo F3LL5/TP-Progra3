@@ -47,14 +47,14 @@ public class ItemControlador {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteItem(@PathVariable Long id) {
-        itemServicio.deleteProduct(id); // Service will throw if not found
-        return ResponseEntity.noContent().build(); // 204 No Content
+        itemServicio.deleteProduct(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<ItemDTO> updateItem(@PathVariable Long id, @Valid @RequestBody UpdateItemDTO updateItemDTO) {
         ItemDTO updatedItem = itemServicio.updateProduct(id, updateItemDTO)
-                .orElse(null); // Service will throw if not found
+                .orElse(null);
         return ResponseEntity.ok(updatedItem);
     }
 

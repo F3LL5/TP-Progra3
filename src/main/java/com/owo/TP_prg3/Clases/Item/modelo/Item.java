@@ -8,7 +8,7 @@ import org.hibernate.annotations.DynamicUpdate;
 
 //JPA
 @Entity @Table(name = "items")
-//Lombok
+
 @Data @AllArgsConstructor @NoArgsConstructor
 @DynamicUpdate
 public class Item {

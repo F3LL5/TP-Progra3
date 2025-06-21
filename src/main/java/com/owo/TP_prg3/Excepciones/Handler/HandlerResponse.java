@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public abstract class HandlerResponse {
-    private static ObjectMapper mapper; // Ahora lo inicializaremos
+    private static ObjectMapper mapper;
 
     public static void setObjectMapper(ObjectMapper objectMapper) {
         if (mapper == null) {
@@ -22,21 +22,21 @@ public abstract class HandlerResponse {
         int statusCode = response.statusCode();
         String responseBody = response.body();
 
-        if (statusCode >= 200 && statusCode < 300) { // Códigos de éxito (2xx)
-            System.out.println(successMessage); // El mensaje de éxito aún se imprime aquí
+        if (statusCode >= 200 && statusCode < 300) {
+            System.out.println(successMessage);
             if (responseBody != null && !responseBody.isBlank()) {
                 try {
-                    if (responseBody.startsWith("[")) { // Asumimos que es una lista
-                        // Se utiliza mapper.getTypeFactory().constructCollectionType para List<?>
+                    if (responseBody.startsWith("[")) {
+
                         List<?> items = mapper.readValue(responseBody, mapper.getTypeFactory().constructCollectionType(List.class, clazz));
-                        return Optional.of(items); // Retorna la lista parseada
-                    } else { // Asumimos que es un objeto único
+                        return Optional.of(items);
+                    } else {
                         Object item = mapper.readValue(responseBody, clazz);
-                        return Optional.of(item); // Retorna el objeto parseado
+                        return Optional.of(item);
                     }
                 } catch (IOException e) {
                     System.out.println("Error al parsear la respuesta JSON: " + e.getMessage());
-                    return Optional.empty(); // Retorna Optional vacío si hay error de parseo
+                    return Optional.empty();
                 }
             } else {
                 System.out.println("La respuesta del servidor está vacía.");
@@ -50,19 +50,19 @@ public abstract class HandlerResponse {
     }
 
     public static void handleErrorResponse(int statusCode, String responseBody) {
-        // System.err.println("Error HTTP - Código: " + statusCode);
+
         try {
-            // Attempt to parse the error response as a Map
+
             Map<String, Object> errorMap = mapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {
             });
 
-            if (errorMap.containsKey("errores")) { // For MethodArgumentNotValidException (400)
+            if (errorMap.containsKey("errores")) {
                 List<String> errors = (List<String>) errorMap.get("errores");
                 System.out.println("Detalles de la validación:");
                 errors.forEach(System.err::println);
-            } else if (errorMap.containsKey("mensaje")) { // For custom exceptions
+            } else if (errorMap.containsKey("mensaje")) {
                 System.out.println("Mensaje: " + errorMap.get("mensaje"));
-            } else if (errorMap.containsKey("error")) { // Generic Spring Boot errors
+            } else if (errorMap.containsKey("error")) {
                 System.out.println("Error: " + errorMap.get("error"));
                 System.out.println("Ruta: " + errorMap.get("path"));
             } else {

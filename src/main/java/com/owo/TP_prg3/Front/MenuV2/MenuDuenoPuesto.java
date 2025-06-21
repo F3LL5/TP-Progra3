@@ -918,10 +918,11 @@ public class MenuDuenoPuesto {
                     1. Obtener todos los pedidos de su puesto
                     2. Buscar pedido por ID (en su puesto)
                     3. Filtrar y Ordenas pedidos
+                    4. Mostrar pedidos de hoy
                     
-                    4. Agregar Pedido (a su puesto)
-                    5. Eliminar Pedido (de su puesto)
-                    6. Modificar Pedido (de su puesto)
+                    5. Agregar Pedido (a su puesto)
+                    6. Eliminar Pedido (de su puesto)
+                    7. Modificar Pedido (de su puesto)
                    
                     0. Volver al menú de Dueño de Puesto
                     Ingrese una opción:"""
@@ -931,9 +932,11 @@ public class MenuDuenoPuesto {
                 case "1" -> obtenerPedidosDeMiPuesto();
                 case "2" -> buscarPedidoPorIdDeMiPuesto();
                 case "3" -> filtrarYOrdenarPedido();
-                case "4" -> agregarPedidoAMiPuesto();
-                case "5" -> eliminarPedidoDeMiPuesto();
-                case "6" -> modificarPedidoDeMiPuesto();
+                case "4" -> filtrarPedidosHoy();
+
+                case "5" -> agregarPedidoAMiPuesto();
+                case "6" -> eliminarPedidoDeMiPuesto();
+                case "7" -> modificarPedidoDeMiPuesto();
                 case "0" -> {}
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
@@ -1150,6 +1153,7 @@ public class MenuDuenoPuesto {
             default -> null;
         };
 
+
         StringBuilder urlBuilder = new StringBuilder(API_URL_PEDIDOS + "/filtrarYOrdenar?");
         if (tipoPedido != null) urlBuilder.append("tipo_transaccion=").append(tipoPedido).append("&");
         if (fechaMin != null) urlBuilder.append("fechaMin=").append(fechaMin).append("&");
@@ -1162,21 +1166,74 @@ public class MenuDuenoPuesto {
             finalUrl = finalUrl.substring(0, finalUrl.length() - 1);
         }
 
-        HttpResponse<String> response = HttpService.realizarPeticion("GET", finalUrl, authHeader, null);
-        String respuestaJson = response.body();
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule()); // Soporte para LocalDateTime
+        Optional<Object> result = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("GET", finalUrl, authHeader, null),
+                PedidoDTO.class,
+                "Detalles de pedido obtenidos exitosamente para el pedido " + ".",
+                "No se pudieron obtener los detalles de pedido para el pedido "  + " de su puesto."
+        );
 
-        List<TransaccionDTO> transacciones = Arrays.asList(mapper.readValue(respuestaJson, TransaccionDTO[].class));
+        result.ifPresent(obj -> {
+            List<PedidoDTO> pedido = (List<PedidoDTO>) obj;
+            if (!pedido.isEmpty()) {
+                FlipTableHelper.imprimir(pedido);
+            } else {
+                System.out.println("No se encontraron detalles de pedido para el pedido " + " de su puesto.");
+            }
+        });
 
-        if (transacciones.isEmpty()) {
-            System.out.println("No se encontraron transacciones con esos filtros.");
-            return;
-        }
 
-        FlipTableHelper.imprimir(transacciones);
+
+
+
+
+
+
+
+
     }
+
+    private void filtrarPedidosHoy() throws IOException, InterruptedException {
+
+
+        Optional<Object> result = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("GET",API_URL_PEDIDOS+"/filtrarYOrdenar?" +"fechaMin="+LocalDate.now()+"&"+"fechaMax="+LocalDate.now(), authHeader, null),
+                PedidoDTO.class,
+                "Detalles de pedido obtenidos exitosamente para el pedido " + ".",
+                "No se pudieron obtener los detalles de pedido para el pedido "  + " de su puesto."
+        );
+
+        result.ifPresent(obj -> {
+            List<PedidoDTO> pedido = (List<PedidoDTO>) obj;
+            if (!pedido.isEmpty()) {
+                FlipTableHelper.imprimir(pedido);
+            } else {
+                System.out.println("No se encontraron detalles de pedido para el pedido " + " de su puesto.");
+            }
+        });
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     /// DETALLES DE PEDIDO

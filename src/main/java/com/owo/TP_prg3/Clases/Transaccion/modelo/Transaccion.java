@@ -24,7 +24,7 @@ public class Transaccion {
     protected TipoTransaccion tipo;
 
     @Column(nullable = false)
-    protected LocalDateTime fecha; // Mapeado a TIMESTAMP en DB, default current_timestamp
+    protected LocalDateTime fecha;
 
     @Column(nullable = false, precision = 10, scale = 2)
     protected BigDecimal monto;

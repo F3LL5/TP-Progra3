@@ -80,25 +80,23 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
 
         BigDecimal cantidad_BD = new BigDecimal(detallePedido.getCantidad());
 
-        // --- INICIO DE LA CORRECCIÓN ---
-        // OBTENEMOS EL TIPO DE TRANSACCIÓN DEL ENUM (COMPRA O VENTA)
+
         TipoTransaccion tipoTransaccion = pedido.getTransaccion().getTipo();
         BigDecimal precioUnitario;
 
-        // LÓGICA CORREGIDA: Seleccionamos el precio según el tipo de transacción
+
         if (tipoTransaccion == TipoTransaccion.VENTA) {
             precioUnitario = inventarioItem.get().getPrecioVenta();
         } else if (tipoTransaccion == TipoTransaccion.COMPRA) {
             precioUnitario = inventarioItem.get().getCostoAdquisicion();
         } else {
-            // Los tipos INGRESO y EGRESO no manejan items, por lo tanto no se puede calcular un precio.
-            // Lanzamos una excepción para indicar que no se puede agregar un detalle a este tipo de pedido.
+
             throw new IngresoInvalidoException("No se pueden agregar items a pedidos de tipo " + tipoTransaccion);
         }
 
         // Usamos el precio unitario correcto para el cálculo
         detallePedido.setPrecioTotal(cantidad_BD.multiply(precioUnitario));
-        // --- FIN DE LA CORRECCIÓN ---
+
 
         return detallePedido;
     }
@@ -150,12 +148,12 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
         // Recalcular el monto total del pedido y actualizar la transacción y los saldos
         updateTransaccionMontoForPedido(savedDetallePedido.getPedido().getPedidoId(), previousMontoTransaccion);
 
-        // LÓGICA: Actualizar el stock del inventario del puesto
+
         actualizarStockInventarioPuesto(
                 savedDetallePedido.getItem().getItem_id(),
                 savedDetallePedido.getPedido().getPuestoId(),
                 savedDetallePedido.getCantidad(),
-                pedido.getTransaccion().getTipo() // Pasamos el tipo de transacción
+                pedido.getTransaccion().getTipo()
         );
 
         return convertirA_DTO(savedDetallePedido);
@@ -190,7 +188,7 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
 
                         if (inventarioItem.isEmpty()) throw new RecursoNoEncontradoException("InventarioPuesto no encontrado para el Item ID: " + detallePedido.getItem().getItem_id() + " y Puesto ID: " + detallePedido.getPedido().getPuestoId());
 
-                        // --- INICIO DE LA CORRECCIÓN EN UPDATE ---
+
                         BigDecimal cantidad_BD = new BigDecimal(detallePedido.getCantidad());
                         TipoTransaccion tipoTransaccion = detallePedido.getPedido().getTransaccion().getTipo();
                         BigDecimal precioUnitario;
@@ -208,7 +206,7 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
                         }
 
                         detallePedido.setPrecioTotal(cantidad_BD.multiply(precioUnitario));
-                        // --- FIN DE LA CORRECCIÓN EN UPDATE ---
+
                     }
 
                     DetallePedido detallePedidoModificado = detallePedidoRepositorio.save(detallePedido);
@@ -252,12 +250,12 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
 
             updateTransaccionMontoForPedido(pedidoId, previousMontoTransaccion);
 
-            // Devolver el stock al inventario del puesto
-            // En la eliminación, la cantidad de ajuste es la opuesta a la que se usó al crear
+
+
             actualizarStockInventarioPuesto(
                     itemId,
                     puestoId,
-                    -cantidadEliminada, // Se resta lo que se vendió, o se suma lo que se compró
+                    -cantidadEliminada, // Se resta lo que se vendio, o se suma lo que se compro
                     tipoTransaccion
             );
 
@@ -347,7 +345,7 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
         InventarioPuesto inventarioPuesto = optionalInventarioPuesto.get();
         Integer nuevaCantidad;
 
-        // --- CORRECCIÓN EN LA LÓGICA DE ACTUALIZACIÓN DE STOCK ---
+
         if (tipo == TipoTransaccion.VENTA) {
             // En una venta, se RESTA del stock
             nuevaCantidad = inventarioPuesto.getCantidad() - cantidadAjuste;

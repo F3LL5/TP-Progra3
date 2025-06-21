@@ -11,11 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-/**
- * DataLoader es un componente de Spring Boot que se ejecuta una vez que la aplicación
- * ha iniciado completamente. Se utiliza aquí para poblar la base de datos con un
- * usuario administrador inicial si no existen usuarios.
- */
+
 @Component
 public class DataLoader implements CommandLineRunner {
 
