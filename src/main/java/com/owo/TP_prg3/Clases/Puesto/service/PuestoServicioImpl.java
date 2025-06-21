@@ -2,6 +2,7 @@ package com.owo.TP_prg3.Clases.Puesto.service;
 
 import com.owo.TP_prg3.Clases.Entidad.dto.EntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
+import com.owo.TP_prg3.Clases.Entidad.modelo.RolEntidad;
 import com.owo.TP_prg3.Excepciones.ConflictoDeDatosException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
@@ -125,6 +126,42 @@ public class PuestoServicioImpl implements PuestoServicio {
                     return convertirA_DTO(updatedPuesto);
                 }).or(() -> {
                     throw new RecursoNoEncontradoException("Puesto con ID " + id + " no encontrado.");
+                });
+    }
+
+    @Transactional
+    public Optional<PuestoDTO> updateMiPuesto(Long idPuesto, UpdatePuestoDTO updatePuestoDTO, Long idDuenio) {
+        return puestoRepositorio.findById(idPuesto)
+                .map(puesto -> {
+
+                    Optional<Entidad> optionalEntidad = entidadRepositorio.findById(idDuenio);
+                    Entidad duenioActual = optionalEntidad.orElseThrow(()-> new RecursoNoEncontradoException("Dueño con ID " + idDuenio + " no encontrado."));
+
+                    // Si se ingresó, actualiza el nombre
+                    if (updatePuestoDTO.getNombre() != null) {
+                        puesto.setNombre(updatePuestoDTO.getNombre());
+                    }
+
+                    // Si se ingresó, actualiza el duenio o lo desasocia
+                    if (updatePuestoDTO.getDuenioId() != null) {
+                        if (updatePuestoDTO.getDuenioId() == 0) {
+                            puesto.setDuenio(null);
+                        } else {
+                            Entidad duenio = entidadRepositorio.findById(updatePuestoDTO.getDuenioId())
+                                    .orElseThrow(() -> new RecursoNoEncontradoException("Entidad (dueño) con ID " + updatePuestoDTO.getDuenioId() + " no encontrada."));
+
+                            Optional<PuestoDTO> optionalPuesto = getPuestoByDni(duenio.getDni());
+                            if (optionalPuesto.isPresent()) throw new RecursoNoEncontradoException("Dueño con ID " + duenio.getEntidad_id() + " ya posee un puesto asignado.");
+
+                            puesto.setDuenio(duenio);
+                        }
+                    }
+
+                    // Guarda los cambios y devuelve el registro modificado
+                    Puesto updatedPuesto = puestoRepositorio.save(puesto);
+                    return convertirA_DTO(updatedPuesto);
+                }).or(() -> {
+                    throw new RecursoNoEncontradoException("Puesto con ID " + idPuesto + " no encontrado.");
                 });
     }
 

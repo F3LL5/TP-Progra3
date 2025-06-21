@@ -51,6 +51,12 @@ public class PuestoControlador {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Puesto con ID " + id + " no encontrado."));
         return ResponseEntity.ok(updatedPuesto);
     }
+    @PatchMapping("/{id}/puesto/{puestoId}")
+    public ResponseEntity<PuestoDTO> updateMiPuesto(@PathVariable Long id, @Valid @RequestBody UpdatePuestoDTO updatePuestoDTO,@PathVariable Long puestoId) {
+        PuestoDTO updatedPuesto = puestoServicio.updateMiPuesto(id, updatePuestoDTO, puestoId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Puesto con ID " + id + " no encontrado."));
+        return ResponseEntity.ok(updatedPuesto);
+    }
 
     @GetMapping("/filtrarYOrdenarPorNombre")
     public ResponseEntity<List<PuestoDTO>> ordenarPorNombre(

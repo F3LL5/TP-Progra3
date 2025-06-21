@@ -80,8 +80,8 @@ public class MenuDuenoPuesto {
 
     private void mostrarMenuDueñoPuesto() {
         System.out.printf("""
-        \n--- PUESTO: "%s" ---
         
+        \n--- PUESTO: "%s" ---
         1. Gestionar Clientes y Proveedores
         2. Modificar Mi Puesto
         
@@ -412,34 +412,26 @@ public class MenuDuenoPuesto {
         });
     }
 
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    /// PUESTO
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     private void modificarMiPuesto() throws IOException, InterruptedException {
         System.out.print("--- Modificar Mi Puesto ---");
         System.out.print("""
             ATRIBUTO A MODIFICAR:
             1. Nombre
-            2. Comisión
             0. Cancelar
             Ingrese una opción:""");
         int opcion = Escaner.enteroValido(scanner);
 
         String jsonBody = "";
-        if (opcion == 0) {
-            System.out.println("Modificación cancelada.");
-            return;
-        } else if (opcion < 1 || opcion > 2) {
-            System.out.println("Opción no válida.");
-            return;
-        }
-        switch (opcion){
-            case 1 -> {
-                System.out.print("Ingrese el nuevo valor: ");
-                String nombre = Escaner.stringValido(scanner);
-                jsonBody = "{\"nombre\":\"" +  nombre + "\"}" ;
-            }
-            case 2 -> {
-                double comision = Escaner.porcentaje(scanner);
-                jsonBody = "{\"comision\":" + comision + "}";
-            }
+        if (opcion == 1) {
+            System.out.print("Ingrese el nuevo valor: ");
+            String nombre = Escaner.stringValido(scanner);
+            jsonBody = "{\"nombre\":\"" + nombre + "\"}";
+        } else {
+            System.out.println("Cancelando operación...");
         }
         HttpResponse<String> response = HttpService.realizarPeticion("PATCH", API_URL_PUESTOS + "/" + puestoUsuario.getPuestoId(), authHeader, jsonBody);
 
