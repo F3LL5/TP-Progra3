@@ -158,11 +158,11 @@ public class MenuItem {
 
     ///--------------------------------------POST-----------------------------------------------------------------------
     private void agregar() throws IOException, InterruptedException {
-        System.out.println("\n--- Agregar nuevo itemId ---");
+        System.out.println("\n--- Agregar nuevo item ---");
 
-        System.out.print("Nombre del itemId: ");
+        System.out.print("Nombre del item: ");
         String nombre = Escaner.stringValido(scanner);
-        System.out.print("Categoria del itemId: ");
+        System.out.print("Categoria del item: ");
         String categoria = Escaner.stringValido(scanner);
 
         CreateItemDTO createItemDTO = new CreateItemDTO(nombre, categoria);
@@ -172,7 +172,7 @@ public class MenuItem {
                 HttpService.realizarPeticion("POST", API_URL, authHeader, jsonBody),
                 ItemDTO.class,
                 "Item agregado exitosamente.",
-                "Error al agregar itemId."
+                "Error al agregar item."
         );
 
         result.ifPresent(obj -> {
@@ -183,7 +183,7 @@ public class MenuItem {
 
     ///-------------------------------------DELETE----------------------------------------------------------------------
     private void eliminar() throws IOException, InterruptedException {
-        System.out.print("Ingrese el ID del itemId a eliminar: ");
+        System.out.print("Ingrese el ID del item a eliminar: ");
         Integer id = Escaner.enteroValido(scanner);
         HttpResponse<String> response = HttpService.realizarPeticion("DELETE", API_URL + "/" + id, authHeader, null);
 
@@ -239,7 +239,7 @@ public class MenuItem {
                 HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody),
                 ItemDTO.class,
                 "Item modificado exitosamente.",
-                "Error al modificar itemId."
+                "Error al modificar item."
         );
 
         result.ifPresent(obj -> {

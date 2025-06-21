@@ -70,7 +70,7 @@ public class CuentaBancariaServicioImpl implements CuentaBancariaServicio {
                 .orElseThrow(() -> new RecursoNoEncontradoException("No existe entidad con ID proporcionado."));
 
         int edad = entidadAsociada.getEdad();
-        if (edad < 18) {
+        if (edad <= 17) {
             throw new ConflictoDeDatosException("La entidades menores de edad NO pueden tener cuentas bancarias");
         }
 

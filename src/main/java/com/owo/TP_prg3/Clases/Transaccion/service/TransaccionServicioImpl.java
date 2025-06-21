@@ -391,12 +391,26 @@ public class TransaccionServicioImpl implements TransaccionServicio {
                 if (cuentaDestino == null) throw new IngresoInvalidoException("Cuenta de destino requerida para VENTA.");
                 if (cuentaOrigen == null) throw new IngresoInvalidoException("Cuenta de origen requerida para VENTA.");
 
+                // --- INICIO DE LA CORRECCIÓN ---
+                // Validar que la cuenta del cliente (destino) tenga saldo suficiente
+                if (cuentaDestino.getSaldo().compareTo(montoDelta) < 0) {
+                    throw new ConflictoDeDatosException("Saldo insuficiente en la cuenta del cliente para completar la venta.");
+                }
+                // --- FIN DE LA CORRECCIÓN ---
+
                 cuentaOrigen.setSaldo(cuentaOrigen.getSaldo().add(montoDelta));
                 cuentaDestino.setSaldo(cuentaDestino.getSaldo().subtract(montoDelta));
                 break;
             case COMPRA:
                 if (cuentaOrigen == null) throw new IngresoInvalidoException("Cuenta de origen requerida para COMPRA.");
                 if (cuentaDestino == null) throw new IngresoInvalidoException("Cuenta de destino requerida para COMPRA.");
+
+                // --- INICIO DE LA CORRECCIÓN ---
+                // Validar que nuestra cuenta (origen) tenga saldo suficiente
+                if (cuentaOrigen.getSaldo().compareTo(montoDelta) < 0) {
+                    throw new ConflictoDeDatosException("Saldo insuficiente en la cuenta propia para completar la compra.");
+                }
+                // --- FIN DE LA CORRECCIÓN ---
 
                 cuentaOrigen.setSaldo(cuentaOrigen.getSaldo().subtract(montoDelta));
                 cuentaDestino.setSaldo(cuentaDestino.getSaldo().add(montoDelta));
@@ -407,6 +421,14 @@ public class TransaccionServicioImpl implements TransaccionServicio {
                 break;
             case EGRESO:
                 if (cuentaDestino == null) throw new IngresoInvalidoException("Cuenta de destino requerida para EGRESO.");
+
+                // --- INICIO DE LA CORRECCIÓN ---
+                // Validar que la cuenta (nuestra, destino en este caso) tenga saldo suficiente
+                if (cuentaDestino.getSaldo().compareTo(montoDelta) < 0) {
+                    throw new ConflictoDeDatosException("Saldo insuficiente para realizar el egreso.");
+                }
+                // --- FIN DE LA CORRECCIÓN ---
+
                 cuentaDestino.setSaldo(cuentaDestino.getSaldo().subtract(montoDelta));
                 break;
             default:
