@@ -64,14 +64,13 @@ public class MenuDuenoPuesto {
             opcion = Escaner.stringValido(scanner);
             switch (opcion) {
                 case "1" -> gestionarEntidadesPuesto();
-                case "2" -> System.out.println("No tiene permisos para gestionar usuarios desde este menú.");
-                case "3" -> modificarMiPuesto();
+                case "2" -> modificarMiPuesto();
+                case "3" -> gestionarItemsGeneral();
                 case "4" -> gestionarInventarioPuesto();
                 case "5" -> verMiCuentaBancaria();
                 case "6" -> gestionarTransaccionesPuesto();
                 case "7" -> gestionarPedidosPuesto();
                 case "8" -> gestionarDetallesPedidoPuesto();
-                case "9" -> gestionarItemsGeneral();
                 case "0" -> System.out.println("Saliendo del menú de Dueño de Puesto.");
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
@@ -81,16 +80,19 @@ public class MenuDuenoPuesto {
 
     private void mostrarMenuDueñoPuesto() {
         System.out.printf("""
-        \n--- MENÚ DE DUEÑO DE PUESTO (Puesto: %s) ---
-        1. Gestionar Entidades (Clientes y Proveedores de su puesto)
-        2. Gestionar Usuarios (No permitido para Dueños de Puesto)
-        3. Modificar Mi Puesto
-        4. Gestionar inventario de mi puesto
+        \n--- PUESTO: "%s" ---
+        
+        1. Gestionar Clientes y Proveedores
+        2. Modificar Mi Puesto
+        
+        3. Gestionar items/productos
+        4. Gestionar inventario de mis items
+        
         5. Ver Detalles de Mi Cuenta Bancaria
-        6. Gestionar Transacciones (De su puesto)
-        7. Gestionar Pedidos (De su puesto)
-        8. Gestionar Detalles de Pedido (De su puesto)
-        9. Gestionar items
+        6. Gestionar mis Transacciones
+        7. Gestionar mis Pedidos (Realizar ventas)
+        8. Gestionar Detalles de un Pedido
+        
         0. Salir
         Ingrese una opción:""", puestoUsuario.getNombre());
     }
@@ -103,26 +105,28 @@ public class MenuDuenoPuesto {
         String opcion;
         do {
             System.out.print("""
-                    \n--- GESTIÓN DE ENTIDADES (SU PUESTO) ---
+                    \n--- GESTIÓN DE ENTIDADES ---
                     1. Obtener todos los clientes y proveedores
-                    2. Agregar Entidad
-                    2.1 Agregar Entidad (Cuenta bancaria automatica)
-                    3. Eliminar Entidad
-                    4. Modificar Entidad
-                    5. Filtrar y Ordenar Entidades
-                    6. Filtrar Clientes con pedidos del puesto
+                    2. Filtrar y Ordenar Entidades
+                    3. Filtrar Clientes con pedidos en el puesto
+                    
+                    4. Agregar
+                    5. Agregar Cuenta Bancaria Automática (Testeo)
+                    6. Eliminar por id
+                    7. Modificar por id
+                    
                     0. Volver al menú de Dueño de Puesto
                     Ingrese una opción:"""
             );
             opcion = Escaner.stringValido(scanner);
             switch (opcion) {
                 case "1" -> obtenerEntidadesDeMiPuesto();
-                case "2" -> agregarEntidadAMiPuesto();
-                case "2.1" -> agregarEntidadAMiPuesto2();
-                case "3" -> eliminarEntidadDeMiPuesto();
-                case "4" -> modificarEntidadDeMiPuesto();
-                case "5" -> filtrarYOrdenarEntidadesDeMiPuesto();
-                case "6" -> filtrarClientesConPedidosDeMiPuesto();
+                case "2" -> filtrarYOrdenarEntidadesDeMiPuesto();
+                case "3" -> filtrarClientesConPedidosDeMiPuesto();
+                case "4" -> agregarEntidadAMiPuesto();
+                case "5" -> agregarEntidadAMiPuesto2();
+                case "6" -> eliminarEntidadDeMiPuesto();
+                case "7" -> modificarEntidadDeMiPuesto();
                 case "0" -> {}
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
@@ -457,16 +461,18 @@ public class MenuDuenoPuesto {
         String opcion;
         do {
             System.out.print("""
-                    \n--- GESTIÓN DE INVENTARIO (SU PUESTO) ---
+                    \n--- GESTIÓN DE SU INVENTARIO ---
                     OPCIONES:
-                    1. Obtener todos los inventarios de mi puesto
-                    2. Buscar por ID
-                    3. Agregar inventario
-                    4. Eliminar inventario
-                    5. Modificar inventario
-                    6. Mostrar productos en stock
-                    7. Mostrar productos en stock bajo
-                    8. Filtrar y ordenar inventario de puesto
+                    1. Obtener inventario completo
+                    2. Buscar por ID de inventario
+                    3. Filtrar y ordenar inventario de puesto
+                    4. Mostrar productos en stock
+                    5. Mostrar productos en stock bajo
+                    
+                    6. Agregar inventario
+                    7. Eliminar inventario
+                    8. Modificar inventario
+                    
                     0. Volver al menú de Dueño de Puesto
                     Ingrese una opción:"""
             );
@@ -474,12 +480,12 @@ public class MenuDuenoPuesto {
             switch (opcion) {
                 case "1" -> obtenerInventariosDeMiPuesto();
                 case "2" -> buscarInventarioPorIdDeMiPuesto();
-                case "3" -> agregarInventarioPorPuesto();
-                case "4" -> eliminarInventarioPorPuesto();
-                case "5" -> modificarInventarioPuesto();
-                case "6" -> mostrarProductosEnStock();
-                case "7" -> mostrarProductosEnStockBajo();
-                case "8" -> filtrarYordenarItemsInventario();
+                case "3" -> filtrarYordenarItemsInventario();
+                case "4" -> mostrarProductosEnStock();
+                case "5" -> mostrarProductosEnStockBajo();
+                case "6" -> agregarInventarioPorPuesto();
+                case "7" -> eliminarInventarioPorPuesto();
+                case "8" -> modificarInventarioPuesto();
                 case "0" -> {}
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
@@ -786,18 +792,20 @@ public class MenuDuenoPuesto {
         }
     }
 
-        /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-        /// TRANSACCIONES
-        /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    /// TRANSACCIONES
+    /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     private void gestionarTransaccionesPuesto() throws IOException, InterruptedException {
         String opcion;
         do {
             System.out.print("""
-                    \n--- GESTIÓN DE TRANSACCIONES (SU PUESTO) ---
+                    \n--- GESTIÓN DE SUS TRANSACCIONES ---
                     1. Obtener todas las transacciones de su puesto
-                    2. Buscar transacción por ID (en su puesto)
-                    3. Filtrar y Ordenar Transacciones (de su puesto)
+                    2. Buscar transacción por ID
+                    3. Filtrar y Ordenar Transacciones
+                    4. Registrar Moviento (INGRESO, EGRESO)
+                    
                     0. Volver al menú de Dueño de Puesto
                     Ingrese una opción:"""
             );
@@ -806,6 +814,7 @@ public class MenuDuenoPuesto {
                 case "1" -> obtenerTransaccionesDeMiPuesto();
                 case "2" -> buscarTransaccionPorIdDeMiPuesto();
                 case "3" -> filtrarYOrdenarTransaccionesDeMiPuesto();
+                case "4" -> registrarMoviento();
                 case "0" -> {}
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
@@ -894,6 +903,41 @@ public class MenuDuenoPuesto {
         });
     }
 
+    private void registrarMoviento() throws IOException, InterruptedException {
+        String tipoTransaccion = "";
+
+        Long idDuenio=puestoUsuario.getDuenio().getEntidad_id();
+
+        String jsonBody =
+                "{"+
+                    "\"puestoId\":" + puestoUsuario.getPuestoId() +
+                    ",\"tipoTransaccion\":\"" + tipoTransaccion + "\"" +
+                    ",\"idEntidad\":" + idDuenio +
+                    ",\"idCuentaDestino\":" + 0 + // Porque no hay cuenta de tercero en este caso
+                "}";
+
+        boolean bucle = false;
+        do {
+            bucle = false;
+            System.out.print("""
+                    Ingrese el tipo de transaccion:
+                    1.INGRESO
+                    2.EGRESO
+                    Ingrese una opcion:""");
+            int n = Escaner.enteroValido(scanner);
+            switch (n) {
+                case 1 -> tipoTransaccion = TipoTransaccion.INGRESO.name();
+                case 2 -> tipoTransaccion = TipoTransaccion.EGRESO.name();
+                default -> {
+                    System.out.println("Opcion no valida. Intente nuevamente...");
+                    bucle = true;
+                }
+            }
+        } while (bucle);
+
+        HttpResponse<String> response = HttpService.realizarPeticion("POST", API_URL_PEDIDOS+"/createTransaccion", authHeader, jsonBody);
+    }
+
     /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     /// PEDIDOS
     /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -902,12 +946,15 @@ public class MenuDuenoPuesto {
         String opcion;
         do {
             System.out.print("""
-                    \n--- GESTIÓN DE PEDIDOS (SU PUESTO) ---
+                    \n--- GESTIÓN DE LOS PEDIDOS DE SU PUESTO ---
                     1. Obtener todos los pedidos de su puesto
                     2. Buscar pedido por ID (en su puesto)
-                    3. Agregar Pedido (a su puesto)
-                    4. Eliminar Pedido (de su puesto)
-                    5. Modificar Pedido (de su puesto)
+                    3. Filtrar y Ordenas pedidos
+                    
+                    4. Agregar Pedido (a su puesto)
+                    5. Eliminar Pedido (de su puesto)
+                    6. Modificar Pedido (de su puesto)
+                   
                     0. Volver al menú de Dueño de Puesto
                     Ingrese una opción:"""
             );
@@ -915,9 +962,10 @@ public class MenuDuenoPuesto {
             switch (opcion) {
                 case "1" -> obtenerPedidosDeMiPuesto();
                 case "2" -> buscarPedidoPorIdDeMiPuesto();
-                case "3" -> agregarPedidoAMiPuesto();
-                case "4" -> eliminarPedidoDeMiPuesto();
-                case "5" -> modificarPedidoDeMiPuesto();
+                case "3" -> filtrarYOrdenarPedido();
+                case "4" -> agregarPedidoAMiPuesto();
+                case "5" -> eliminarPedidoDeMiPuesto();
+                case "6" -> modificarPedidoDeMiPuesto();
                 case "0" -> {}
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
@@ -967,7 +1015,6 @@ public class MenuDuenoPuesto {
         Long idDuenio=puestoUsuario.getDuenio().getEntidad_id();
 
 
-
         String tipoTransaccion = "";
         boolean bucle = false;
         do {
@@ -976,15 +1023,11 @@ public class MenuDuenoPuesto {
                     Ingrese el tipo de transaccion:
                     1.COMPRA
                     2.VENTA
-                    3.INGRESO
-                    4.EGRESO
                     Ingrese una opcion:""");
             int n = Escaner.enteroValido(scanner);
             switch (n) {
                 case 1 -> tipoTransaccion = TipoTransaccion.COMPRA.name();
                 case 2 -> tipoTransaccion = TipoTransaccion.VENTA.name();
-                case 3 -> tipoTransaccion = TipoTransaccion.INGRESO.name();
-                case 4 -> tipoTransaccion = TipoTransaccion.EGRESO.name();
                 default -> {
                     System.out.println("Opcion no valida. Intente nuevamente...");
                     bucle = true;
@@ -992,12 +1035,8 @@ public class MenuDuenoPuesto {
             }
         } while (bucle);
 
-        Long idCuentaOtro = Long.valueOf("0");
-
-        if (TipoTransaccion.COMPRA.name().equals(tipoTransaccion) || TipoTransaccion.VENTA.name().equals(tipoTransaccion)){
-            System.out.println("Ingrese el id de la cuenta cliente/proveedor");
-            idCuentaOtro=Long.valueOf(Escaner.enteroValido(scanner));
-        }
+        System.out.println("Ingrese el id de la cuenta bancaria del tercero: ");
+        long idCuentaOtro=Long.valueOf(Escaner.enteroValido(scanner));
 
         String jsonBody =
                 "{"+
@@ -1067,7 +1106,11 @@ public class MenuDuenoPuesto {
     private void filtrarYOrdenarPedido() throws IOException, InterruptedException {
         System.out.println("--- FILTRAR Y ORDENAR PEDIDOS ---");
 
-        System.out.print("""
+        boolean bucle;
+        String tipoPedido = "";
+        do {
+            bucle = false;
+            System.out.print("""
             TIPO DE TRANSACCIÓN:
             [1] COMPRA
             [2] VENTA
@@ -1075,14 +1118,16 @@ public class MenuDuenoPuesto {
             [4] EGRESO
             [0] SIN FILTRO
             Opción:""");
-        int estado = Escaner.enteroValido(scanner);
-        String estado_pedido = switch (estado) {
-            case 1 -> "COMPRA";
-            case 2 -> "VENTA";
-            case 3 -> "INGRESO";
-            case 4 -> "EGRESO";
-            default -> null;
-        };
+            int opcion = Escaner.enteroValido(scanner);
+            switch (opcion) {
+                case 1 -> tipoPedido = "COMPRA";
+                case 2 -> tipoPedido = "VENTA";
+                case 3 -> tipoPedido = "INGRESO";
+                case 4 -> tipoPedido = "EGRO";
+                case 0 -> tipoPedido = null;
+                default -> bucle = true;
+            }
+        } while (bucle);
 
         LocalDate fechaMin;
         LocalDate fechaMax;
@@ -1138,9 +1183,9 @@ public class MenuDuenoPuesto {
         };
 
         StringBuilder urlBuilder = new StringBuilder(API_URL_PEDIDOS + "/filtrarYOrdenar?");
-        if (estado_pedido != null) urlBuilder.append("tipo_transaccion=").append(estado_pedido).append("&");
-        if (fechaMin != null) urlBuilder.append("fechaMin=").append(estado_pedido).append("&");
-        if (fechaMax != null) urlBuilder.append("fechaMax=").append(estado_pedido).append("&");
+        if (tipoPedido != null) urlBuilder.append("tipo_transaccion=").append(tipoPedido).append("&");
+        if (fechaMin != null) urlBuilder.append("fechaMin=").append(fechaMin).append("&");
+        if (fechaMax != null) urlBuilder.append("fechaMax=").append(fechaMax).append("&");
         if (sortBy != null) urlBuilder.append("sortBy=").append(sortBy).append("&");
         if (sortDir != null) urlBuilder.append("sortDir=").append(sortDir);
 
@@ -1174,10 +1219,10 @@ public class MenuDuenoPuesto {
         do {
             System.out.print("""
                     \n--- GESTIÓN DE DETALLES DE PEDIDO (SU PUESTO) ---
-                    1. Obtener todos los detalles de pedido de su puesto (por ID de Pedido)
-                    2. Agregar Detalle de Pedido (a un pedido de su puesto)
-                    3. Eliminar Detalle de Pedido (de un pedido de su puesto)
-                    4. Modificar Detalle de Pedido (de un pedido de su puesto)
+                    1. Detallar pedido por id
+                    2. Agregar un Detalle de Pedido
+                    3. Eliminar un Detalle de Pedido
+                    4. Modificar un Detalle de Pedido
                     0. Volver al menú de Dueño de Puesto
                     Ingrese una opción:"""
             );
@@ -1218,7 +1263,7 @@ public class MenuDuenoPuesto {
     private void agregarDetallePedidoAMiPuesto() throws IOException, InterruptedException {
         System.out.println("\n--- Registrar detalle de pedido para un pedido de su puesto ---");
 
-        System.out.print("Ingrese el ID del pedido (de su puesto) al que pertenece este detalle: ");
+        System.out.print("Ingrese el ID del pedido al que pertenece este detalle: ");
         int pedidoId = Escaner.enteroValido(scanner);
 
         System.out.print("Ingrese el ID del ítem: ");
