@@ -433,7 +433,7 @@ public class MenuDuenoPuesto {
         } else {
             System.out.println("Cancelando operación...");
         }
-        HttpResponse<String> response = HttpService.realizarPeticion("PATCH", API_URL_PUESTOS + "/" + puestoUsuario.getPuestoId(), authHeader, jsonBody);
+        HttpResponse<String> response = HttpService.realizarPeticion("PATCH", API_URL_PUESTOS + "/" + puestoUsuario.getPuestoId() + "/puesto" + puestoUsuario.getPuestoId(), authHeader, jsonBody);
 
         int statusCode = response.statusCode();
         if (statusCode >= 200 && statusCode < 300) {
@@ -589,6 +589,68 @@ public class MenuDuenoPuesto {
         });
     }
 
+    private void mostrarProductosEnStock() throws IOException, InterruptedException {
+        Long id = puestoUsuario.getPuestoId();
+
+        // Realizar la petición HTTP
+        HttpResponse<String> response = HttpService.realizarPeticion(
+                "GET",
+                API_URL_INVENTARIO_PUESTO + "/obtenerInvConStock/" + id,
+                authHeader,
+                null
+        );
+
+        String respuestaJson = response.body();
+
+        List<Map<String, Object>> stock = this.mapper.readValue(
+                respuestaJson,
+                new TypeReference<List<Map<String, Object>>>() {
+                }
+        );
+
+        // Verificar si hay resultados
+        if (stock.isEmpty()) {
+            System.out.println("No hay productos en stock.");
+            return;
+        }
+
+        // Obtener headers (nombres de columnas)
+        String[] headers = stock.getFirst().keySet().toArray(new String[0]);
+
+        // Obtener los datos como matriz de strings
+        String[][] data = stock.stream()
+                .map(m -> m.values().stream()
+                        .map(v -> v == null ? "" : v.toString())
+                        .toArray(String[]::new))
+                .toArray(String[][]::new);
+
+        // Imprimir la tabla con FlipTable
+        System.out.println(FlipTable.of(headers, data));
+    }
+
+    private void mostrarProductosEnStockBajo() throws IOException, InterruptedException {
+        System.out.println("Ingrese id de puesto");
+        Long id = puestoUsuario.getPuestoId();
+
+        HttpResponse<String> response = HttpService.realizarPeticion("GET", API_URL_INVENTARIO_PUESTO + "/obtenerInvConStockBajo/" + id, authHeader, null);
+        String respuestaJson = response.body();
+
+        List<Map<String, Object>> stock = this.mapper.readValue(respuestaJson, new TypeReference<>() {
+        });
+
+        if (stock.isEmpty()) {
+            System.out.println("No hay productos con stock bajo.");
+            return;
+        }
+
+        String[] headers = stock.get(0).keySet().toArray(new String[0]);
+        String[][] data = stock.stream()
+                .map(m -> m.values().stream().map(String::valueOf).toArray(String[]::new))
+                .toArray(String[][]::new);
+
+        System.out.println(FlipTable.of(headers, data));
+    }
+
     /// POST
     private void agregarInventarioPorPuesto() throws IOException, InterruptedException {
         System.out.println("AGREGAR NUEVO INVENTARIO");
@@ -696,70 +758,6 @@ public class MenuDuenoPuesto {
             HandlerResponse.handleErrorResponse(statusCode, response.body());
         }
     }
-
-    /// METODOS DE STOCK
-    private void mostrarProductosEnStock() throws IOException, InterruptedException {
-        Long id = puestoUsuario.getPuestoId();
-
-        // Realizar la petición HTTP
-        HttpResponse<String> response = HttpService.realizarPeticion(
-                "GET",
-                API_URL_INVENTARIO_PUESTO + "/obtenerInvConStock/" + id,
-                authHeader,
-                null
-        );
-
-        String respuestaJson = response.body();
-
-        List<Map<String, Object>> stock = this.mapper.readValue(
-                respuestaJson,
-                new TypeReference<List<Map<String, Object>>>() {
-                }
-        );
-
-        // Verificar si hay resultados
-        if (stock.isEmpty()) {
-            System.out.println("No hay productos en stock.");
-            return;
-        }
-
-        // Obtener headers (nombres de columnas)
-        String[] headers = stock.getFirst().keySet().toArray(new String[0]);
-
-        // Obtener los datos como matriz de strings
-        String[][] data = stock.stream()
-                .map(m -> m.values().stream()
-                        .map(v -> v == null ? "" : v.toString())
-                        .toArray(String[]::new))
-                .toArray(String[][]::new);
-
-        // Imprimir la tabla con FlipTable
-        System.out.println(FlipTable.of(headers, data));
-    }
-
-    private void mostrarProductosEnStockBajo() throws IOException, InterruptedException {
-        System.out.println("Ingrese id de puesto");
-        Long id = puestoUsuario.getPuestoId();
-
-        HttpResponse<String> response = HttpService.realizarPeticion("GET", API_URL_INVENTARIO_PUESTO + "/obtenerInvConStockBajo/" + id, authHeader, null);
-        String respuestaJson = response.body();
-
-        List<Map<String, Object>> stock = this.mapper.readValue(respuestaJson, new TypeReference<>() {
-        });
-
-        if (stock.isEmpty()) {
-            System.out.println("No hay productos con stock bajo.");
-            return;
-        }
-
-        String[] headers = stock.get(0).keySet().toArray(new String[0]);
-        String[][] data = stock.stream()
-                .map(m -> m.values().stream().map(String::valueOf).toArray(String[]::new))
-                .toArray(String[][]::new);
-
-        System.out.println(FlipTable.of(headers, data));
-    }
-
 
     /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     /// CUENTA BANCARIA
