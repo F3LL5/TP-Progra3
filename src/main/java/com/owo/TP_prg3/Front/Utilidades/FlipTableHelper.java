@@ -2,9 +2,7 @@ package com.owo.TP_prg3.Front.Utilidades;
 
 import com.jakewharton.fliptables.FlipTable;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public abstract class FlipTableHelper {
 
@@ -56,6 +54,30 @@ public abstract class FlipTableHelper {
             }
         }
 
+        System.out.println(FlipTable.of(headers, datos));
+    }
+
+    public static void imprimirMapa(List<Map<String, Object>> listaMapa) {
+        if (listaMapa == null || listaMapa.isEmpty()) {
+            System.out.println("No hay datos para mostrar.");
+            return;
+        }
+
+        // Obtenemos los encabezados de las claves del mapa.
+        String[] headers = listaMapa.get(0).keySet().toArray(new String[0]);
+
+        // Convertir el map en una matriz de Strings
+        String[][] datos = listaMapa.stream()
+                .map(filaMapa -> Arrays.stream(headers)
+                        .map(header -> {
+                            Object valor = filaMapa.get(header);
+                            return (valor != null) ? valor.toString() : "";
+                        })
+                        .toArray(String[]::new)
+                )
+                .toArray(String[][]::new);
+
+        // Imprimir la tabla usando FlipTable.
         System.out.println(FlipTable.of(headers, datos));
     }
 

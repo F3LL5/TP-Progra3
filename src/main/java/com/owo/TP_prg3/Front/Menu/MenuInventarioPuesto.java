@@ -5,10 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jakewharton.fliptables.FlipTable;
 import com.jakewharton.fliptables.FlipTableConverters;
 import com.owo.TP_prg3.Clases.InventarioPuesto.dto.InventarioPuestoDTO;
-import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import com.owo.TP_prg3.Excepciones.Handler.HandlerResponse;
 import com.owo.TP_prg3.Front.HttpService;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
+import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -80,9 +80,9 @@ public class MenuInventarioPuesto {
         );
 
         result.ifPresent(obj -> {
-            List<InventarioPuestoDTO> invetarios = (List<InventarioPuestoDTO>) obj;
-            if (!invetarios.isEmpty()) {
-                System.out.println(FlipTableConverters.fromIterable(invetarios, InventarioPuestoDTO.class));
+            List<InventarioPuestoDTO> inventarios = (List<InventarioPuestoDTO>) obj;
+            if (!inventarios.isEmpty()) {
+                FlipTableHelper.imprimir(inventarios);
             } else {
                 System.out.println("No se encontraron resultados.");
             }
@@ -102,7 +102,7 @@ public class MenuInventarioPuesto {
 
         result.ifPresent(obj -> {
             InventarioPuestoDTO inventario = (InventarioPuestoDTO) obj;
-            System.out.println(FlipTableConverters.fromIterable(List.of(inventario), InventarioPuestoDTO.class));
+            FlipTableHelper.imprimir(List.of(inventario));
         });
 
     }
@@ -168,7 +168,7 @@ public class MenuInventarioPuesto {
         result.ifPresent(obj -> {
             List<InventarioPuestoDTO> inventarios = (List<InventarioPuestoDTO>) obj;
             if (!inventarios.isEmpty()) {
-                System.out.println(FlipTableConverters.fromIterable(inventarios, InventarioPuestoDTO.class));
+                FlipTableHelper.imprimir(inventarios);
             } else {
                 System.out.println("No se encontraron resultados.");
             }
@@ -271,34 +271,17 @@ public class MenuInventarioPuesto {
                 authHeader,
                 null
         );
-
+        // Obtenemos el json de la respuesta
         String respuestaJson = response.body();
 
-        // Deserializar JSON a lista de Map<String, Object>
+        // Deserializar JSON a Map<String, Object>
         ObjectMapper mapper = new ObjectMapper();
         List<Map<String, Object>> stock = mapper.readValue(
                 respuestaJson,
-                new TypeReference<List<Map<String, Object>>>() {}
+                new TypeReference<>() {}
         );
 
-        // Verificar si hay resultados
-        if (stock.isEmpty()) {
-            System.out.println("No hay productos en stock.");
-            return;
-        }
-
-        // Obtener headers (nombres de columnas)
-        String[] headers = stock.get(0).keySet().toArray(new String[0]);
-
-        // Obtener los datos como matriz de strings
-        String[][] data = stock.stream()
-                .map(m -> m.values().stream()
-                        .map(v -> v == null ? "" : v.toString())
-                        .toArray(String[]::new))
-                .toArray(String[][]::new);
-
-        // Imprimir la tabla con FlipTable
-        System.out.println(FlipTable.of(headers, data));
+        FlipTableHelper.imprimirMapa(stock);
     }
 
     private void mostrarProductosEnStockBajo() throws IOException, InterruptedException {
@@ -309,20 +292,9 @@ public class MenuInventarioPuesto {
         String respuestaJson = response.body();
 
         ObjectMapper mapper = new ObjectMapper();
-        List<Map<String, Object>> stock = mapper.readValue(respuestaJson, new TypeReference<>() {
-        });
+        List<Map<String, Object>> stock = mapper.readValue(respuestaJson, new TypeReference<>() {});
 
-        if (stock.isEmpty()) {
-            System.out.println("No hay productos con stock bajo.");
-            return;
-        }
-
-        String[] headers = stock.get(0).keySet().toArray(new String[0]);
-        String[][] data = stock.stream()
-                .map(m -> m.values().stream().map(String::valueOf).toArray(String[]::new))
-                .toArray(String[][]::new);
-
-        System.out.println(FlipTable.of(headers, data));
+        FlipTableHelper.imprimirMapa(stock);
     }
 
 }

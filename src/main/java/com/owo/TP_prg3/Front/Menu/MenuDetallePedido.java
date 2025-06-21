@@ -1,22 +1,13 @@
 package com.owo.TP_prg3.Front.Menu;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jakewharton.fliptables.FlipTableConverters;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.CreateDetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.DetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.UpdateDetallePedidoDTO;
-import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedido;
-import com.owo.TP_prg3.Clases.Entidad.dto.CreateEntidadDTO;
-import com.owo.TP_prg3.Clases.Entidad.dto.EntidadDTO;
-import com.owo.TP_prg3.Clases.Entidad.modelo.RolEntidad;
-import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
-import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
 import com.owo.TP_prg3.Excepciones.Handler.HandlerResponse;
 import com.owo.TP_prg3.Front.HttpService;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.http.HttpResponse;

@@ -175,10 +175,11 @@ public class MenuDuenoPuesto {
         String nombre = Escaner.stringValido(scanner);
         System.out.print("Tipo de Entidad: ");
         String tipoEntidad = Escaner.stringValido(scanner);
-        boolean bucle = false;
+        boolean bucle;
         String rol = "";
         do {
-            System.out.print("Filtrar por ROL (1. CLIENTE, 2.PROVEEDOR): ");
+            bucle = false;
+            System.out.print("ROL (1. CLIENTE, 2.PROVEEDOR): ");
             int opcion = Escaner.enteroValido(scanner);
             switch (opcion) {
                 case 1 -> rol = "CLIENTE";

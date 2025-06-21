@@ -268,17 +268,22 @@ public class MenuEntidades {
                 attributeSelected = true;
             }
             case 3 -> {
-                System.out.print("Rol \n1-CLIENTE \n2-PROVEEDOR \n3-DUENIO \n4-ADMIN \n Ingrese una opción: ");
-                int roles = Escaner.enteroValido(scanner);
-                String rol = switch (roles) {
-                    case 1 -> "CLIENTE";
-                    case 2 -> "PROVEEDOR";
-                    case 3-> "DUENO_PUESTO";
-                    case 4-> "ADMIN";
-                    default -> null;
-                };
-                updateEntidadDTO.setRolEntidad(RolEntidad.valueOf(rol));
-                attributeSelected = true;
+                boolean bucle;
+                String rol = "";
+                do {
+                    bucle = false;
+                    System.out.print("Rol \n1-CLIENTE \n2-PROVEEDOR \n3-DUENIO \n4-ADMIN \n Ingrese una opción: ");
+                    int roles = Escaner.enteroValido(scanner);
+                    switch (roles) {
+                        case 1 -> rol = "CLIENTE";
+                        case 2 -> rol = "PROVEEDOR";
+                        case 3 -> rol = "DUENO_PUESTO";
+                        case 4 -> rol = "ADMIN";
+                        default -> bucle = true;
+                    }
+                } while (bucle);
+                    updateEntidadDTO.setRolEntidad(RolEntidad.valueOf(rol));
+                    attributeSelected = true;
             }
             case 4 -> {
                 Integer edad = Escaner.enteroValido(scanner);

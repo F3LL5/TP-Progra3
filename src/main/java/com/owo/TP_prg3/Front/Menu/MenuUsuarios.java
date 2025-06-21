@@ -7,6 +7,7 @@ import com.owo.TP_prg3.Clases.User.dto.UsuarioDTO;
 import com.owo.TP_prg3.Excepciones.Handler.HandlerResponse;
 import com.owo.TP_prg3.Front.HttpService;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
+import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;
 
 import java.io.IOException;
 import java.net.http.HttpResponse;
@@ -61,9 +62,9 @@ public class MenuUsuarios {
         );
 
         result.ifPresent(obj -> {
-            List<UsuarioDTO> items = (List<UsuarioDTO>) obj;
-            if (!items.isEmpty()) {
-                System.out.println(FlipTableConverters.fromIterable(items, UsuarioDTO.class));
+            List<UsuarioDTO> usuarios = (List<UsuarioDTO>) obj;
+            if (!usuarios.isEmpty()) {
+                FlipTableHelper.imprimir(usuarios);
             } else {
                 System.out.println("No se encontraron resultados.");
             }
