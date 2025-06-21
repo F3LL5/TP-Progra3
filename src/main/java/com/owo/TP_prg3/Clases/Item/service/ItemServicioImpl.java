@@ -104,8 +104,7 @@ public class ItemServicioImpl implements ItemServicio {
         if (itemRepositorio.existsById(id)) {
             itemRepositorio.deleteById(id);
             return true;
-        }
-        throw new RecursoNoEncontradoException("Item con ID " + id + " no encontrado para eliminar.");
+        } else throw new RecursoNoEncontradoException("Item con ID " + id + " no encontrado para eliminar.");
     }
 
     public List<ItemDTO> filtrarYordenar(Long puestoId, String categoria, String orden, String direccion) {

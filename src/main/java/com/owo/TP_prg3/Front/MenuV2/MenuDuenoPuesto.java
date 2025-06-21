@@ -654,16 +654,16 @@ public class MenuDuenoPuesto {
     /// POST
     private void agregarInventarioPorPuesto() throws IOException, InterruptedException {
         System.out.println("AGREGAR NUEVO INVENTARIO");
-        System.out.print("Ingrese cantidad: ");
-        Integer cantidad = Escaner.enteroValido(scanner);
-        Long puestoId = puestoUsuario.getPuestoId();
         System.out.print("Ingrese ID item: ");
         Long itemId = Long.valueOf(Escaner.enteroValido(scanner));
+        System.out.print("Ingrese cantidad que posee: ");
+        Integer cantidad = Escaner.enteroValido(scanner);
+        Long puestoId = puestoUsuario.getPuestoId();
         System.out.print("Ingrese la cantidad de stock minimo que desea establecer: ");
         Integer stockMin = Escaner.enteroValido(scanner);
-        System.out.print("Ingrese el precio de venta del item");
+        System.out.print("Ingrese el precio de venta unitario: ");
         BigDecimal precioVenta = BigDecimal.valueOf(Escaner.doubleValido(scanner));
-        System.out.print("Ingrese el costo de adquisicion");
+        System.out.print("Ingrese el costo de adquisicion: ");
         BigDecimal costoAdquisicion = BigDecimal.valueOf(Escaner.doubleValido(scanner));
 
         String jsonBody = "{" +

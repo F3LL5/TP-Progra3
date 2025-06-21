@@ -48,7 +48,7 @@ public class HttpService {
             System.out.println( "Cuerpo de la respuesta:\n" + response.body() );
 
         } catch (IOException | InterruptedException e) {
-            System.err.println("Error durante la petición HTTP: " + e.getMessage());
+            System.out.println("Error durante la petición HTTP: " + e.getMessage());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

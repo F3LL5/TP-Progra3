@@ -149,9 +149,9 @@ public class PedidoServicioImpl implements PedidoServicio {
 
     @Override
     public boolean deletePedido(Long id) {
-        if (!pedidoRepositorio.existsById(id))
+        if (!pedidoRepositorio.existsById(id)) {
             throw new RecursoNoEncontradoException("Pedido con ID " + id + " no encontrado para eliminar.");
-
+        }
         pedidoRepositorio.deleteById(id);
         return true;
     }
@@ -246,8 +246,7 @@ public class PedidoServicioImpl implements PedidoServicio {
         if (pedidoOptional.isPresent() && pedidoOptional.get().getPuestoId().equals(puestoId)) {
             pedidoRepositorio.deleteById(id);
             return true;
-        }
-        throw new RecursoNoEncontradoException("Pedido con ID " + id + " no encontrado o no pertenece al puesto " + puestoId + " para eliminar.");
+        } else throw new RecursoNoEncontradoException("Pedido con ID " + id + " no encontrado o no pertenece al puesto " + puestoId + " para eliminar.");
     }
 
     // Modificar Pedido de un Puesto específico

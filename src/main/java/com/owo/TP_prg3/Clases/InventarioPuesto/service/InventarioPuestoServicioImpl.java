@@ -10,6 +10,7 @@ import com.owo.TP_prg3.Clases.Item.modelo.Item;
 import com.owo.TP_prg3.Clases.Item.modelo.ItemRepositorio;
 import com.owo.TP_prg3.Clases.Item.service.ItemServicioImpl;
 import com.owo.TP_prg3.Clases.Puesto.modelo.PuestoRepositorio;
+import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -277,8 +278,7 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
         if (inventarioPuestoRepositorio.existsById(id)) {
             inventarioPuestoRepositorio.deleteById(id);
             return true;
-        }
-        return false;
+        } else throw new RecursoNoEncontradoException("El inventario de ID " + id + " no ha sido encontrado.");
     }
 
     public boolean deleteInventarioPuesto(Long id, Long puestoId) {
@@ -287,8 +287,7 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
         if (inventarioPuestoOptional.isPresent() && inventarioPuestoOptional.get().getPuesto().getPuestoId().equals(puestoId)) {
             inventarioPuestoRepositorio.deleteById(id);
             return true;
-        }
-        return false; // Retorna false si no existe o no pertenece al puesto
+        } else throw new RecursoNoEncontradoException("El inventario de ID " + id + " no es del puesto: " + puestoId + ".");
     }
 
     /// PATCH ------------------------------------------------------------------------------------------------------------------------------------------------

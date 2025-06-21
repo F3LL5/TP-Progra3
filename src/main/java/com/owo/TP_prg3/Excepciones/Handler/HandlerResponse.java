@@ -35,7 +35,7 @@ public abstract class HandlerResponse {
                         return Optional.of(item); // Retorna el objeto parseado
                     }
                 } catch (IOException e) {
-                    System.err.println("Error al parsear la respuesta JSON: " + e.getMessage());
+                    System.out.println("Error al parsear la respuesta JSON: " + e.getMessage());
                     return Optional.empty(); // Retorna Optional vacío si hay error de parseo
                 }
             } else {
@@ -44,7 +44,7 @@ public abstract class HandlerResponse {
             }
         } else { // Códigos de error
             handleErrorResponse(statusCode, responseBody);
-            System.err.println(errorMessage);
+            System.out.println(errorMessage);
             return Optional.empty(); // Retorna Optional vacío en caso de error
         }
     }
@@ -58,19 +58,19 @@ public abstract class HandlerResponse {
 
             if (errorMap.containsKey("errores")) { // For MethodArgumentNotValidException (400)
                 List<String> errors = (List<String>) errorMap.get("errores");
-                System.err.println("Detalles de la validación:");
+                System.out.println("Detalles de la validación:");
                 errors.forEach(System.err::println);
             } else if (errorMap.containsKey("mensaje")) { // For custom exceptions
-                System.err.println("Mensaje: " + errorMap.get("mensaje"));
+                System.out.println("Mensaje: " + errorMap.get("mensaje"));
             } else if (errorMap.containsKey("error")) { // Generic Spring Boot errors
-                System.err.println("Error: " + errorMap.get("error"));
-                System.err.println("Ruta: " + errorMap.get("path"));
+                System.out.println("Error: " + errorMap.get("error"));
+                System.out.println("Ruta: " + errorMap.get("path"));
             } else {
-                System.err.println("Respuesta de error no reconocida: " + responseBody);
+                System.out.println("Respuesta de error no reconocida: " + responseBody);
             }
         } catch (IOException e) {
-            System.err.println("Error al parsear el cuerpo del error: " + e.getMessage());
-            System.err.println("Cuerpo de la respuesta original: " + responseBody);
+            System.out.println("Error al parsear el cuerpo del error: " + e.getMessage());
+            System.out.println("Cuerpo de la respuesta original: " + responseBody);
         }
     }
 }

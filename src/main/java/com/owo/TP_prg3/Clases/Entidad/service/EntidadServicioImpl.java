@@ -264,8 +264,7 @@ public class EntidadServicioImpl implements EntidadServicio {
         if (entidadRepositorio.existsById(id)) {
             entidadRepositorio.deleteById(id);
             return true;
-        }
-        throw new RecursoNoEncontradoException("La entidad de ID " + id + " no ha sido encontrada.");
+        } else throw new RecursoNoEncontradoException("La entidad de ID " + id + " no ha sido encontrada.");
     }
 
     // Eliminar Entidad de un Puesto específico
@@ -274,8 +273,7 @@ public class EntidadServicioImpl implements EntidadServicio {
         Optional<EntidadDTO> entidad = getEntidadByIdAndPuestoId(id, puestoId);
         if (entidad.isPresent()) {
             return deleteEntidad(id);
-        }
-        throw new RecursoNoEncontradoException("La entidad con ID " + id + " no fue encontrada o no está asociada al puesto " + puestoId + " para ser eliminada.");
+        } else throw new RecursoNoEncontradoException("La entidad con ID " + id + " no fue encontrada o no está asociada al puesto " + puestoId + " para ser eliminada.");
     }
 
 }

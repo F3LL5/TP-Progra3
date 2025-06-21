@@ -40,54 +40,57 @@ public class AuthService {
         try {
             HttpResponse<String> response = HttpService.realizarPeticion("GET", PROFILE_URL, this.authHeader, null);
 
-            int responseCode = response.statusCode();
+            if (response != null) {
+                int responseCode = response.statusCode();
 
-            if (responseCode == 200) {
-                String respuesta = response.body();
-                System.out.println("¡Inicio de sesión exitoso!");
+                if (responseCode == 200) {
+                    String respuesta = response.body();
+                    System.out.println("¡Inicio de sesión exitoso!");
 
-                UsuarioAutenticado usuarioAutenticado = parsearUsuario(respuesta);
-                Puesto puesto = null;
-                Entidad entidad = null;
+                    UsuarioAutenticado usuarioAutenticado = parsearUsuario(respuesta);
+                    Puesto puesto = null;
+                    Entidad entidad = null;
 
-                //Busca en los puestos si el usuario tiene un puesto
-                HttpResponse<String> puestoResponse = HttpService.realizarPeticion("GET", PUESTO_URL + "/dni/" + dni, this.authHeader, null);
-                if (puestoResponse.statusCode() == 200 && !puestoResponse.body().equals("null")) {
-                    puesto = parsearPuesto(puestoResponse.body());
-                    if (puesto != null){
-                        entidad = puesto.getDuenio();
-                    }
-                } else {
-                    System.out.println("El DNI: " + dni + " no tiene puestos asociados.");
-                }
-
-                // Si no tiene puesto, se busca si el usuario tiene una entidad asociada
-                if (entidad == null){
-                    HttpResponse<String> entidadResponse = HttpService.realizarPeticion("GET", ENTIDAD_URL + "/dni/" + dni, this.authHeader, null);
-                    if (entidadResponse.statusCode() == 200 && !entidadResponse.body().isEmpty() && !entidadResponse.body().isBlank()) {
-                        entidad = parsearEntidad(entidadResponse.body());
+                    //Busca en los puestos si el usuario tiene un puesto
+                    HttpResponse<String> puestoResponse = HttpService.realizarPeticion("GET", PUESTO_URL + "/dni/" + dni, this.authHeader, null);
+                    if (puestoResponse.statusCode() == 200 && !puestoResponse.body().equals("null")) {
+                        puesto = parsearPuesto(puestoResponse.body());
+                        if (puesto != null) {
+                            entidad = puesto.getDuenio();
+                        }
                     } else {
-                        System.out.println("No se encontró una entidad para el DNI: " + dni + " (Código de estado: " + entidadResponse.statusCode() + ")");
+                        System.out.println("El DNI: " + dni + " no tiene puestos asociados.");
                     }
+
+                    // Si no tiene puesto, se busca si el usuario tiene una entidad asociada
+                    if (entidad == null) {
+                        HttpResponse<String> entidadResponse = HttpService.realizarPeticion("GET", ENTIDAD_URL + "/dni/" + dni, this.authHeader, null);
+                        if (entidadResponse.statusCode() == 200 && !entidadResponse.body().isEmpty() && !entidadResponse.body().isBlank()) {
+                            entidad = parsearEntidad(entidadResponse.body());
+                        } else {
+                            System.out.println("No se encontró una entidad para el DNI: " + dni + " (Código de estado: " + entidadResponse.statusCode() + ")");
+                        }
+                    }
+
+                    //Se retornan todos los objetos.
+                    Map<String, Object> resultado = new HashMap<>();
+                    resultado.put("usuario", usuarioAutenticado);
+                    resultado.put("puesto", puesto);
+                    resultado.put("entidad", entidad);
+
+                    return resultado;
+                } else {
+                    System.out.println("Error de autenticación: " + responseCode + " " + response.body());
+                    this.authHeader = null; // Resetea el header si falla
+                    return null;
                 }
-
-                //Se retornan todos los objetos.
-                Map<String, Object> resultado = new HashMap<>();
-                resultado.put("usuario", usuarioAutenticado);
-                resultado.put("puesto", puesto);
-                resultado.put("entidad", entidad);
-
-                return resultado;
-            } else {
-                System.err.println("Error de autenticación: " + responseCode + " " + response.body());
-                this.authHeader = null; // Resetea el header si falla
-                return null;
             }
         } catch (IOException | InterruptedException e) {
             System.err.println("Error de conexión al intentar iniciar sesión: " + e.getMessage());
             this.authHeader = null;
             return null;
         }
+        return null;
     }
 
     /**
@@ -124,7 +127,7 @@ public class AuthService {
         if (entidadResponse.statusCode() == 200) {
             duenio = parsearEntidad(entidadResponse.body());
         } else {
-            System.err.println("Error al obtener detalles de la Entidad con ID " + duenioId + ": " + entidadResponse.statusCode() + " " + entidadResponse.body());
+            System.out.println("Error al obtener detalles de la Entidad con ID " + duenioId + ": " + entidadResponse.statusCode() + " " + entidadResponse.body());
         }
 
         return new Puesto(puestoId, nombre, duenio, comision);
