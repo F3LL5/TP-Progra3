@@ -601,31 +601,17 @@ public class MenuDuenoPuesto {
         );
 
         String respuestaJson = response.body();
+        if (response.body().isBlank()){
 
-        List<Map<String, Object>> stock = this.mapper.readValue(
-                respuestaJson,
-                new TypeReference<List<Map<String, Object>>>() {
-                }
-        );
+            List<Map<String, Object>> stock = this.mapper.readValue(
+                    respuestaJson,
+                    new TypeReference<>() {}
+            );
 
-        // Verificar si hay resultados
-        if (stock.isEmpty()) {
-            System.out.println("No hay productos en stock.");
-            return;
+            FlipTableHelper.imprimirMapa(stock);
+        } else {
+            System.out.println("No se han encontrado inventarios que filtrar.");
         }
-
-        // Obtener headers (nombres de columnas)
-        String[] headers = stock.getFirst().keySet().toArray(new String[0]);
-
-        // Obtener los datos como matriz de strings
-        String[][] data = stock.stream()
-                .map(m -> m.values().stream()
-                        .map(v -> v == null ? "" : v.toString())
-                        .toArray(String[]::new))
-                .toArray(String[][]::new);
-
-        // Imprimir la tabla con FlipTable
-        System.out.println(FlipTable.of(headers, data));
     }
 
     private void mostrarProductosEnStockBajo() throws IOException, InterruptedException {
@@ -633,22 +619,14 @@ public class MenuDuenoPuesto {
         Long id = puestoUsuario.getPuestoId();
 
         HttpResponse<String> response = HttpService.realizarPeticion("GET", API_URL_INVENTARIO_PUESTO + "/obtenerInvConStockBajo/" + id, authHeader, null);
-        String respuestaJson = response.body();
 
-        List<Map<String, Object>> stock = this.mapper.readValue(respuestaJson, new TypeReference<>() {
-        });
-
-        if (stock.isEmpty()) {
-            System.out.println("No hay productos con stock bajo.");
-            return;
+        if (response != null) {
+            String respuestaJson = response.body();
+            List<Map<String, Object>> stock = this.mapper.readValue(respuestaJson, new TypeReference<>() {});
+            FlipTableHelper.imprimirMapa(stock);
+        } else {
+            System.out.println("No se han encontrado inventarios que filtrar.");
         }
-
-        String[] headers = stock.get(0).keySet().toArray(new String[0]);
-        String[][] data = stock.stream()
-                .map(m -> m.values().stream().map(String::valueOf).toArray(String[]::new))
-                .toArray(String[][]::new);
-
-        System.out.println(FlipTable.of(headers, data));
     }
 
     /// POST
