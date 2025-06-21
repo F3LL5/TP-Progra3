@@ -11,12 +11,12 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CuentaBancariaDTO {
-    @Column(order = 0, name = "ID")
+    @Column(order = 0, name = "ID Cuenta Bancaria")
     protected Long cuentaBancariaId;
 
-    @Column(order = 1, name = "ID ENTIDAD")
+    @Column(order = 1, name = "ID del Dueño")
     protected Long entidadId;
 
-    @Column(order = 3, name = "SALDO")
+    @Column(order = 3, name = "Saldo actual")
     protected BigDecimal saldo;
 }

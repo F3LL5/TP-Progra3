@@ -10,21 +10,23 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EntidadDTO {
-    @Column(order = 0, name = "ID")
+
+    @Column(order = 0, name = "ID Entidad")
     protected Long entidad_id;
 
-    @Column(order = 1, name = "NOMBRE")
+    @Column(order = 1, name = "DNI")
+    protected Integer dni;
+
+    @Column(order = 2, name = "Nombre")
     protected String nombre;
 
-    @Column(order = 2, name = "ROL")
-    protected RolEntidad rolEntidad;
-
-    @Column(order = 3, name = "TIPO ENTIDAD")
-    protected String tipoEntidad;
-
-    @Column(order = 4, name = "EDAD")
+    @Column(order = 3, name = "Edad")
     protected Integer edad;
 
-    @Column(order = 5, name = "DNI")
-    protected Integer dni;
+    @Column(order = 4, name = "Tipo Entidad")
+    protected String tipoEntidad;
+
+    @Column(order = 5, name = "Rol")
+    protected RolEntidad rolEntidad;
+
 }

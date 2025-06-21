@@ -119,7 +119,7 @@ public class PedidoServicioImpl implements PedidoServicio {
 
         Pedido pedido=new Pedido();
         pedido.setTransaccion(transaccion1);
-        pedido.setPuestoId(Long.valueOf(createPedidoDTO2.getPuestoId()));
+        pedido.setPuestoId(createPedidoDTO2.getPuestoId());
 
 
         Pedido savedPedido = pedidoRepositorio.save(pedido);

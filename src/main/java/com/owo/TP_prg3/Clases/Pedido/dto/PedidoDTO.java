@@ -9,12 +9,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PedidoDTO {
-    @Column(order = 0, name = "ID")
+    @Column(order = 0, name = "ID Pedido")
     protected Long pedidoId;
 
-    @Column(order = 1, name = "TRANSACCION ID")
+    @Column(order = 1, name = "ID Transacción")
     protected Long transaccionId;
 
-    @Column(order = 2, name = "PUESTO ID")
+    @Column(order = 2, name = "ID Puesto")
     protected Long puestoId;
 }

@@ -11,18 +11,18 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DetallePedidoDTO {
-    @Column(order = 0, name = "ID")
+    @Column(order = 0, name = "ID Detalle Pedido")
     protected Long detallePedidoId;
 
-    @Column(order = 1, name = "PEDIDO")
+    @Column(order = 1, name = "ID Pedido")
     protected Long pedidoId;
 
-    @Column(order = 2, name = "ITEM")
+    @Column(order = 2, name = "Código Ítem")
     protected Long itemId;
 
-    @Column(order = 3, name = "CANTIDAD")
+    @Column(order = 3, name = "Cantidad")
     protected Integer cantidad;
 
-    @Column(order = 4, name = "PRECIO TOTAL")
+    @Column(order = 4, name = "Subtotal")
     protected BigDecimal precioTotal;
 }

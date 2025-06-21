@@ -39,11 +39,11 @@ public class EntidadServicioImpl implements EntidadServicio {
     private EntidadDTO convertirA_DTO(Entidad entidad) {
         return new EntidadDTO(
                 entidad.getEntidad_id(),
+                entidad.getDni(),
                 entidad.getNombre(),
-                entidad.getRolEntidad(),
-                entidad.getTipoEntidad(),
                 entidad.getEdad(),
-                entidad.getDni()
+                entidad.getTipoEntidad(),
+                entidad.getRolEntidad()
         );
     }
 

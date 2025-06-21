@@ -12,21 +12,21 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TransaccionDTO {
-    @Column(order = 0, name = "ID")
+    @Column(order = 0, name = "ID Transacción")
     protected Long transaccionId;
 
-    @Column(order = 1, name = "TIPO")
+    @Column(order = 1, name = "Tipo")
     protected String tipo;
 
-    @Column(order = 2, name = "FECHA")
+    @Column(order = 2, name = "Fecha y Hora")
     protected String fecha;
 
-    @Column(order = 3, name = "MONTO")
+    @Column(order = 3, name = "Monto")
     protected BigDecimal monto;
 
-    @Column(order = 4, name = "CUENTA ORIGEN")
+    @Column(order = 4, name = "Cuenta Dueño")
     protected Long cuentaOrigenId;
 
-    @Column(order = 5, name = "CUENA DESTINO")
+    @Column(order = 5, name = "Cuenta Tercero")
     protected Long cuentaDestinoId;
 }

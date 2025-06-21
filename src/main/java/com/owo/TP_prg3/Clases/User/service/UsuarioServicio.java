@@ -12,6 +12,8 @@ import com.owo.TP_prg3.Clases.User.dto.UsuarioDTO;
 import com.owo.TP_prg3.Clases.User.modelo.RolUsuario;
 import com.owo.TP_prg3.Clases.User.modelo.Usuario;
 import com.owo.TP_prg3.Clases.User.modelo.UsuarioRepositorio;
+import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -35,9 +37,9 @@ public class UsuarioServicio {
     private UsuarioDTO convertirA_DTO(Usuario usuario){
         return new UsuarioDTO(
                 usuario.getId(),
-                usuario.getDni(),
                 usuario.getRol(),
-                usuario.getEntidad().getEntidad_id()
+                usuario.getEntidad().getEntidad_id(),
+                usuario.getDni()
         );
     }
 
@@ -45,17 +47,17 @@ public class UsuarioServicio {
     public Usuario crearUsuario(CreateUsuarioDTO dto) {
         // 1. Verificar que la entidad exista
         Entidad entidadAsociada = entidadRepositorio.findByDni(dto.getDni())
-                .orElseThrow(() -> new RuntimeException("No existe una entidad con el DNI proporcionado."));
+                .orElseThrow(() -> new RecursoNoEncontradoException("No existe una entidad con el DNI proporcionado."));
 
         // 2. Verificar que la entidad tenga un tipo válido para crear un usuario
         RolEntidad tipo = entidadAsociada.getRolEntidad();
         if (tipo != RolEntidad.DUENO_PUESTO && tipo != RolEntidad.ADMIN) {
-            throw new RuntimeException("No se puede crear un usuario para una entidad de tipo " + tipo);
+            throw new IngresoInvalidoException("No se puede crear un usuario para una entidad de tipo " + tipo);
         }
 
         // 3. Verificar que no exista ya un usuario con ese DNI
         if (usuarioRepositorio.existsByDni(dto.getDni())) {
-            throw new RuntimeException("Ya existe un usuario con ese DNI.");
+            throw new IngresoInvalidoException("Ya existe un usuario con ese DNI.");
         }
 
         Usuario nuevoUsuario = new Usuario();

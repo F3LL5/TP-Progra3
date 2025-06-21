@@ -9,12 +9,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ItemDTO {
-    @Column(order = 0, name = "ID")
+    @Column(order = 0, name = "Código Ítem")
     protected Long item_id;
 
-    @Column(order = 1, name = "NOMBRE")
+    @Column(order = 1, name = "Nombre")
     protected String nombre;
 
-    @Column(order = 2, name = "CATEGORÍA")
+    @Column(order = 2, name = "Categoría")
     protected String categoria;
 }

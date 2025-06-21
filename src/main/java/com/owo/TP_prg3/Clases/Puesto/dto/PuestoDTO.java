@@ -11,15 +11,15 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PuestoDTO {
-    @Column(order = 0, name = "ID")
+    @Column(order = 0, name = "ID Puesto")
     protected Long puestoId;
 
-    @Column(order = 1, name = "NOMBRE")
+    @Column(order = 1, name = "Nombre")
     protected String nombre;
 
-    @Column(order = 2, name = "COMISION")
+    @Column(order = 2, name = "Comisión")
     protected BigDecimal comision;
 
-    @Column(order = 3, name = "ID DUEÑO")
+    @Column(order = 3, name = "ID Dueño")
     protected Long duenioId;
 }
