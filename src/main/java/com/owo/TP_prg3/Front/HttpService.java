@@ -49,7 +49,8 @@ public class HttpService {
 
         } catch (IOException | InterruptedException e) {
             System.err.println("Error durante la petición HTTP: " + e.getMessage());
-            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
         return response;
     }

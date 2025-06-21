@@ -71,10 +71,9 @@ public class MenuDuenoPuesto {
                 case "6" -> gestionarTransaccionesPuesto();
                 case "7" -> gestionarPedidosPuesto();
                 case "8" -> gestionarDetallesPedidoPuesto();
-                case "0" -> System.out.println("Saliendo del menú de Dueño de Puesto.");
+                case "0" -> System.out.println("Saliendo...");
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
-            if (!opcion.equals("0")) Escaner.pausa(scanner);
         } while (!opcion.equals("0"));
     }
 
@@ -93,7 +92,7 @@ public class MenuDuenoPuesto {
         7. Gestionar mis Pedidos (Realizar ventas)
         8. Gestionar Detalles de un Pedido
         
-        0. Salir
+        0. Cerrar sesión
         Ingrese una opción:""", puestoUsuario.getNombre());
     }
 
@@ -417,7 +416,7 @@ public class MenuDuenoPuesto {
     /// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     private void modificarMiPuesto() throws IOException, InterruptedException {
-        System.out.print("--- Modificar Mi Puesto ---");
+        System.out.println("--- Modificar Mi Puesto ---");
         System.out.print("""
             ATRIBUTO A MODIFICAR:
             1. Nombre
@@ -430,16 +429,17 @@ public class MenuDuenoPuesto {
             System.out.print("Ingrese el nuevo valor: ");
             String nombre = Escaner.stringValido(scanner);
             jsonBody = "{\"nombre\":\"" + nombre + "\"}";
+
+            HttpResponse<String> response = HttpService.realizarPeticion("PATCH", API_URL_PUESTOS + "/" + puestoUsuario.getPuestoId() + "/puesto" + puestoUsuario.getPuestoId(), authHeader, jsonBody);
+
+            int statusCode = response.statusCode();
+            if (statusCode >= 200 && statusCode < 300) {
+                System.out.println("Puesto modificado exitosamente.");
+            } else {
+                HandlerResponse.handleErrorResponse(statusCode, response.body());
+            }
         } else {
             System.out.println("Cancelando operación...");
-        }
-        HttpResponse<String> response = HttpService.realizarPeticion("PATCH", API_URL_PUESTOS + "/" + puestoUsuario.getPuestoId() + "/puesto" + puestoUsuario.getPuestoId(), authHeader, jsonBody);
-
-        int statusCode = response.statusCode();
-        if (statusCode >= 200 && statusCode < 300) {
-            System.out.println("Puesto modificado exitosamente.");
-        } else {
-            HandlerResponse.handleErrorResponse(statusCode, response.body());
         }
     }
 
