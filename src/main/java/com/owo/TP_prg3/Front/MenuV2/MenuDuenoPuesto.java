@@ -772,7 +772,7 @@ public class MenuDuenoPuesto {
                     1. Obtener todas las transacciones de su puesto
                     2. Buscar transacción por ID
                     3. Filtrar y Ordenar Transacciones
-                    4. Registrar Moviento (INGRESO, EGRESO)
+                    4. Registrar Movimiento (INGRESO, EGRESO)
                     
                     0. Volver al menú de Dueño de Puesto
                     Ingrese una opción:"""

@@ -184,7 +184,7 @@ public class MenuTransacciones {
     private void agregar() throws IOException, InterruptedException {
         System.out.println("\n--- Registrar transacción ---");
 
-        System.out.print("Tipo de transacción :\n1-COMPRA, \n2-VENTA,\n3-INGRESO,\n4-EGRESO]: ");
+        System.out.print("Tipo de transacción :\n1-COMPRA, \n2-VENTA,\n3-INGRESO,\n4-EGRESO: ");
         int tipos = Escaner.enteroValido(scanner);
         String tipo = switch (tipos) {
             case 1 -> "COMPRA";
