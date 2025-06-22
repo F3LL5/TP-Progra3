@@ -633,10 +633,9 @@ public class MenuDuenoPuesto {
         );
 
         result.ifPresent(obj -> {
-            Optional<List<ItemStockDTO>> optional = (Optional<List<ItemStockDTO>>) obj;
-            if (optional.isPresent()) {
-                List<ItemStockDTO> itemsStock = optional.get();
-                FlipTableHelper.imprimir(itemsStock);
+            List<ItemStockDTO> itemsStockBajo = (List<ItemStockDTO>) obj;
+            if (!itemsStockBajo.isEmpty()) {
+                FlipTableHelper.imprimir(itemsStockBajo);
             } else {
                 System.out.println("No se encontraron resultados.");
             }

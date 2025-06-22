@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,15 +35,15 @@ public class InventarioPuestoControlador {
     }
 
     @GetMapping("/obtenerInvConStock/{id}")
-    public Optional<List<ItemStockDTO>> obtenerItemsEnStock(@PathVariable Long id) {
+    public ResponseEntity<List<ItemStockDTO>> obtenerItemsEnStock(@PathVariable Long id) {
         Optional<List<ItemStockDTO>> itemsEnStock=inventarioPuestoServicio.obtenerItemsEnStock(id);
-        return itemsEnStock;
+        return ResponseEntity.ok(itemsEnStock.orElse(Collections.emptyList()));
     }
 
     @GetMapping("/obtenerInvConStockBajo/{id}")
-    public Optional<List<ItemStockDTO>> obtenerItemsEnStockBajo(@PathVariable Long id) {
+    public ResponseEntity<List<ItemStockDTO>> obtenerItemsEnStockBajo(@PathVariable Long id) {
         Optional<List<ItemStockDTO>> itemsEnStockBajo=inventarioPuestoServicio.obtenerItemsEnStockBajo(id);
-        return itemsEnStockBajo;
+        return ResponseEntity.ok(itemsEnStockBajo.orElse(Collections.emptyList()));
     }
 
     @GetMapping("/filtrarYordenarItemsInventario")
