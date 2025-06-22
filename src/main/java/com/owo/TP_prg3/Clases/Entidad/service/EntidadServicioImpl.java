@@ -269,10 +269,21 @@ public class EntidadServicioImpl implements EntidadServicio {
 
     @Override
     public boolean deleteEntidad(Long id) {
-        if (entidadRepositorio.existsById(id)) {
-            entidadRepositorio.deleteById(id);
-            return true;
-        } else throw new RecursoNoEncontradoException("La entidad de ID " + id + " no ha sido encontrada.");
+        Entidad entidad = entidadRepositorio.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("La entidad de ID " + id + " no ha sido encontrada."));
+
+        boolean tienePedidos = pedidoRepositorio.findAll().stream()
+                .anyMatch(p ->
+                        (p.getTransaccion().getCuentaOrigen().getEntidad().getEntidad_id().equals(id)) || (p.getTransaccion().getCuentaDestino().getEntidad().getEntidad_id().equals(id))
+                );
+
+        boolean tieneCuentas = cuentaBancariaRepositorio.findAll().stream().anyMatch(c -> c.getEntidad().getEntidad_id().equals(id));
+
+        if (tienePedidos || tieneCuentas)
+            throw new ConflictoDeDatosException("No se puede eliminar la entidad. Tiene pedidos o cuentas bancarias asociadas.");
+
+        entidadRepositorio.delete(entidad);
+        return true;
     }
 
     // Eliminar Entidad de un Puesto específico

@@ -90,7 +90,7 @@ public class EntidadControlador {
     /// DELETE ------------------------------------------------------------------------------------------------------------------------------------------------
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteItem(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteEntidad(@PathVariable Long id) {
         entidadServicio.deleteEntidad(id);
         return ResponseEntity.noContent().build();
     }
