@@ -5,7 +5,6 @@ import com.owo.TP_prg3.Clases.DetallePedido.dto.DetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.UpdateDetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedido;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedidoRepositorio;
-import com.owo.TP_prg3.Clases.Puesto.modelo.Puesto;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.TipoTransaccion;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
@@ -263,6 +262,7 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
         } else throw new RecursoNoEncontradoException("DetallePedido con ID " + id + " no encontrado para eliminar.");
     }
 
+    @Override
     public List<DetallePedidoDTO> getDetallesPedidoByPedidoIdAndPuestoId(Long pedidoId, Long puestoId) {
         return detallePedidoRepositorio.findAll().stream()
                 .filter(detalle -> detalle.getPedido() != null && detalle.getPedido().getPedidoId().equals(pedidoId) && detalle.getPedido().getPuestoId().equals(puestoId))
@@ -270,6 +270,7 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
                 .collect(Collectors.toList());
     }
 
+    @Override
     public Optional<DetallePedidoDTO> getDetallePedidoByIdAndPuestoId(Long id, Long puestoId) {
         return detallePedidoRepositorio.findById(id)
                 .filter(detalle -> detalle.getPedido() != null && detalle.getPedido().getPuestoId().equals(puestoId))
@@ -277,6 +278,7 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
     }
 
     @Transactional
+    @Override
     public DetallePedidoDTO createDetallePedidoForPuesto(Long puestoId, CreateDetallePedidoDTO createDetallePedidoDTO) {
         // 1. Verificar que el Pedido exista y pertenezca al Puesto
         Optional<Pedido> optionalPedido = pedidoRepositorio.findById(createDetallePedidoDTO.getPedidoId());
@@ -299,7 +301,8 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
     }
 
     @Transactional
-    private void updateTransaccionMontoForPedido(Long pedidoId, BigDecimal previousMonto) {
+    @Override
+    public void updateTransaccionMontoForPedido(Long pedidoId, BigDecimal previousMonto) {
         Optional<Pedido> optionalPedido = pedidoRepositorio.findById(pedidoId);
         if (optionalPedido.isEmpty()) throw new RecursoNoEncontradoException("Pedido con ID " + pedidoId + " no encontrado para actualizar Transaccion.");
 
@@ -330,7 +333,8 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
     }
 
     @Transactional
-    private void actualizarStockInventarioPuesto(Long itemId, Long puestoId, Integer cantidadAjuste, TipoTransaccion tipo) {
+    @Override
+    public void actualizarStockInventarioPuesto(Long itemId, Long puestoId, Integer cantidadAjuste, TipoTransaccion tipo) {
         Optional<InventarioPuesto> optionalInventarioPuesto = inventarioPuestoRepositorio.findAll()
                 .stream()
                 .filter(inv ->

@@ -95,6 +95,7 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
     }
 
     //devuelve todos los inventarios del puesto con esa id
+    @Override
     public List<InventarioPuestoDTO> obtenerInventariosDeUnPuesto(Long puestoId){
         List<InventarioPuestoDTO> inventarioPuestoDTOS = getAllInventarioPuestos();
         return inventarioPuestoDTOS.stream()
@@ -143,6 +144,7 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
         return Optional.of(result);
     }
 
+    @Override
     public Optional<List<ItemStockDTO>> obtenerItemsEnStockBajo(Long puestoId) {
         // Todos los items del mercado
         List<ItemDTO> listaItems = itemServicio.getAllProducts();
@@ -184,6 +186,7 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
         return Optional.of(result);
     }
 
+    @Override
     public List<InventarioPuestoDTO> filtrarYordenar(
             @RequestParam(required = false) Long puestoId, @RequestParam(required = false) String categoria,
             @RequestParam(required = false) String sortBy, @RequestParam(required = false) String sortDir) {

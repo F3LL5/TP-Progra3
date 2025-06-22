@@ -2,7 +2,6 @@ package com.owo.TP_prg3.Clases.Item.service;
 
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
-import com.owo.TP_prg3.Clases.InventarioPuesto.modelo.InventarioPuesto;
 import com.owo.TP_prg3.Clases.InventarioPuesto.modelo.InventarioPuestoRepositorio;
 import com.owo.TP_prg3.Clases.Item.dto.CreateItemDTO;
 import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
@@ -15,8 +14,6 @@ import org.springframework.stereotype.Service;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -97,6 +94,7 @@ public class ItemServicioImpl implements ItemServicio {
         } else throw new RecursoNoEncontradoException("Item con ID " + id + " no encontrado para eliminar.");
     }
 
+    @Override
     public List<ItemDTO> filtrarYordenar(String categoria, String orden, String direccion) {
 
         // 1. Obtenemos todos los items y los pasamos a dto

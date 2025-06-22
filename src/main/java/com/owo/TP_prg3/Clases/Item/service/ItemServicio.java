@@ -13,4 +13,5 @@ public interface ItemServicio {
     ItemDTO createProduct(CreateItemDTO createItemDTO);
     Optional<ItemDTO> updateProduct(Long id, UpdateItemDTO updateItemDTO);
     boolean deleteProduct(Long id);
+    List<ItemDTO> filtrarYordenar(String categoria, String orden, String direccion);
 }

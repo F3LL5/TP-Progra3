@@ -97,6 +97,7 @@ public class PedidoServicioImpl implements PedidoServicio {
     }
 
     @Transactional
+    @Override
     public PedidoDTO createPedidoYtransaccion(CreatePedidoDTO2 createPedidoDTO2) {
         Transaccion transaccion = new Transaccion();
         transaccion.setTipo(TipoTransaccion.valueOf(createPedidoDTO2.getTipoTransaccion()));
@@ -223,6 +224,7 @@ public class PedidoServicioImpl implements PedidoServicio {
     }
 
     // Obtener todos los pedidos asociados a un puesto específico
+    @Override
     public List<PedidoDTO> getPedidosByPuestoId(Long puestoId) {
         return pedidoRepositorio.findAll().stream()
                 .filter(pedido -> pedido.getPuestoId().equals(puestoId))
@@ -231,6 +233,7 @@ public class PedidoServicioImpl implements PedidoServicio {
     }
 
     // Buscar pedido por ID y Puesto ID
+    @Override
     public Optional<PedidoDTO> getPedidoByIdAndPuestoId(Long id, Long puestoId) {
         return pedidoRepositorio.findById(id)
                 .filter(pedido -> pedido.getPuestoId().equals(puestoId))
@@ -239,6 +242,7 @@ public class PedidoServicioImpl implements PedidoServicio {
 
     // Eliminar Pedido de un Puesto específico
     @Transactional
+    @Override
     public boolean deletePedidoFromPuesto(Long id, Long puestoId) {
         Optional<Pedido> pedidoOptional = pedidoRepositorio.findById(id);
         if (pedidoOptional.isPresent() && pedidoOptional.get().getPuestoId().equals(puestoId)) {
@@ -249,6 +253,7 @@ public class PedidoServicioImpl implements PedidoServicio {
 
     // Modificar Pedido de un Puesto específico
     @Transactional
+    @Override
     public Optional<PedidoDTO> updatePedidoForPuesto(Long id, Long puestoId, UpdatePedidoDTO updatePedidoDTO) {
         return pedidoRepositorio.findById(id)
                 .filter(pedido -> pedido.getPuestoId().equals(puestoId))
@@ -269,6 +274,7 @@ public class PedidoServicioImpl implements PedidoServicio {
                 });
     }
 
+    @Override
     public List<FacturaDTO> generarFactura(Long id) {
         Pedido pedido = pedidoRepositorio.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Pedido con ID " + id + " no encontrado"));

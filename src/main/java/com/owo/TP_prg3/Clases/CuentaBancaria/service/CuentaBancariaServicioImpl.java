@@ -121,6 +121,7 @@ public class CuentaBancariaServicioImpl implements CuentaBancariaServicio {
         return true;
     }
 
+    @Override
     public Optional<CuentaBancariaDTO> getCuentaBancariaByEntidadId(Long entidadId) {
         if (!entidadRepositorio.existsById(entidadId)) {
             throw new RecursoNoEncontradoException("Entidad con ID " + entidadId + " no existe.");

@@ -83,6 +83,7 @@ public class EntidadServicioImpl implements EntidadServicio {
         return optional.map(this::convertirA_DTO);
     }
 
+    @Override
     public List<EntidadDTO> filtrarYOrdenar(
             @RequestParam(required = false) Long puestoId, @RequestParam(required = false) String rol_entidad,
             @RequestParam(required = false) String sortBy, @RequestParam(required = false) String sortDir) {
@@ -131,6 +132,7 @@ public class EntidadServicioImpl implements EntidadServicio {
     }
 
     // Obtener todas las entidades (CLIENTE, PROVEEDOR) asociadas a un puesto específico
+    @Override
     public List<EntidadDTO> getEntidadesByPuestoId(Long puestoId) {
         List<EntidadDTO> allEntities = getAllEntidades(); // Obtener todas las entidades
         return allEntities.stream()
@@ -149,6 +151,7 @@ public class EntidadServicioImpl implements EntidadServicio {
     }
 
     // Filtrar Clientes con pedidos de un puesto específico
+    @Override
     public List<EntidadDTO> getClientesConPedidosByPuestoId(Long puestoId) {
         List<Pedido> pedidosDePuesto = pedidoRepositorio.findAll().stream()
                 .filter(pedido -> pedido.getPuestoId().equals(puestoId))
@@ -166,6 +169,7 @@ public class EntidadServicioImpl implements EntidadServicio {
     }
 
     // Buscar entidad por ID y Puesto ID
+    @Override
     public Optional<EntidadDTO> getEntidadByIdAndPuestoId(Long id, Long puestoId) {
         Optional<EntidadDTO> entidad = getEntidadById(id);
 
@@ -183,6 +187,7 @@ public class EntidadServicioImpl implements EntidadServicio {
 
     // Agregar Entidad para un Puesto específico
     @Transactional
+    @Override
     public EntidadDTO createEntidadForPuesto(Long puestoId, CreateEntidadDTO createEntidadDTO) {
         if (createEntidadDTO.getRolEntidad() != RolEntidad.CLIENTE && createEntidadDTO.getRolEntidad() != RolEntidad.PROVEEDOR) {
             throw new IngresoInvalidoException("Solo se pueden crear entidades con rol CLIENTE o PROVEEDOR para un puesto.");
@@ -191,7 +196,9 @@ public class EntidadServicioImpl implements EntidadServicio {
         Entidad entidadRegistrada = entidadRepositorio.save(entidad);
         return convertirA_DTO(entidadRegistrada);
     }
+
     @Transactional
+    @Override
     public EntidadDTO createEntidadYCuentaBancaria(Long puestoId, CreateEntidadDTO createEntidadDTO) {
         if (createEntidadDTO.getRolEntidad() != RolEntidad.CLIENTE && createEntidadDTO.getRolEntidad() != RolEntidad.PROVEEDOR) {
             throw new IngresoInvalidoException("Solo se pueden crear entidades con rol CLIENTE o PROVEEDOR para un puesto.");
@@ -249,6 +256,7 @@ public class EntidadServicioImpl implements EntidadServicio {
 
     // Modificar Entidad de un Puesto específico
     @Transactional
+    @Override
     public Optional<EntidadDTO> updateEntidadForPuesto(Long id, Long puestoId, UpdateEntidadDTO updateEntidadDTO) {
         Optional<EntidadDTO> entidad = getEntidadByIdAndPuestoId(id, puestoId);
         if (entidad.isPresent()) {
@@ -269,6 +277,7 @@ public class EntidadServicioImpl implements EntidadServicio {
 
     // Eliminar Entidad de un Puesto específico
     @Transactional
+    @Override
     public boolean deleteEntidadFromPuesto(Long id, Long puestoId) {
         Optional<EntidadDTO> entidad = getEntidadByIdAndPuestoId(id, puestoId);
         if (entidad.isPresent()) {

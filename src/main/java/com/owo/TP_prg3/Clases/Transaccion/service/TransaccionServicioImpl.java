@@ -104,6 +104,7 @@ public class TransaccionServicioImpl implements TransaccionServicio {
         return s.toString();
     }
 
+    @Override
     public List<TransaccionDTO> getTransaccionesByPuestoId(Long puestoId) {
         puestoRepositorio.findById(puestoId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Puesto con ID " + puestoId + " no encontrado."));
@@ -126,6 +127,7 @@ public class TransaccionServicioImpl implements TransaccionServicio {
                 .collect(Collectors.toList());
     }
 
+    @Override
     public Optional<TransaccionDTO> getTransaccionByIdAndPuestoId(Long id, Long puestoId) {
         return getTransaccionById(id).filter(transaccionDTO ->
                 getTransaccionesByPuestoId(puestoId).stream()
@@ -133,6 +135,7 @@ public class TransaccionServicioImpl implements TransaccionServicio {
         );
     }
 
+    @Override
     public List<TransaccionDTO> getTransaccionesByCuentaBancariaId(Long cuentaBancariaId) {
         CuentaBancaria cuenta = cuentaBancariaRepositorio.findById(cuentaBancariaId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Cuenta bancaria con ID " + cuentaBancariaId + " no encontrada."));
@@ -185,6 +188,7 @@ public class TransaccionServicioImpl implements TransaccionServicio {
         return transaccionDTOStream.toList();
     }
 
+    @Override
     public List<TransaccionDTO> filtrarYOrdenarTransaccionesByPuestoId(Long puestoId, String tipo_transaccion, String sortBy, String sortDir) {
         Stream<TransaccionDTO> transaccionDTOStream = getTransaccionesByPuestoId(puestoId).stream();
 
@@ -220,6 +224,7 @@ public class TransaccionServicioImpl implements TransaccionServicio {
         return transaccionDTOStream.collect(Collectors.toList());
     }
 
+    @Override
     public List<TransaccionDTO> filtrarYOrdenarTransaccionesByCuentaBancariaId(
             Long cuentaBancariaId,
             String tipo_transaccion,
@@ -369,6 +374,7 @@ public class TransaccionServicioImpl implements TransaccionServicio {
     }
 
     @Transactional
+    @Override
     public void ajustarSaldosPorCambioDeMonto(Long transaccionId, BigDecimal previousMonto, BigDecimal newMonto) {
         Transaccion transaccion = transaccionRepositorio.findById(transaccionId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Transaccion con ID " + transaccionId + " no encontrada para ajustar saldos."));
@@ -441,7 +447,8 @@ public class TransaccionServicioImpl implements TransaccionServicio {
     }
 
     @Transactional
-    private void revertirMovimientoDeFondos(Transaccion transaccion) {
+    @Override
+    public void revertirMovimientoDeFondos(Transaccion transaccion) {
 
         CuentaBancaria cuentaDestino = transaccion.getCuentaDestino();
         CuentaBancaria cuentaOrigen = transaccion.getCuentaOrigen();

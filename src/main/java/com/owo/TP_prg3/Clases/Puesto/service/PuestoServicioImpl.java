@@ -1,8 +1,6 @@
 package com.owo.TP_prg3.Clases.Puesto.service;
 
-import com.owo.TP_prg3.Clases.Entidad.dto.EntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
-import com.owo.TP_prg3.Clases.Entidad.modelo.RolEntidad;
 import com.owo.TP_prg3.Excepciones.ConflictoDeDatosException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
@@ -130,6 +128,7 @@ public class PuestoServicioImpl implements PuestoServicio {
     }
 
     @Transactional
+    @Override
     public Optional<PuestoDTO> updateMiPuesto(Long idPuesto, UpdatePuestoDTO updatePuestoDTO, Long idDuenio) {
         return puestoRepositorio.findById(idPuesto)
                 .map(puesto -> {
