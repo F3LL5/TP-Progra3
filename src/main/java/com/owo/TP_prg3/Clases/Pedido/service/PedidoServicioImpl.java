@@ -2,13 +2,12 @@ package com.owo.TP_prg3.Clases.Pedido.service;
 
 import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancaria;
 import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancariaRepositorio;
+import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedido;
+import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedidoRepositorio;
 import com.owo.TP_prg3.Clases.DetallePedido.service.DetallePedidoServicioImpl;
+import com.owo.TP_prg3.Clases.Pedido.dto.*;
 import com.owo.TP_prg3.Clases.Puesto.modelo.PuestoRepositorio;
 import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
-import com.owo.TP_prg3.Clases.Pedido.dto.CreatePedidoDTO;
-import com.owo.TP_prg3.Clases.Pedido.dto.CreatePedidoDTO2;
-import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
-import com.owo.TP_prg3.Clases.Pedido.dto.UpdatePedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
 import com.owo.TP_prg3.Clases.Pedido.modelo.PedidoRepositorio;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.TipoTransaccion;
@@ -42,6 +41,8 @@ public class PedidoServicioImpl implements PedidoServicio {
 
     @Autowired
     private DetallePedidoServicioImpl detallePedidoServicio;
+    @Autowired
+    private DetallePedidoRepositorio detallePedidoRepositorio;
 
     //CONVERSION
     private PedidoDTO convertirA_DTO(Pedido pedido) {
@@ -266,6 +267,34 @@ public class PedidoServicioImpl implements PedidoServicio {
                 .or(() -> {
                     throw new RecursoNoEncontradoException("Pedido con ID " + id + " no encontrado o no pertenece al puesto " + puestoId + " para actualizar.");
                 });
+    }
+
+    public List<FacturaDTO> generarFactura(Long id) {
+        Pedido pedido = pedidoRepositorio.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Pedido con ID " + id + " no encontrado"));
+
+        Transaccion transaccion = pedido.getTransaccion();
+        String tipoTransaccion = transaccion.getTipo().toString();
+        String cliente;
+
+        if (transaccion.getTipo() == TipoTransaccion.VENTA) {
+            cliente = transaccion.getCuentaDestino().getEntidad().getNombre();
+        } else {
+            cliente = transaccion.getCuentaOrigen().getEntidad().getNombre();
+        }
+
+        List<DetallePedido> detalles = detallePedidoRepositorio.findByPedido(pedido);
+
+        List<FacturaDTO> facturaItems = detalles.stream().map(det -> {
+            String nombre = det.getItem().getNombre();
+            int cantidad = det.getCantidad();
+            BigDecimal subtotal = det.getPrecioTotal();
+            double precioUnitario =subtotal.doubleValue() / cantidad;
+
+            return new FacturaDTO(cliente, tipoTransaccion, nombre, cantidad, precioUnitario, subtotal);
+        }).toList();
+
+        return facturaItems;
     }
 
 }

@@ -6,6 +6,7 @@ import com.jakewharton.fliptables.FlipTableConverters;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.DetallePedidoDTO;
 import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.CreatePedidoDTO;
+import com.owo.TP_prg3.Clases.Pedido.dto.FacturaDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.UpdatePedidoDTO;
 import com.owo.TP_prg3.Clases.Puesto.dto.PuestoDTO;
@@ -48,6 +49,7 @@ public class MenuPedidos {
                 case "4" -> eliminar();
                 case "5" -> modificar();
                 case "6" -> filtrarYOrdenar();
+                case "7" -> mostrarFactura();
                 case "0" -> {} // Salir
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
@@ -65,6 +67,7 @@ public class MenuPedidos {
                 4. Eliminar
                 5. Modificar
                 6. Filtrar y Ordenar VENTAS, COMPRAS, INGRESOS Y EGRESOS
+                7. Generar FACTURA por ID de Pedido.
                 0. Salir
                 Ingrese la opción:""");
     }
@@ -181,6 +184,27 @@ public class MenuPedidos {
                 FlipTableHelper.imprimir(pedidoDTOS);
             } else {
                 System.out.println("No se encontraron resultados.");
+            }
+        });
+    }
+
+    private void mostrarFactura() throws IOException, InterruptedException {
+        System.out.print("Ingrese el ID del pedido para generar la factura: ");
+        Integer id = Escaner.enteroValido(scanner);
+
+        Optional<Object> result = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("GET", API_URL + "/" + id + "/factura", authHeader, null),
+                FacturaDTO.class,
+                "Factura generada exitosamente:",
+                "No se pudo generar la factura para el pedido con ID " + id
+        );
+
+        result.ifPresent(obj -> {
+            List<?> factura = (List<?>) obj;
+            if (!factura.isEmpty()) {
+                FlipTableHelper.imprimir(factura);
+            } else {
+                System.out.println("La factura está vacía.");
             }
         });
     }

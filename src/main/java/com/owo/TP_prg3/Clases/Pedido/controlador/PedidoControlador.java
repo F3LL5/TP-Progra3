@@ -1,10 +1,7 @@
 package com.owo.TP_prg3.Clases.Pedido.controlador;
 
 import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
-import com.owo.TP_prg3.Clases.Pedido.dto.CreatePedidoDTO;
-import com.owo.TP_prg3.Clases.Pedido.dto.CreatePedidoDTO2;
-import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
-import com.owo.TP_prg3.Clases.Pedido.dto.UpdatePedidoDTO;
+import com.owo.TP_prg3.Clases.Pedido.dto.*;
 import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
 import com.owo.TP_prg3.Clases.Pedido.service.PedidoServicio;
 import com.owo.TP_prg3.Clases.Pedido.service.PedidoServicioImpl;
@@ -92,6 +89,13 @@ public class PedidoControlador {
         PedidoDTO pedidoDTO = pedidoServicio.getPedidoByIdAndPuestoId(id, puestoId)
                 .orElse(null);
         return ResponseEntity.ok(pedidoDTO);
+    }
+
+    // Buscar pedido por ID, pero devuelve una FACTURA
+    @GetMapping("/{id}/factura")
+    public ResponseEntity<List<FacturaDTO>> generarFactura(@PathVariable Long id) {
+        List<FacturaDTO> factura = pedidoServicio.generarFactura(id);
+        return ResponseEntity.ok(factura);
     }
 
     // Eliminar Pedido de un Puesto específico
