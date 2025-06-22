@@ -52,10 +52,10 @@ public class MenuDuenoPuesto {
         HandlerResponse.setObjectMapper(new ObjectMapper());
     }
 
-    public void gestionar() throws IOException, InterruptedException {
+    public int gestionar() throws IOException, InterruptedException {
         if (puestoUsuario == null) {
             System.out.println("No tiene un puesto asignado. No puede acceder al menú de Dueño de Puesto.");
-            return;
+            return -1;
         }
 
         String opcion;
@@ -71,10 +71,15 @@ public class MenuDuenoPuesto {
                 case "6" -> gestionarTransaccionesPuesto();
                 case "7" -> gestionarPedidosPuesto();
                 case "8" -> gestionarDetallesPedidoPuesto();
-                case "0" -> System.out.println("Saliendo...");
+                case "0" -> System.out.println("Sesion cerrada...");
+                case "-1" -> {
+                    System.out.println("Saliendo...");
+                    return 0;
+                }
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
         } while (!opcion.equals("0"));
+        return 1;
     }
 
     private void mostrarMenuDueñoPuesto() {
@@ -93,6 +98,7 @@ public class MenuDuenoPuesto {
         8. Gestionar Detalles de un Pedido
         
         0. Cerrar sesión
+        -1. Finalizar ejecución.
         Ingrese una opción:""", puestoUsuario.getNombre());
     }
 
@@ -527,24 +533,26 @@ public class MenuDuenoPuesto {
 
         Long puestoId = puestoUsuario.getPuestoId(); // Obtener el ID del puesto del atributo de la clase
 
-        System.out.print("Filtrar por categoría (dejar vacío si no aplica): ");
+        System.out.print("Filtrar por categoría del item (dejar vacío si no aplica): ");
         String categoria = scanner.nextLine();
         if (categoria.isBlank()) categoria = null;
 
         System.out.print("""
         ORDENAR POR:
-        [1] NOMBRE
+        [1] ID ITEM
         [2] PRECIO VENTA
         [3] COSTO ADQUISICIÓN
         [4] CANTIDAD
+        [5] STOCK MIN
         [0] SIN ORDENAMIENTO
         Opción:""");
         int opcOrden = Escaner.enteroValido(scanner);
         String sortBy = switch (opcOrden) {
-            case 1 -> "nombre";
-            case 2 -> "precioVenta";
-            case 3 -> "costoAdquisicion";
+            case 1 -> "iditem";
+            case 2 -> "precioventa";
+            case 3 -> "costoadquisicion";
             case 4 -> "cantidad";
+            case 5 -> "stockmin";
             default -> null;
         };
 
@@ -562,10 +570,10 @@ public class MenuDuenoPuesto {
         };
 
         StringBuilder urlBuilder = new StringBuilder(API_URL_INVENTARIO_PUESTO + "/filtrarYordenarItemsInventario?");
-        urlBuilder.append("id=").append(puestoId).append("&");
-        if (categoria != null) urlBuilder.append("categoria=").append(categoria).append("&");
-        if (sortBy != null) urlBuilder.append("orden=").append(sortBy).append("&");
-        if (sortDir != null) urlBuilder.append("direccion=").append(sortDir);
+        if (puestoId != null) urlBuilder.append("idPuesto=").append(puestoId).append("&");
+        if (categoria != null) urlBuilder.append("categoriaItem=").append(categoria).append("&");
+        if (sortBy != null) urlBuilder.append("sortBy=").append(sortBy).append("&");
+        if (sortDir != null) urlBuilder.append("sortDir=").append(sortDir);
 
         String finalUrl = urlBuilder.toString();
         if (finalUrl.endsWith("&") || finalUrl.endsWith("?")) {
@@ -582,7 +590,7 @@ public class MenuDuenoPuesto {
         result.ifPresent(obj -> {
             List<InventarioPuestoDTO> inventarios = (List<InventarioPuestoDTO>) obj;
             if (!inventarios.isEmpty()) {
-                FlipTableHelper.imprimir(List.of(inventarios));;
+                FlipTableHelper.imprimir(inventarios);
             } else {
                 System.out.println("No se encontraron resultados.");
             }
@@ -593,40 +601,43 @@ public class MenuDuenoPuesto {
         Long id = puestoUsuario.getPuestoId();
 
         // Realizar la petición HTTP
-        HttpResponse<String> response = HttpService.realizarPeticion(
-                "GET",
-                API_URL_INVENTARIO_PUESTO + "/obtenerInvConStock/" + id,
-                authHeader,
-                null
+        Optional<Object> result = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("GET", API_URL_INVENTARIO_PUESTO + "/obtenerInvConStock/" + id, authHeader, null),
+                InventarioPuestoDTO.class,
+                "Inventarios de su puesto filtrados exitosamente.",
+                "No se pudieron filtrar los inventarios de su puesto"
         );
 
-        String respuestaJson = response.body();
-        if (response.body().isBlank()){
-
-            List<Map<String, Object>> stock = this.mapper.readValue(
-                    respuestaJson,
-                    new TypeReference<>() {}
-            );
-
-            FlipTableHelper.imprimirMapa(stock);
-        } else {
-            System.out.println("No se han encontrado inventarios que filtrar.");
-        }
+        result.ifPresent(obj -> {
+            List<InventarioPuestoDTO> inv = (List<InventarioPuestoDTO>) obj;
+            if (!inv.isEmpty()) {
+                FlipTableHelper.imprimir(inv);
+            } else {
+                System.out.println("No se encontraron resultados.");
+            }
+        });
     }
 
     private void mostrarProductosEnStockBajo() throws IOException, InterruptedException {
         System.out.println("Ingrese id de puesto");
         Long id = puestoUsuario.getPuestoId();
 
-        HttpResponse<String> response = HttpService.realizarPeticion("GET", API_URL_INVENTARIO_PUESTO + "/obtenerInvConStockBajo/" + id, authHeader, null);
+        // Realizar la petición HTTP
+        Optional<Object> result = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("GET", API_URL_INVENTARIO_PUESTO + "/obtenerInvConStockBajo/" + id, authHeader, null),
+                InventarioPuestoDTO.class,
+                "Inventarios de su puesto filtrados exitosamente.",
+                "No se pudieron filtrar los inventarios de su puesto"
+        );
 
-        if (response != null) {
-            String respuestaJson = response.body();
-            List<Map<String, Object>> stock = this.mapper.readValue(respuestaJson, new TypeReference<>() {});
-            FlipTableHelper.imprimirMapa(stock);
-        } else {
-            System.out.println("No se han encontrado inventarios que filtrar.");
-        }
+        result.ifPresent(obj -> {
+            List<InventarioPuestoDTO> inv = (List<InventarioPuestoDTO>) obj;
+            if (!inv.isEmpty()) {
+                FlipTableHelper.imprimir(inv);
+            } else {
+                System.out.println("No se encontraron resultados.");
+            }
+        });
     }
 
     /// POST

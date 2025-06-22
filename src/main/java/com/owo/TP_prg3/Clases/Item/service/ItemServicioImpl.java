@@ -68,16 +68,6 @@ public class ItemServicioImpl implements ItemServicio {
     }
 
     @Override
-    public String listado() {
-        StringBuilder s = new StringBuilder();
-        getAllProducts().forEach(i -> s
-                .append(i.getItem_id() + ". ")
-                .append(i)
-                .append(",\n"));
-        return s.toString();
-    }
-
-    @Override
     public Optional<ItemDTO> updateProduct(Long id, UpdateItemDTO updateItemDTO) {
         return itemRepositorio.findById(id)
                 .map(item -> {
@@ -107,33 +97,16 @@ public class ItemServicioImpl implements ItemServicio {
         } else throw new RecursoNoEncontradoException("Item con ID " + id + " no encontrado para eliminar.");
     }
 
-    public List<ItemDTO> filtrarYordenar(Long puestoId, String categoria, String orden, String direccion) {
-        // 1. Obtener los IDs de los ítems que tienen stock (cantidad > 0)
-        Stream<InventarioPuesto> inventarioStream = inventarioPuestoRepositorio.findAll().stream()
-                .filter(inv -> inv.getCantidad() > 0); // Solo ítems con stock
+    public List<ItemDTO> filtrarYordenar(String categoria, String orden, String direccion) {
 
-        if (puestoId != null) {
-            inventarioStream = inventarioStream.filter(inv -> inv.getPuesto().getPuestoId().equals(puestoId)); // Filtrar por puesto
-        }
+        // 1. Obtenemos todos los items y los pasamos a dto
+        Stream<ItemDTO> itemstream = itemRepositorio.findAll().stream().map(this::convertirA_DTO);
+        if (itemRepositorio.findAll().isEmpty()) throw new RecursoNoEncontradoException("No se encontraron registros de items.");
 
-        // Obtener los IDs únicos de los ítems en stock y/o del puesto
-        Set<Long> itemIdsInStock = inventarioStream
-                .map(InventarioPuesto::getItemId)
-                .collect(Collectors.toSet());
+        // 2. Aplicamos filtros de categoría
+        if (categoria != null) itemstream = itemstream.filter(item -> item.getCategoria().equalsIgnoreCase(categoria));
 
-        // 2. Obtener los DTOs de los ítems correspondientes a esos IDs
-        List<ItemDTO> itemsdto = itemRepositorio.findAllById(itemIdsInStock).stream()
-                .map(this::convertirA_DTO)
-                .toList();
-
-        Stream<ItemDTO> itemstream = itemsdto.stream();
-
-        // 3. Aplicar filtros de categoría
-        if (categoria != null && !categoria.isEmpty()) {
-            itemstream = itemstream.filter(item -> item.getCategoria().equalsIgnoreCase(categoria));
-        }
-
-        // 4. Aplicar ordenación
+        // 3. Aplicar ordenación
         if (orden != null) {
             Comparator<ItemDTO> comparador = null;
             switch (orden.toLowerCase()) {

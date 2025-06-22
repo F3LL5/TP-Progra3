@@ -110,27 +110,32 @@ public class MenuInventarioPuesto {
     private void filtrarYordenarItemsInventario() throws IOException, InterruptedException {
         System.out.println("--- FILTRAR Y ORDENAR ITEMS DEL INVENTARIO ---");
 
-        System.out.print("Ingrese ID del puesto: ");
-        int puestoId = Escaner.enteroValido(scanner);
+        System.out.print("Ingrese el id del puesto (dejar vacío si no desea filtrar por puesto): ");
+        String idPuestoStr = scanner.nextLine();
+        Long idPuesto;
+        if (idPuestoStr.isBlank()) idPuesto = null;
+        else idPuesto = Long.parseLong( idPuestoStr );
 
-        System.out.print("Filtrar por categoría (dejar vacío si no aplica): ");
+        System.out.print("Filtrar por categoría del item (dejar vacío si no aplica): ");
         String categoria = scanner.nextLine();
         if (categoria.isBlank()) categoria = null;
 
         System.out.print("""
         ORDENAR POR:
-        [1] NOMBRE
+        [1] ID ITEM
         [2] PRECIO VENTA
         [3] COSTO ADQUISICIÓN
         [4] CANTIDAD
+        [5] STOCK MIN
         [0] SIN ORDENAMIENTO
         Opción:""");
         int opcOrden = Escaner.enteroValido(scanner);
         String sortBy = switch (opcOrden) {
-            case 1 -> "nombre";
-            case 2 -> "precioVenta";
-            case 3 -> "costoAdquisicion";
+            case 1 -> "iditem";
+            case 2 -> "precioventa";
+            case 3 -> "costoadquisicion";
             case 4 -> "cantidad";
+            case 5 -> "stockmin";
             default -> null;
         };
 
@@ -148,17 +153,17 @@ public class MenuInventarioPuesto {
         };
 
         StringBuilder urlBuilder = new StringBuilder(API_URL + "/filtrarYordenarItemsInventario?");
-        urlBuilder.append("id=").append(puestoId).append("&");
-        if (categoria != null) urlBuilder.append("categoria=").append(categoria).append("&");
-        if (sortBy != null) urlBuilder.append("orden=").append(sortBy).append("&");
-        if (sortDir != null) urlBuilder.append("direccion=").append(sortDir);
+        urlBuilder.append("idPuesto=").append(idPuesto).append("&");
+        if (categoria != null) urlBuilder.append("categoriaItem=").append(categoria).append("&");
+        if (sortBy != null) urlBuilder.append("sortBy=").append(sortBy).append("&");
+        if (sortDir != null) urlBuilder.append("sortDir=").append(sortDir);
 
         String finalUrl = urlBuilder.toString();
         if (finalUrl.endsWith("&") || finalUrl.endsWith("?")) {
             finalUrl = finalUrl.substring(0, finalUrl.length() - 1);
         }
 
-        Optional<Object> result = handleResponse(
+        Optional<Object> result = HandlerResponse.handleResponse(
                 HttpService.realizarPeticion("GET", finalUrl, authHeader, null),
                 InventarioPuestoDTO.class,
                 "Inventarios filtrados y ordenados exitosamente.",
@@ -168,7 +173,7 @@ public class MenuInventarioPuesto {
         result.ifPresent(obj -> {
             List<InventarioPuestoDTO> inventarios = (List<InventarioPuestoDTO>) obj;
             if (!inventarios.isEmpty()) {
-                FlipTableHelper.imprimir(inventarios);
+                FlipTableHelper.imprimir(List.of(inventarios));;
             } else {
                 System.out.println("No se encontraron resultados.");
             }

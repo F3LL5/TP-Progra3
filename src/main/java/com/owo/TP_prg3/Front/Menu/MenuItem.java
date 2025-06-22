@@ -54,7 +54,7 @@ public class MenuItem {
                 3. Agregar
                 4. Eliminar
                 5. Modificar
-                6. filtrarYordenar
+                6. Filtrar y ordenar
                 0. Salir
                 Ingrese la opción:""");
     }
@@ -110,11 +110,10 @@ public class MenuItem {
         [1] NOMBRE
         [0] SIN ORDENAMIENTO
         Opción:""");
+        String orden;
         int by = Escaner.enteroValido(scanner);
-        String orden = switch (by) {
-            case 1 -> "nombre";
-            default -> null;
-        };
+        if (by == 1) orden = "nombre";
+        else orden = null;
 
         System.out.print("""
         DIRECCIÓN DE ORDEN:
@@ -123,7 +122,8 @@ public class MenuItem {
         [0] SIN DIRECCIÓN
         Opción:""");
         int dir = Escaner.enteroValido(scanner);
-        String direccion = switch (dir) {
+        String direccion =
+        switch (dir) {
             case 1 -> "asc";
             case 2 -> "desc";
             default -> null;

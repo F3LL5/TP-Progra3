@@ -13,5 +13,4 @@ public interface ItemServicio {
     ItemDTO createProduct(CreateItemDTO createItemDTO);
     Optional<ItemDTO> updateProduct(Long id, UpdateItemDTO updateItemDTO);
     boolean deleteProduct(Long id);
-    String listado();
 }

@@ -2,6 +2,7 @@ package com.owo.TP_prg3.Clases.InventarioPuesto.service;
 
 import com.owo.TP_prg3.Clases.InventarioPuesto.dto.CreateInventarioPuestoDTO;
 import com.owo.TP_prg3.Clases.InventarioPuesto.dto.InventarioPuestoDTO;
+import com.owo.TP_prg3.Clases.InventarioPuesto.dto.ItemStockDTO;
 import com.owo.TP_prg3.Clases.InventarioPuesto.dto.UpdateInventarioPuestoDTO;
 import com.owo.TP_prg3.Clases.InventarioPuesto.modelo.InventarioPuesto;
 import com.owo.TP_prg3.Clases.InventarioPuesto.modelo.InventarioPuestoRepositorio;
@@ -10,16 +11,16 @@ import com.owo.TP_prg3.Clases.Item.modelo.Item;
 import com.owo.TP_prg3.Clases.Item.modelo.ItemRepositorio;
 import com.owo.TP_prg3.Clases.Item.service.ItemServicioImpl;
 import com.owo.TP_prg3.Clases.Puesto.modelo.PuestoRepositorio;
+import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
@@ -87,167 +88,126 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
     }
 
     @Override
-    public Optional<InventarioPuestoDTO> getInventarioPuestoById(Long id) {
-        return inventarioPuestoRepositorio.findById(id).map(this::convertirA_DTO);
-    }
-
-    public Optional<InventarioPuestoDTO> getInventarioPuestoByIdAndPuestoId(Long id, Long puestoId) {
-        return inventarioPuestoRepositorio.findById(id)
-                .filter(inventario -> inventario.getPuesto().getPuestoId().equals(puestoId)) // Filtra por puestoId
-                .map(this::convertirA_DTO);
+    public Optional<InventarioPuestoDTO> getInventarioPuestoById(Long idInv) {
+        return inventarioPuestoRepositorio.findById(idInv).map(this::convertirA_DTO);
     }
 
     //devuelve todos los inventarios del puesto con esa id
     public List<InventarioPuestoDTO> obtenerInventariosDeUnPuesto(Long puestoId){
-        List<InventarioPuestoDTO> inventarioPuestoDTOS=getAllInventarioPuestos();
-        List<InventarioPuestoDTO> inventarioPuestosDTOSconStock;
-        inventarioPuestosDTOSconStock=inventarioPuestoDTOS.stream()
-                .filter(inventarioPuestoDTO ->inventarioPuestoDTO.getPuestoId()==puestoId)
-                .toList();
-
-        return  inventarioPuestosDTOSconStock;
+        List<InventarioPuestoDTO> inventarioPuestoDTOS = getAllInventarioPuestos();
+        return inventarioPuestoDTOS.stream()
+                                .filter(inventarioPuestoDTO -> inventarioPuestoDTO.getPuestoId().equals(puestoId))
+                                .toList();
     }
 
-    public List<Map<String,Object>> mostrarItemsEnStock(Long puestoId) {
-        List<ItemDTO> ListaItems=itemServicio.getAllProducts();
-        List<InventarioPuestoDTO> inventariosPuesto=obtenerInventariosDeUnPuesto(puestoId);
+    public Optional<List<ItemStockDTO>> obtenerItemsEnStock(Long puestoId) {
+        // Todos los items del mercado
+        List<ItemDTO> listaItems = itemServicio.getAllProducts();
+        if (listaItems.isEmpty()) throw new RecursoNoEncontradoException("No se han encontrado items registrados.");
 
-        List<InventarioPuestoDTO> inventarioConStock=inventariosPuesto.stream()
+        // Todos los inventarios del puesto
+        List<InventarioPuestoDTO> inventariosPuesto = obtenerInventariosDeUnPuesto(puestoId);
+        if (inventariosPuesto.isEmpty()) throw new RecursoNoEncontradoException("No se han encontrado inventarios en el puesto con ID " + puestoId + ".");
+
+        // Filtrar inventarios con stock positivo
+        List<InventarioPuestoDTO> inventarioConStock = inventariosPuesto.stream()
                 .filter(inventariopuestodto->inventariopuestodto.getCantidad()>0)
                 .toList();
+        if ( inventarioConStock.isEmpty() ) return Optional.empty();
 
-
-
-        List<ItemDTO> itemsConStock = ListaItems.stream()
-                .filter(item -> inventarioConStock.stream()
-                        .anyMatch(inv -> (inv.getItemId() == item.getItem_id())))
+        // Filtrar todos los items que tengan stock
+        List<ItemDTO> listaItemsEnStock = listaItems.stream()
+                .filter(item -> inventarioConStock.stream().anyMatch( inv -> inv.getItemId().equals(item.getItem_id()) ))
                 .toList();
-        System.out.println(itemsConStock);
 
-        List<Map<String, Object>> respuesta = new ArrayList<>();
-
-        for (ItemDTO item : itemsConStock) {
-            for (InventarioPuestoDTO inv : inventarioConStock) {
-                if (inv.getItemId() == item.getItem_id()) {
-                    Map<String, Object> fila = new HashMap<>();
-                    fila.put("id_Item", item.getItem_id());
-                    fila.put("nombre", item.getNombre());
-                    fila.put("categoria",item.getCategoria());
-                    fila.put("cantidad", inv.getCantidad());
-                    fila.put("costoAdquisicion", inv.getCostoAdquisicion());
-
-                    respuesta.add(fila);
-                    break;
-                }
-            }
-        }
-        return respuesta;
+        return Optional.of(
+                inventarioConStock.stream()
+                    .flatMap( inventario ->
+                                        listaItemsEnStock.stream()
+                                            .map( itemDTO -> new ItemStockDTO( inventario.getInventario_id(), inventario.getPuestoId(),
+                                                                                        inventario.getItemId(), itemDTO.getNombre(),
+                                                                                        inventario.getCantidad(), inventario.getStockMin() ) //Y los paso a ItemStockDTO para poder mostrar más información
+                                            )
+                    )
+                    .toList()
+        );
     }
 
-    public List<Map<String,Object>> obtenerItemsEnInventario(Long puestoId) {
-        List<ItemDTO> ListaItems=itemServicio.getAllProducts();
-        List<InventarioPuestoDTO> inventarioPuesto=obtenerInventariosDeUnPuesto(puestoId);
+    public Optional<List<ItemStockDTO>> obtenerItemsEnStockBajo(Long puestoId) {
+        // Todos los items del mercado
+        List<ItemDTO> listaItems = itemServicio.getAllProducts();
+        if (listaItems.isEmpty()) throw new RecursoNoEncontradoException("No se han encontrado items registrados.");
 
+        // Todos los inventarios del puesto
+        List<InventarioPuestoDTO> inventariosPuesto = obtenerInventariosDeUnPuesto(puestoId);
+        if (inventariosPuesto.isEmpty()) throw new RecursoNoEncontradoException("No se han encontrado inventarios en el puesto con ID " + puestoId + ".");
 
-        List<ItemDTO> itemsEnInventario = ListaItems.stream()
-                .filter(item -> inventarioPuesto.stream()
-                        .anyMatch(inv -> (inv.getItemId() == item.getItem_id())))
+        // Filtrar inventarios con stock bajo
+        List<InventarioPuestoDTO> inventarioConStock = inventariosPuesto.stream()
+                .filter(inv->inv.getCantidad() <= inv.getStockMin())
                 .toList();
-        System.out.println(itemsEnInventario);
+        if ( inventarioConStock.isEmpty() ) return Optional.empty();
 
-        List<Map<String, Object>> respuesta = new ArrayList<>();
+        // Filtrar todos los items que tengan stock bajo
+        List<ItemDTO> listaItemsEnStock = listaItems.stream()
+                .filter(item -> inventarioConStock.stream().anyMatch( inv -> inv.getItemId().equals(item.getItem_id()) ))
+                .toList();
 
-        for (ItemDTO item : itemsEnInventario) {
-            for (InventarioPuestoDTO inv : inventarioPuesto) {
-                if (inv.getItemId() == item.getItem_id()) {
-                    Map<String, Object> fila = new HashMap<>();
-                    fila.put("id_Item", item.getItem_id());
-                    fila.put("nombre", item.getNombre());
-                    fila.put("categoria",item.getCategoria());
-                    fila.put("cantidad", inv.getCantidad());
-                    fila.put("costoAdquisicion", inv.getCostoAdquisicion());
-
-                    respuesta.add(fila);
-                    break;
-                }
-            }
-        }
-        return respuesta;
+        return Optional.of(
+                inventarioConStock.stream()
+                        .flatMap( inventario ->
+                                listaItemsEnStock.stream()
+                                        .map( itemDTO -> new ItemStockDTO( inventario.getInventario_id(), inventario.getPuestoId(),
+                                                inventario.getItemId(), itemDTO.getNombre(),
+                                                inventario.getCantidad(), inventario.getStockMin() ) //Y los paso a ItemStockDTO para poder mostrar más información
+                                        )
+                        )
+                        .toList()
+        );
     }
 
-    public List<Map<String,Object>> mostrarItemsEnStockBajo(Long puestoId) {
-        List<ItemDTO> ListaItems=itemServicio.getAllProducts();
-        List<InventarioPuestoDTO> inventarioConStock=obtenerInventariosDeUnPuesto(puestoId);
+    public List<InventarioPuestoDTO> filtrarYordenar(
+            @RequestParam(required = false) Long puestoId, @RequestParam(required = false) String categoria,
+            @RequestParam(required = false) String sortBy, @RequestParam(required = false) String sortDir) {
 
+        Stream<InventarioPuestoDTO> inventarioStream;
 
-        List<ItemDTO> itemsConStockBajo = ListaItems.stream()
-                .filter(item -> inventarioConStock.stream()
-                        .anyMatch(inv -> (inv.getItemId() == item.getItem_id()) && (inv.getCantidad() <= inv.getStockMin())))
-                .toList();
-        System.out.println(itemsConStockBajo);
+        inventarioStream = getAllInventarioPuestos().stream();
 
-        List<Map<String, Object>> respuesta = new ArrayList<>();
+        //Filtrado por puesto
+        if (puestoId != null) inventarioStream = inventarioStream.filter(inv -> inv.getPuestoId().equals(puestoId));
 
-        for (ItemDTO item : itemsConStockBajo) {
-            for (InventarioPuestoDTO inv : inventarioConStock) {
-                if (inv.getItemId() == item.getItem_id()) {
-                    Map<String, Object> fila = new HashMap<>();
-                    fila.put("id_Item", item.getItem_id());
-                    fila.put("nombre", item.getNombre());
-                    fila.put("categoria",item.getCategoria());
-                    fila.put("cantidad", inv.getCantidad());
-                    fila.put("costoAdquisicion", inv.getCostoAdquisicion());
-                    respuesta.add(fila);
-                    break;
-                }
-            }
-        }
-        return respuesta;
-    }
+        //Filtrado por categoria del item
+        if (categoria != null) {
+            // Filtra todos los items que sean de la categoria ingresada
+            List<Item> itemsCategoria = itemRepositorio.findAll().stream().filter( i -> i.getCategoria().equals(categoria) ).toList();
 
-    public List<Map<String,Object>> filtrarYordenar(Long puestoId,String categoria,String orden,String direccion) {
-        // Obtener todos los inventarios de un puesto
-        List<Map<String,Object>> itemsMap=obtenerItemsEnInventario(puestoId);
-
-        // Filtro por categoria
-        if (categoria != null && !categoria.isEmpty()) {
-            itemsMap = itemsMap.stream()
-                    .filter(item -> categoria.equalsIgnoreCase((String) item.get("categoria")))
-                    .collect(Collectors.toList());
+            // Filtra los inventarios que tengan un match con el stream de items filtrados
+            inventarioStream = inventarioStream
+                    .filter( inv -> itemsCategoria.stream().anyMatch(i -> i.getItem_id().equals( inv.getItemId() )) );
         }
 
-        // Orden y direccion por defecto
-        String campoOrden = (orden == null || orden.isEmpty()) ? "nombre" : orden;
-        String campoDireccion = (direccion == null || direccion.isEmpty()) ? "asc" : direccion;
+        // Verificacion de direccion
+        if (sortDir != null && !sortDir.equalsIgnoreCase("asc") && !sortDir.equalsIgnoreCase("desc")) {
+            throw new IngresoInvalidoException("La dirección de ordenamiento debe ser 'asc' o 'desc'.");
+        }
 
-
-        itemsMap.sort((a, b) -> {
-            Comparable valorA;
-            Comparable valorB;
-
-            // Manejo de valores nulos para el ordenamiento
-            if (a.get(campoOrden) == null && b.get(campoOrden) == null) return 0;
-            if (a.get(campoOrden) == null) return "desc".equalsIgnoreCase(campoDireccion) ? -1 : 1;
-            if (b.get(campoOrden) == null) return "desc".equalsIgnoreCase(campoDireccion) ? 1 : -1;
-
-            // Convertir a BigDecimal si el campo es numérico para comparar correctamente
-            if ("costoAdquisicion".equalsIgnoreCase(campoOrden) || "precioVenta".equalsIgnoreCase(campoOrden) || "cantidad".equalsIgnoreCase(campoOrden)) {
-                valorA = new BigDecimal(a.get(campoOrden).toString());
-                valorB = new BigDecimal(b.get(campoOrden).toString());
-            } else {
-                valorA = (Comparable) a.get(campoOrden);
-                valorB = (Comparable) b.get(campoOrden);
+        // Si se ingresa un ordenamiento lo crea y lo aplica
+        if(sortBy != null) {
+            Comparator<InventarioPuestoDTO> comparator = null;
+            switch (sortBy.toLowerCase()) {
+                case "iditem" -> comparator = Comparator.comparing(InventarioPuestoDTO::getInventario_id);
+                case "precioventa" -> comparator = Comparator.comparing(InventarioPuestoDTO::getPrecioVenta);
+                case "costoadquisicion" -> comparator = Comparator.comparing(InventarioPuestoDTO::getCostoAdquisicion);
+                case "cantidad" -> comparator = Comparator.comparing(InventarioPuestoDTO::getCantidad);
+                case "stockmin" -> comparator = Comparator.comparing(InventarioPuestoDTO::getStockMin);
+                default -> throw new RuntimeException("Dicho criterio NO existe.");
             }
+            if(comparator != null) if ("desc".equalsIgnoreCase(sortDir)) comparator = comparator.reversed();
 
-            int comparacion = valorA.compareTo(valorB);
-
-            if ("desc".equalsIgnoreCase(campoDireccion)) {
-                return -comparacion;
-            } else {
-                return comparacion;
-            }
-        });
-        return itemsMap;
+            inventarioStream = inventarioStream.sorted(comparator);
+        }
+        return inventarioStream.toList();
     }
 
     /// POST ------------------------------------------------------------------------------------------------------------------------------------------------

@@ -33,12 +33,6 @@ public class ItemControlador {
         return ResponseEntity.ok(item);
     }
 
-
-    @GetMapping("/listado")
-    public ResponseEntity<String> obtenerTodosString() {
-        return ResponseEntity.ok(itemServicio.listado());
-    }
-
     @PostMapping
     public ResponseEntity<ItemDTO> createItem(@Valid @RequestBody CreateItemDTO createItemDTO) {
         ItemDTO newItem = itemServicio.createProduct(createItemDTO);
@@ -60,12 +54,11 @@ public class ItemControlador {
 
     @GetMapping("/filtrarYordenar")
     public ResponseEntity<List<ItemDTO>> filtrarYordenar(
-            @RequestParam(required = false) Long puestoId,
             @RequestParam(required = false) String categoria,
             @RequestParam(required = false) String orden,
             @RequestParam(required = false) String direccion
     ) {
-        List<ItemDTO> items = itemServicio.filtrarYordenar(puestoId, categoria, orden, direccion);
+        List<ItemDTO> items = itemServicio.filtrarYordenar(categoria, orden, direccion);
         return ResponseEntity.ok(items);
     }
 

@@ -2,16 +2,15 @@ package com.owo.TP_prg3.Clases.InventarioPuesto.controlador;
 
 import com.owo.TP_prg3.Clases.InventarioPuesto.dto.CreateInventarioPuestoDTO;
 import com.owo.TP_prg3.Clases.InventarioPuesto.dto.InventarioPuestoDTO;
+import com.owo.TP_prg3.Clases.InventarioPuesto.dto.ItemStockDTO;
 import com.owo.TP_prg3.Clases.InventarioPuesto.dto.UpdateInventarioPuestoDTO;
 import com.owo.TP_prg3.Clases.InventarioPuesto.service.InventarioPuestoServicioImpl;
-import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -35,22 +34,22 @@ public class InventarioPuestoControlador {
     }
 
     @GetMapping("/obtenerInvConStock/{id}")
-    public List<Map<String,Object>> obtenerItemsEnStock(@PathVariable Long id) {
-        List<Map<String,Object>> itemsEnStock=inventarioPuestoServicio.mostrarItemsEnStock(id);
+    public Optional<List<ItemStockDTO>> obtenerItemsEnStock(@PathVariable Long id) {
+        Optional<List<ItemStockDTO>> itemsEnStock=inventarioPuestoServicio.obtenerItemsEnStock(id);
         return itemsEnStock;
     }
 
     @GetMapping("/obtenerInvConStockBajo/{id}")
-    public List<Map<String,Object>> obtenerItemsEnStockBajo(@PathVariable Long id) {
-        List<Map<String,Object>> itemsEnStockBajo=inventarioPuestoServicio.mostrarItemsEnStockBajo(id);
+    public Optional<List<ItemStockDTO>> obtenerItemsEnStockBajo(@PathVariable Long id) {
+        Optional<List<ItemStockDTO>> itemsEnStockBajo=inventarioPuestoServicio.obtenerItemsEnStockBajo(id);
         return itemsEnStockBajo;
     }
 
     @GetMapping("/filtrarYordenarItemsInventario")
-    public List<Map<String,Object>> filtrarYordenarItemsInventario(
-            @RequestParam Long id, @RequestParam(required = false)String categoria,
-            @RequestParam(required = false)String orden, @RequestParam(required = false)String direccion){
-        return inventarioPuestoServicio.filtrarYordenar(id,categoria,orden,direccion);
+    public ResponseEntity<List<InventarioPuestoDTO>> filtrarYordenarItemsInventario(@RequestParam Long idPuesto, @RequestParam(required = false)String categoriaItem,
+                                                                                    @RequestParam(required = false)String sortBy, @RequestParam(required = false)String sortDir)
+    {
+        return ResponseEntity.ok(inventarioPuestoServicio.filtrarYordenar(idPuesto,categoriaItem,sortBy,sortDir));
     }
 
     @GetMapping("/puesto/{puestoId}")

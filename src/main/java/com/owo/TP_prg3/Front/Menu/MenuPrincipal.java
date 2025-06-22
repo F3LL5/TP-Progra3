@@ -50,7 +50,9 @@ public class MenuPrincipal {
 
             if ("DUENO_PUESTO".equalsIgnoreCase(usuario.getRol())) { // Si el rol es DUENO_PUESTO
                 MenuDuenoPuesto menuDuenoPuesto = new MenuDuenoPuesto(authService.getAuthHeader(), puestoUsuario);
-                menuDuenoPuesto.gestionar();
+                if (menuDuenoPuesto.gestionar() == 0) {
+                    return; // Cierra el programa
+                }
             } else {
                 Scanner scanner = new Scanner(System.in);
                 String opcion;
@@ -71,7 +73,7 @@ public class MenuPrincipal {
                             9. Gestionar Detalles de pedido
                             
                             0. Cerrar sesión
-                            -1. Salir
+                            -1. Finalizar ejecución.
                             Ingrese una opción:""");
                     opcion = Escaner.stringValido(scanner);
 
