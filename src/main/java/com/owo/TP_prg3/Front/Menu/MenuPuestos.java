@@ -100,7 +100,7 @@ public class MenuPuestos {
         System.out.print("""
         ORDENAR POR:
         [1] NOMBRE
-        [1] COMISION
+        [2] COMISION
         [0] SIN ORDENAMIENTO
         Opción:""");
         int by = Escaner.enteroValido(scanner);

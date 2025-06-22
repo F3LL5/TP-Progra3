@@ -65,6 +65,7 @@ public abstract class Escaner {
     public static LocalDate fecha(Scanner scanner){
         while(true){
             try {
+                System.out.print("(YYYY-MM-DD)");
                 String fechaString = stringValido(scanner);
                 LocalDate fecha = LocalDate.parse(fechaString);
                 return fecha;

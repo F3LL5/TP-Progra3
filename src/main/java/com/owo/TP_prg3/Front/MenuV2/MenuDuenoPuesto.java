@@ -1104,8 +1104,8 @@ public class MenuDuenoPuesto {
         LocalDate fechaMax;
         System.out.print("""
             FILTRADO POR FECHAS:
-            [1] ESTABLECER FECHA MAX
-            [0] SIN FILTRO FECHA MAX
+            [1] A partir del:
+            [0] Desde el principio
             Opción:""");
         int opcionFecha = Escaner.enteroValido(scanner);
         switch (opcionFecha) {
@@ -1114,8 +1114,8 @@ public class MenuDuenoPuesto {
         };
         System.out.print("""
             FILTRADO POR FECHAS:
-            [1] ESTABLECER FECHA MIN
-            [0] SIN FILTRO FECHA MIN
+            [1] Hasta el:
+            [0] Sin fecha limite.
             Opción:""");
         int opcionFecha2 = Escaner.enteroValido(scanner);
         switch (opcionFecha2) {
