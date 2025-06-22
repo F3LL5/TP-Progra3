@@ -51,12 +51,17 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/inventario-puesto/{id}").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/inventario-puesto/puesto/{id}").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/inventario-puesto/item/{id}").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/inventario-puesto/filtrarYordenarItemsInventario/").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/inventario-puesto/obtenerInvConStockBajo/{id}").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/inventario-puesto/obtenerInvConStock/{id}").hasAnyRole("DUENO_PUESTO", "ADMIN")
+
                         .requestMatchers(HttpMethod.POST, "/api/inventario-puesto").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/inventario-puesto/{id}").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/inventario-puesto/{id}/puesto/{puestoId}").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/inventario-puesto/{id}").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/inventario-puesto/{id}/puesto/{puestoId}").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/inventario-puesto/{id}/puesto/{puestoId}").hasAnyRole("DUENO_PUESTO", "ADMIN")
+
                         // Ítems generales (/api/items) - DUENO_PUESTO no puede modificar ni eliminar
                         .requestMatchers(HttpMethod.GET, "/api/items").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/items/*").hasAnyRole("DUENO_PUESTO", "ADMIN")

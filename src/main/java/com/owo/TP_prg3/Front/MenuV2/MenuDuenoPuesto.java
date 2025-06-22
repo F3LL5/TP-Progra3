@@ -9,7 +9,9 @@ import com.owo.TP_prg3.Clases.Entidad.dto.EntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.dto.UpdateEntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.modelo.RolEntidad;
 import com.owo.TP_prg3.Clases.InventarioPuesto.dto.InventarioPuestoDTO;
+import com.owo.TP_prg3.Clases.InventarioPuesto.dto.ItemStockDTO;
 import com.owo.TP_prg3.Clases.InventarioPuesto.dto.UpdateInventarioPuestoDTO;
+import com.owo.TP_prg3.Clases.Item.modelo.Item;
 import com.owo.TP_prg3.Excepciones.Handler.HandlerResponse;
 import com.owo.TP_prg3.Clases.Puesto.modelo.Puesto;
 import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
@@ -603,15 +605,15 @@ public class MenuDuenoPuesto {
         // Realizar la petición HTTP
         Optional<Object> result = HandlerResponse.handleResponse(
                 HttpService.realizarPeticion("GET", API_URL_INVENTARIO_PUESTO + "/obtenerInvConStock/" + id, authHeader, null),
-                InventarioPuestoDTO.class,
+                ItemStockDTO.class,
                 "Inventarios de su puesto filtrados exitosamente.",
                 "No se pudieron filtrar los inventarios de su puesto"
         );
 
         result.ifPresent(obj -> {
-            List<InventarioPuestoDTO> inv = (List<InventarioPuestoDTO>) obj;
-            if (!inv.isEmpty()) {
-                FlipTableHelper.imprimir(inv);
+            List<ItemStockDTO> stock = (List<ItemStockDTO>) obj;
+            if (!stock.isEmpty()) {
+                FlipTableHelper.imprimir(stock);
             } else {
                 System.out.println("No se encontraron resultados.");
             }
@@ -625,15 +627,16 @@ public class MenuDuenoPuesto {
         // Realizar la petición HTTP
         Optional<Object> result = HandlerResponse.handleResponse(
                 HttpService.realizarPeticion("GET", API_URL_INVENTARIO_PUESTO + "/obtenerInvConStockBajo/" + id, authHeader, null),
-                InventarioPuestoDTO.class,
+                ItemStockDTO.class,
                 "Inventarios de su puesto filtrados exitosamente.",
                 "No se pudieron filtrar los inventarios de su puesto"
         );
 
         result.ifPresent(obj -> {
-            List<InventarioPuestoDTO> inv = (List<InventarioPuestoDTO>) obj;
-            if (!inv.isEmpty()) {
-                FlipTableHelper.imprimir(inv);
+            Optional<List<ItemStockDTO>> optional = (Optional<List<ItemStockDTO>>) obj;
+            if (optional.isPresent()) {
+                List<ItemStockDTO> itemsStock = optional.get();
+                FlipTableHelper.imprimir(itemsStock);
             } else {
                 System.out.println("No se encontraron resultados.");
             }

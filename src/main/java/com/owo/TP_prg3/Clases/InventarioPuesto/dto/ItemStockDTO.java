@@ -16,7 +16,7 @@ public class ItemStockDTO {
     private Long puestoId;
 
     @Column(order = 2, name = "Código Ítem")
-    protected Long item_id;
+    protected Long itemId;
 
     @Column(order = 3, name = "Nombre")
     protected String nombre;

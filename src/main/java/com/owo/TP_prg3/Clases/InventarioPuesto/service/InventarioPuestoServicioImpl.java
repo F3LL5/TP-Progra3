@@ -20,6 +20,8 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -115,22 +117,30 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
                 .toList();
         if ( inventarioConStock.isEmpty() ) return Optional.empty();
 
-        // Filtrar todos los items que tengan stock
-        List<ItemDTO> listaItemsEnStock = listaItems.stream()
-                .filter(item -> inventarioConStock.stream().anyMatch( inv -> inv.getItemId().equals(item.getItem_id()) ))
-                .toList();
+        // Crear un mapa para una búsqueda rápida de ItemDTO por itemId
+        Map<Long, ItemDTO> itemMap = listaItems.stream()
+                .collect(Collectors.toMap(ItemDTO::getItem_id, Function.identity()));
 
-        return Optional.of(
+        // Mapear cada InventarioPuestoDTO a su correspondiente ItemStockDTO
+        List<ItemStockDTO> result =
                 inventarioConStock.stream()
-                    .flatMap( inventario ->
-                                        listaItemsEnStock.stream()
-                                            .map( itemDTO -> new ItemStockDTO( inventario.getInventario_id(), inventario.getPuestoId(),
-                                                                                        inventario.getItemId(), itemDTO.getNombre(),
-                                                                                        inventario.getCantidad(), inventario.getStockMin() ) //Y los paso a ItemStockDTO para poder mostrar más información
-                                            )
-                    )
-                    .toList()
-        );
+                                .map(inventario -> {
+                                    // Encontrar el ItemDTO específico para el itemId de este inventario
+                                    ItemDTO itemDTO = itemMap.get(inventario.getItemId());
+                                    if (itemDTO != null) {
+                                        return new ItemStockDTO(
+                                                inventario.getInventario_id(),
+                                                inventario.getPuestoId(),
+                                                inventario.getItemId(),
+                                                itemDTO.getNombre(),
+                                                inventario.getCantidad(),
+                                                inventario.getStockMin()
+                                        );
+                                    }
+                                    return null;})
+                                .filter(Objects::nonNull) // Eliminar cualquier nulo si un item no fue encontrado
+                                .toList();
+        return Optional.of(result);
     }
 
     public Optional<List<ItemStockDTO>> obtenerItemsEnStockBajo(Long puestoId) {
@@ -143,27 +153,35 @@ public class InventarioPuestoServicioImpl implements InventarioPuestoServicio {
         if (inventariosPuesto.isEmpty()) throw new RecursoNoEncontradoException("No se han encontrado inventarios en el puesto con ID " + puestoId + ".");
 
         // Filtrar inventarios con stock bajo
-        List<InventarioPuestoDTO> inventarioConStock = inventariosPuesto.stream()
+        List<InventarioPuestoDTO> inventarioConStockBajo = inventariosPuesto.stream()
                 .filter(inv->inv.getCantidad() <= inv.getStockMin())
                 .toList();
-        if ( inventarioConStock.isEmpty() ) return Optional.empty();
+        if ( inventarioConStockBajo.isEmpty() ) return Optional.empty();
 
-        // Filtrar todos los items que tengan stock bajo
-        List<ItemDTO> listaItemsEnStock = listaItems.stream()
-                .filter(item -> inventarioConStock.stream().anyMatch( inv -> inv.getItemId().equals(item.getItem_id()) ))
+        // Crear un mapa para una búsqueda rápida de ItemDTO por itemId
+        Map<Long, ItemDTO> itemMap = listaItems.stream()
+                .collect(Collectors.toMap(ItemDTO::getItem_id, Function.identity()));
+
+        // Mapear cada InventarioPuestoDTO a su correspondiente ItemStockDTO
+        List<ItemStockDTO> result = inventarioConStockBajo.stream()
+                .map(inventario -> {
+                    // Encontrar el ItemDTO específico para el itemId de este inventario
+                    ItemDTO itemDTO = itemMap.get(inventario.getItemId());
+                    if (itemDTO != null) {
+                        return new ItemStockDTO(
+                                inventario.getInventario_id(),
+                                inventario.getPuestoId(),
+                                inventario.getItemId(),
+                                itemDTO.getNombre(),
+                                inventario.getCantidad(),
+                                inventario.getStockMin()
+                        );
+                    }
+                    return null;
+                })
+                .filter(Objects::nonNull) // Eliminar cualquier nulo
                 .toList();
-
-        return Optional.of(
-                inventarioConStock.stream()
-                        .flatMap( inventario ->
-                                listaItemsEnStock.stream()
-                                        .map( itemDTO -> new ItemStockDTO( inventario.getInventario_id(), inventario.getPuestoId(),
-                                                inventario.getItemId(), itemDTO.getNombre(),
-                                                inventario.getCantidad(), inventario.getStockMin() ) //Y los paso a ItemStockDTO para poder mostrar más información
-                                        )
-                        )
-                        .toList()
-        );
+        return Optional.of(result);
     }
 
     public List<InventarioPuestoDTO> filtrarYordenar(
