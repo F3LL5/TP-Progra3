@@ -86,6 +86,11 @@ public class EntidadControlador {
         EntidadDTO newEntidad = entidadServicio.createEntidadYCuentaBancaria(createEntidadDTO);
         return new ResponseEntity<>(newEntidad, HttpStatus.CREATED);
     }
+    @PostMapping("/puesto/{puestoId}/v2")
+    public ResponseEntity<EntidadDTO> createEntidadYCuentaBancaria(@PathVariable Long puestoId, @Valid @RequestBody CreateEntidadDTO createEntidadDTO) {
+        EntidadDTO newEntidad = entidadServicio.createEntidadYCuentaBancariaPuesto(puestoId,createEntidadDTO);
+        return new ResponseEntity<>(newEntidad, HttpStatus.CREATED);
+    }
 
     /// DELETE ------------------------------------------------------------------------------------------------------------------------------------------------
 

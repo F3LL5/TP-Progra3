@@ -216,6 +216,27 @@ public class EntidadServicioImpl implements EntidadServicio {
 
         return convertirA_DTO(entidadRegistrada);
     }
+    @Transactional
+    public EntidadDTO createEntidadYCuentaBancariaPuesto(Long puestoId,CreateEntidadDTO createEntidadDTO) {
+        if (createEntidadDTO.getRolEntidad() != RolEntidad.CLIENTE && createEntidadDTO.getRolEntidad() != RolEntidad.PROVEEDOR) {
+            throw new IngresoInvalidoException("Solo se pueden crear entidades con rol CLIENTE o PROVEEDOR para un puesto.");
+        }
+
+        Entidad entidad = convertirA_Entidad(createEntidadDTO);
+        Entidad entidadRegistrada = entidadRepositorio.save(entidad);
+
+        //Creamos una cuenta bancaria automaticamente con un saldo random para agilizar el sistema
+        if (entidadRegistrada.getEdad() >= 18) { // Solo si la entidad es mayor de edad
+            CuentaBancaria cuentaBancaria = new CuentaBancaria();
+            cuentaBancaria.setEntidad(entidadRegistrada);
+            // Saldo random: 10,000 * (número aleatorio entre 1 y 10)
+            double num = (int)(Math.random() * 10) + 1; // Número aleatorio entre 1 y 10
+            cuentaBancaria.setSaldo(BigDecimal.valueOf(num * 10000.0));
+            cuentaBancariaRepositorio.save(cuentaBancaria);
+        }
+
+        return convertirA_DTO(entidadRegistrada);
+    }
 
     @Override
     public EntidadDTO createEntidad(CreateEntidadDTO createEntidadDTO) {

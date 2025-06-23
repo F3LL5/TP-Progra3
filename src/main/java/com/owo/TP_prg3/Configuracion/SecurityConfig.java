@@ -83,6 +83,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/transacciones/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/transacciones/filtrarYOrdenar*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/transacciones/puesto/*/filtrarYOrdenar*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/transacciones/puesto/").hasAnyRole("DUENO_PUESTO", "ADMIN")
 
                         // Pedidos
                         .requestMatchers(HttpMethod.GET, "/api/pedidos").hasAnyRole("DUENO_PUESTO", "ADMIN")
@@ -92,6 +93,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/pedidos/createPedidoYtransaccion").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/pedidos/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/pedidos/*/puesto/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/pedidos/*/factura").hasAnyRole("DUENO_PUESTO", "ADMIN")
 
 
                         // Detalles de Pedido

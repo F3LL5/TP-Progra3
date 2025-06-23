@@ -83,7 +83,7 @@ public class MenuItem {
     }
 
     private void buscarPorId() throws IOException, InterruptedException {
-        System.out.print("Ingrese el ID de la entidad: ");
+        System.out.print("Ingrese el ID del item: ");
         Integer id = Escaner.enteroValido(scanner);
 
         Optional<Object> result = HandlerResponse.handleResponse(
