@@ -251,14 +251,16 @@ public class EntidadServicioImpl implements EntidadServicio {
         return entidadRepositorio.findById(id)
                 .map(entidad -> {
                     if (entidad == null) {
-                        throw new RecursoNoEncontradoException("Item con ID " + id + " no encontrado para actualizar.");
+                        throw new RecursoNoEncontradoException("Entidad con ID " + id + " no encontrado para actualizar.");
                     }
                     if (updateEntidadDTO.getNombre() != null) entidad.setNombre(updateEntidadDTO.getNombre());
                     if (updateEntidadDTO.getRolEntidad() != null) entidad.setRolEntidad(updateEntidadDTO.getRolEntidad());
                     if (updateEntidadDTO.getTipoEntidad() != null) entidad.setTipoEntidad(updateEntidadDTO.getTipoEntidad());
-                    if (updateEntidadDTO.getEdad() < 0)
+                    if (updateEntidadDTO.getEdad() != null) {
+                        if (updateEntidadDTO.getEdad() < 0)
                             throw new IngresoInvalidoException("La edad no puede ser negativa.");
-                    entidad.setEdad(updateEntidadDTO.getEdad());
+                        entidad.setEdad(updateEntidadDTO.getEdad());
+                    }
 
                     if (updateEntidadDTO.getDni() != null) {
                         Integer nuevoDni = updateEntidadDTO.getDni();

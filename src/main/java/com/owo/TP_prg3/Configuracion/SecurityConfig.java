@@ -103,6 +103,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/detalles-pedido/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/detalles-pedido/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/detalles-pedido/pedido/{pedidoId}/puesto/{puestoId}").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/detalles-pedido/{pedidoId}/total-venta").hasAnyRole("DUENO_PUESTO", "ADMIN")
 
 
                         // ADMIN: acceso total a cualquier otro endpoint bajo /api/**

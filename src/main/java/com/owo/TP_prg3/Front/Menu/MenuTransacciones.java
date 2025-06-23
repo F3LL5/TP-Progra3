@@ -6,7 +6,7 @@ import com.owo.TP_prg3.Clases.Transaccion.dto.UpdateTransaccionDTO;
 import com.owo.TP_prg3.Excepciones.Handler.HandlerResponse;
 import com.owo.TP_prg3.Clases.Transaccion.dto.CreateTransaccionDTO;
 import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
-import com.owo.TP_prg3.Front.HttpService;
+import com.owo.TP_prg3.Front.Utilidades.HttpService;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;
 

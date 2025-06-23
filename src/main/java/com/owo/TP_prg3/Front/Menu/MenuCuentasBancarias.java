@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CreateCuentaBancariaDTO;
 import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CuentaBancariaDTO;
 import com.owo.TP_prg3.Excepciones.Handler.HandlerResponse;
-import com.owo.TP_prg3.Front.HttpService;
+import com.owo.TP_prg3.Front.Utilidades.HttpService;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;
 

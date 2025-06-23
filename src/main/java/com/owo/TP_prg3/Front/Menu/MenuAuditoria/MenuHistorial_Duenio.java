@@ -1,10 +1,8 @@
 package com.owo.TP_prg3.Front.Menu.MenuAuditoria;
 
 import com.owo.TP_prg3.Auditoria.DuenioHistorial.dto.DuenioHistorialDTO;
-import com.owo.TP_prg3.Auditoria.DuenioHistorial.modelo.DuenioHistorial;
-import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import com.owo.TP_prg3.Excepciones.Handler.HandlerResponse;
-import com.owo.TP_prg3.Front.HttpService;
+import com.owo.TP_prg3.Front.Utilidades.HttpService;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;
 

@@ -2,11 +2,9 @@ package com.owo.TP_prg3.Front.Menu;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jakewharton.fliptables.FlipTable;
-import com.jakewharton.fliptables.FlipTableConverters;
 import com.owo.TP_prg3.Clases.InventarioPuesto.dto.InventarioPuestoDTO;
 import com.owo.TP_prg3.Excepciones.Handler.HandlerResponse;
-import com.owo.TP_prg3.Front.HttpService;
+import com.owo.TP_prg3.Front.Utilidades.HttpService;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;
 

@@ -6,7 +6,7 @@ import com.owo.TP_prg3.Clases.Item.dto.CreateItemDTO;
 import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import com.owo.TP_prg3.Clases.Item.dto.UpdateItemDTO;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
-import com.owo.TP_prg3.Front.HttpService;
+import com.owo.TP_prg3.Front.Utilidades.HttpService;
 import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;
 
 import java.io.IOException;

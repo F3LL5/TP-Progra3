@@ -3,10 +3,9 @@ package com.owo.TP_prg3.Front.Menu;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.owo.TP_prg3.Clases.Entidad.dto.CreateEntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.dto.EntidadDTO;
-import com.owo.TP_prg3.Clases.Entidad.dto.UpdateEntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.modelo.RolEntidad;
 import com.owo.TP_prg3.Excepciones.Handler.HandlerResponse;
-import com.owo.TP_prg3.Front.HttpService;
+import com.owo.TP_prg3.Front.Utilidades.HttpService;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;
 
@@ -53,9 +52,9 @@ public class MenuEntidades {
                 2. Buscar por id
                 3. Agregar
                 4. Agregar (con cuenta bancaria automáticamente)
-                4. Eliminar
-                5. Modificar
-                6. Ordenar y Filtrar
+                5. Eliminar
+                6. Modificar
+                7. Ordenar y Filtrar
                 0. Salir
                 Ingrese la opción:""");
     }
@@ -228,9 +227,9 @@ public class MenuEntidades {
 
         System.out.print("""
         TIPO DE ENTIDAD:
-        [1] DUEÑO DE PUESTO
-        [2] CLIENTE
-        [3] PROVEEDOR
+        [1] CLIENTE
+        [2] PROVEEDOR
+        [3] DUEÑO DE PUESTO
         [4] ADMIN
         Opción:""");
         int roles = Escaner.enteroValido(scanner);
@@ -303,48 +302,47 @@ public class MenuEntidades {
             return;
         }
 
-        UpdateEntidadDTO updateEntidadDTO = new UpdateEntidadDTO();
         boolean attributeSelected = false;
+        String jsonBody = "";
 
         System.out.print("Ingrese el nuevo valor: ");
-
         switch (opcion) {
             case 1 -> {
                 String nombre = Escaner.stringValido(scanner);
-                updateEntidadDTO.setNombre(nombre);
+                jsonBody = "{\"nombre\":\""  + nombre + "\"}";
                 attributeSelected = true;
             }
             case 2 -> {
                 String tipoEntidad = Escaner.stringValido(scanner);
-                updateEntidadDTO.setTipoEntidad(tipoEntidad);
+                jsonBody = "{\"tipoEntidad\":\""  + tipoEntidad + "\"}";
                 attributeSelected = true;
             }
             case 3 -> {
                 boolean bucle;
-                String rol = "";
+                String rolEntidad = "";
                 do {
                     bucle = false;
                     System.out.print("Rol \n1-CLIENTE \n2-PROVEEDOR \n3-DUENIO \n4-ADMIN \n Ingrese una opción: ");
                     int roles = Escaner.enteroValido(scanner);
                     switch (roles) {
-                        case 1 -> rol = "CLIENTE";
-                        case 2 -> rol = "PROVEEDOR";
-                        case 3 -> rol = "DUENO_PUESTO";
-                        case 4 -> rol = "ADMIN";
+                        case 1 -> rolEntidad = "CLIENTE";
+                        case 2 -> rolEntidad = "PROVEEDOR";
+                        case 3 -> rolEntidad = "DUENO_PUESTO";
+                        case 4 -> rolEntidad = "ADMIN";
                         default -> bucle = true;
                     }
                 } while (bucle);
-                    updateEntidadDTO.setRolEntidad(RolEntidad.valueOf(rol));
+                    jsonBody = "{\"rolEntidad\":\""  + rolEntidad + "\"}";
                     attributeSelected = true;
             }
             case 4 -> {
                 Integer edad = Escaner.enteroValido(scanner);
-                updateEntidadDTO.setEdad(edad);
+                jsonBody = "{\"edad\":"  + edad + "}";
                 attributeSelected = true;
             }
             case 5 -> {
                 Integer dni = Escaner.enteroValido(scanner);
-                updateEntidadDTO.setDni(dni);
+                jsonBody = "{\"dni\":"  + dni + "}";
                 attributeSelected = true;
             }
             default -> {
@@ -357,8 +355,6 @@ public class MenuEntidades {
             System.out.println("No se seleccionó ningún atributo para modificar.");
             return;
         }
-
-        String jsonBody = new ObjectMapper().writeValueAsString(updateEntidadDTO);
 
         Optional<Object> result = HandlerResponse.handleResponse(
                 HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody),

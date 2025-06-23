@@ -5,7 +5,7 @@ import com.owo.TP_prg3.Excepciones.Handler.HandlerResponse;
 import com.owo.TP_prg3.Clases.Puesto.dto.CreatePuestoDTO;
 import com.owo.TP_prg3.Clases.Puesto.dto.PuestoDTO;
 import com.owo.TP_prg3.Clases.Puesto.dto.UpdatePuestoDTO;
-import com.owo.TP_prg3.Front.HttpService;
+import com.owo.TP_prg3.Front.Utilidades.HttpService;
 import com.owo.TP_prg3.Front.Menu.MenuAuditoria.MenuHistorial_Duenio;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;

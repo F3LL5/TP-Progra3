@@ -54,7 +54,7 @@ public abstract class FlipTableHelper {
             }
         }
 
-        System.out.println(FlipTable.of(headers, datos));
+        System.out.print(FlipTable.of(headers, datos));
     }
 
     public static void imprimirMapa(List<Map<String, Object>> listaMapa) {
@@ -78,7 +78,7 @@ public abstract class FlipTableHelper {
                 .toArray(String[][]::new);
 
         // Imprimir la tabla usando FlipTable.
-        System.out.println(FlipTable.of(headers, datos));
+        System.out.print(FlipTable.of(headers, datos));
     }
 
 

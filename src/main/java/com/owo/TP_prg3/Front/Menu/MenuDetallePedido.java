@@ -5,7 +5,7 @@ import com.owo.TP_prg3.Clases.DetallePedido.dto.CreateDetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.DetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.UpdateDetallePedidoDTO;
 import com.owo.TP_prg3.Excepciones.Handler.HandlerResponse;
-import com.owo.TP_prg3.Front.HttpService;
+import com.owo.TP_prg3.Front.Utilidades.HttpService;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;
 import java.io.IOException;

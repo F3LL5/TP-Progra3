@@ -3,7 +3,7 @@ package com.owo.TP_prg3.Front.Auntenticacion;
 import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
 import com.owo.TP_prg3.Clases.Entidad.modelo.RolEntidad;
 import com.owo.TP_prg3.Clases.Puesto.modelo.Puesto;
-import com.owo.TP_prg3.Front.HttpService;
+import com.owo.TP_prg3.Front.Utilidades.HttpService;
 import lombok.Getter;
 import org.json.JSONArray;
 import org.json.JSONObject;

@@ -1,4 +1,4 @@
-package com.owo.TP_prg3.Front;
+package com.owo.TP_prg3.Front.Utilidades;
 
 import java.io.IOException;
 import java.net.URI;

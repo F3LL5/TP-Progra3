@@ -1,9 +1,7 @@
 package com.owo.TP_prg3.Front.MenuV2;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.jakewharton.fliptables.FlipTable;
 import com.owo.TP_prg3.Clases.Entidad.dto.CreateEntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.dto.EntidadDTO;
 import com.owo.TP_prg3.Clases.Entidad.dto.UpdateEntidadDTO;
@@ -11,8 +9,8 @@ import com.owo.TP_prg3.Clases.Entidad.modelo.RolEntidad;
 import com.owo.TP_prg3.Clases.InventarioPuesto.dto.InventarioPuestoDTO;
 import com.owo.TP_prg3.Clases.InventarioPuesto.dto.ItemStockDTO;
 import com.owo.TP_prg3.Clases.InventarioPuesto.dto.UpdateInventarioPuestoDTO;
-import com.owo.TP_prg3.Clases.Item.modelo.Item;
 import com.owo.TP_prg3.Clases.Pedido.dto.FacturaDTO;
+import com.owo.TP_prg3.Clases.Transaccion.dto.CreateTransaccionDTO;
 import com.owo.TP_prg3.Excepciones.Handler.HandlerResponse;
 import com.owo.TP_prg3.Clases.Puesto.modelo.Puesto;
 import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
@@ -20,8 +18,7 @@ import com.owo.TP_prg3.Clases.DetallePedido.dto.DetallePedidoDTO;
 import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
 import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CuentaBancariaDTO;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.TipoTransaccion;
-import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
-import com.owo.TP_prg3.Front.HttpService;
+import com.owo.TP_prg3.Front.Utilidades.HttpService;
 import com.owo.TP_prg3.Front.Menu.MenuItem;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;
@@ -913,22 +910,17 @@ public class MenuDuenoPuesto {
         System.out.print("Monto: ");
         BigDecimal monto = BigDecimal.valueOf(Escaner.doubleValido(scanner));
 
-        Long cuentaOrigenId = null;
-        Optional<Object> result = HandlerResponse.handleResponse(
-                HttpService.realizarPeticion("GET", API_URL_CUENTAS_BANCARIAS + "/entidad/" + puestoUsuario.getDuenio().getEntidad_id(), authHeader, null),
-                CuentaBancariaDTO.class,
-                "",
-                ""
-        );
-        if (result.isEmpty()) throw new RecursoNoEncontradoException("No se encontro la cuenta bancaria para la entidad de ID: " + puestoUsuario.getDuenio().getEntidad_id());
+        System.out.print("ID de su cuenta: ");
+        Long cuenta = Escaner.enteroValido(scanner).longValue();
 
-        String jsonBody =
-                "{"+
-                    "\"puestoId\":" + puestoUsuario.getPuestoId() +
-                    ",\"tipoTransaccion\":\"" + tipoTransaccion + "\"" +
-                    ",\"idEntidad\":" + idDuenio +
-                    ",\"idCuentaDestino\":" + 0 + // Porque no hay cuenta de tercero en este caso
-                "}";
+        // Armás el DTO
+        CreateTransaccionDTO dto = new CreateTransaccionDTO();
+        dto.setTipo(tipoTransaccion);
+        dto.setMonto(monto);
+        dto.setCuentaOrigenId(cuenta);
+        dto.setCuentaDestinoId(0L);
+
+        String jsonBody = new ObjectMapper().writeValueAsString(dto);
 
         HttpResponse<String> response = HttpService.realizarPeticion("POST", API_URL_PEDIDOS+"/createTransaccion", authHeader, jsonBody);
     }
@@ -1250,22 +1242,33 @@ public class MenuDuenoPuesto {
 
     private void mostrarFactura() throws IOException, InterruptedException {
         System.out.print("Ingrese el ID del pedido para generar la factura: ");
-        Integer id = Escaner.enteroValido(scanner);
+        Integer idPedido = Escaner.enteroValido(scanner);
 
-        Optional<Object> result = HandlerResponse.handleResponse(
-                HttpService.realizarPeticion("GET", API_URL_PEDIDOS + "/" + id + "/factura", authHeader, null),
+        Optional<Object> detalle = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("GET", API_URL_PEDIDOS + "/" + idPedido + "/factura", authHeader, null),
                 FacturaDTO.class,
-                "Factura generada exitosamente:",
-                "No se pudo generar la factura para el pedido con ID " + id
+                "Factura generada exitosamente.",
+                "No se pudo generar la factura para el pedido con ID " + idPedido
         );
 
-        result.ifPresent(obj -> {
+        Optional<Object> total = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("GET", API_URL_DETALLES_PEDIDO + "/" + idPedido + "/total-venta", authHeader, null),
+                BigDecimal.class,
+                "Total obtenido exitosamente.",
+                "No se pudo obtener el total del pedido con ID " + idPedido
+        );
+
+        detalle.ifPresent(obj -> {
             List<FacturaDTO> factura = (List<FacturaDTO>) obj;
             if (!factura.isEmpty()) {
                 FlipTableHelper.imprimir(factura);
             } else {
                 System.out.println("La factura está vacía.");
             }
+        });
+        total.ifPresent(obj -> {
+            BigDecimal totalFactura = (BigDecimal) obj;
+            System.out.println("[TOTAL: " + totalFactura + "]");
         });
     }
 
