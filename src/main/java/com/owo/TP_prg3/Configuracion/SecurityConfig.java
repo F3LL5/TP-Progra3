@@ -68,8 +68,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/items/listado").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/items/filtrarYordenar").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/items").hasAnyRole("DUENO_PUESTO", "ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/items/*").hasRole("ADMIN") // Solo ADMIN
-                        .requestMatchers(HttpMethod.PATCH, "/api/items/*").hasRole("ADMIN") // Solo ADMIN
+                        .requestMatchers(HttpMethod.DELETE, "/api/items/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/items/*").hasAnyRole("DUENO_PUESTO", "ADMIN")
 
 
                         // Cuentas bancarias
