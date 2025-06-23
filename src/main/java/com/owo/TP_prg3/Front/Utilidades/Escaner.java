@@ -94,19 +94,24 @@ public abstract class Escaner {
         }
     }
 
-    public static double porcentaje (Scanner scanner){
-        while (true){
+    public static double porcentaje(Scanner scanner) {
+        while (true) {
+            try {
+                System.out.print("Ingrese el porcentaje de la comisión (0-100): ");
+                double porcentaje = doubleValido(scanner);
+                double porcentajeFinal = porcentaje/100;
 
-            System.out.print("Ingrese el porcentaje de la comision(0-100):");
-            double porcentaje=doubleValido(scanner);
-            double porcentajeFinal=porcentaje/100;
-
-                if (porcentaje < 0 || porcentaje > 100) {
-                    throw new IngresoInvalidoException("Número ingresado invalido (0-100).");
-                }else {
+                if (porcentaje <= 0 || porcentaje > 100) {
+                    throw new IngresoInvalidoException("Número ingresado inválido (debe ser > 0 y ≤ 100).");
+                } else {
                     return porcentajeFinal;
                 }
+            } catch (IngresoInvalidoException e) {
+                System.out.println("Error: " + e.getMessage());
+            } catch (Exception e) {
+                System.out.println("Error: Debe ingresar un número válido.");
+                scanner.nextLine();
+            }
         }
     }
-
 }

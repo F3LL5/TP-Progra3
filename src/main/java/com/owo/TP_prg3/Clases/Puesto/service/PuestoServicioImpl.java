@@ -132,9 +132,8 @@ public class PuestoServicioImpl implements PuestoServicio {
     public Optional<PuestoDTO> updateMiPuesto(Long idPuesto, UpdatePuestoDTO updatePuestoDTO, Long idDuenio) {
         return puestoRepositorio.findById(idPuesto)
                 .map(puesto -> {
-
                     Optional<Entidad> optionalEntidad = entidadRepositorio.findById(idDuenio);
-                    Entidad duenioActual = optionalEntidad.orElseThrow(()-> new RecursoNoEncontradoException("Dueño con ID " + idDuenio + " no encontrado."));
+                    Entidad duenioActual = optionalEntidad.orElseThrow(() -> new RecursoNoEncontradoException("Dueño con ID " + idDuenio + " no encontrado."));
 
                     // Si se ingresó, actualiza el nombre
                     if (updatePuestoDTO.getNombre() != null) {
@@ -143,22 +142,28 @@ public class PuestoServicioImpl implements PuestoServicio {
 
                     // Si se ingresó, actualiza el duenio o lo desasocia
                     if (updatePuestoDTO.getDuenioId() != null) {
-                        if (updatePuestoDTO.getDuenioId() == 0) {
+                        if (Long.valueOf(0).equals(updatePuestoDTO.getDuenioId())) {
                             puesto.setDuenio(null);
                         } else {
-                            Entidad duenio = entidadRepositorio.findById(updatePuestoDTO.getDuenioId())
+                            Entidad nuevoDuenio = entidadRepositorio.findById(updatePuestoDTO.getDuenioId())
                                     .orElseThrow(() -> new RecursoNoEncontradoException("Entidad (dueño) con ID " + updatePuestoDTO.getDuenioId() + " no encontrada."));
 
-                            Optional<PuestoDTO> optionalPuesto = getPuestoByDni(duenio.getDni());
-                            if (optionalPuesto.isPresent()) throw new RecursoNoEncontradoException("Dueño con ID " + duenio.getEntidad_id() + " ya posee un puesto asignado.");
+                            Optional<PuestoDTO> optionalPuesto = getPuestoByDni(nuevoDuenio.getDni());
+                            if (optionalPuesto.isPresent()) throw new RecursoNoEncontradoException("Dueño con ID " + nuevoDuenio.getEntidad_id() + " ya posee un puesto asignado.");
 
-                            puesto.setDuenio(duenio);
+                            puesto.setDuenio(nuevoDuenio);
                         }
                     }
 
+                    // Verifica que la comisión sea superior a cero (al final no era tan relevante porque esto lo verifica el Escaner de porcetaje pero equis)
+                    if (updatePuestoDTO.getComision()!= null && updatePuestoDTO.getComision().compareTo(BigDecimal.ZERO) <= 0) {
+                        throw new IllegalArgumentException("La comisión debe ser mayor que 0.");
+                    }
+                    puesto.setComision(updatePuestoDTO.getComision());
+
                     // Guarda los cambios y devuelve el registro modificado
-                    Puesto updatedPuesto = puestoRepositorio.save(puesto);
-                    return convertirA_DTO(updatedPuesto);
+                    Puesto actualizado = puestoRepositorio.save(puesto);
+                    return convertirA_DTO(actualizado);
                 }).or(() -> {
                     throw new RecursoNoEncontradoException("Puesto con ID " + idPuesto + " no encontrado.");
                 });

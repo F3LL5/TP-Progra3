@@ -223,7 +223,7 @@ public class MenuPuestos {
             case 2 -> {
                 System.out.print("Ingrese el ID del nuevo dueño (0 para desasociar): ");
                 Long idDuenio = Escaner.enteroValido(scanner).longValue();
-                updatePuestoDTO.setDuenioId(idDuenio == 0 ? null : idDuenio);
+                updatePuestoDTO.setDuenioId(idDuenio);
                 attributeSelected = true;
             }
             case 3 -> {
@@ -245,8 +245,8 @@ public class MenuPuestos {
         Optional<Object> result = HandlerResponse.handleResponse(
                 HttpService.realizarPeticion("PATCH", API_URL + "/" + id, authHeader, jsonBody),
                 PuestoDTO.class,
-                "Puesto modificado exitosamente.",
-                "Error al modificar el puesto."
+                "Puesto modificado exitosamente,",
+                "Error al modificar puesto."
         );
 
         result.ifPresent(obj -> {

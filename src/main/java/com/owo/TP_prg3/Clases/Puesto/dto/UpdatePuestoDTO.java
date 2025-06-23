@@ -2,6 +2,7 @@ package com.owo.TP_prg3.Clases.Puesto.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.micrometer.common.lang.Nullable;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -18,7 +19,7 @@ public class UpdatePuestoDTO {
     @Size(max = 100, message = "El nombre no debe pasar los 100 caracteres.")
     protected String nombre;
 
-    @Positive(message = "El ID del dueño debe ser un número positivo.")
+    @Min(value = 0, message = "La comisión debe ser un número positivo o 0.")
     protected Long duenioId;
 
     @Positive(message = "La comisión debe ser un número positivo.")
