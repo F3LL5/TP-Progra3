@@ -84,7 +84,7 @@ public class MenuCuentasBancarias {
         Optional<Object> result = HandlerResponse.handleResponse(
                 HttpService.realizarPeticion("GET", API_URL + "/" + id, authHeader, null),
                 CuentaBancariaDTO.class, 
-                "Cuenta no  encontrado:",
+                "Cuenta encontrada",
                 "No se encontró la cuenta con ID " + id + "."
         );
 

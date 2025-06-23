@@ -262,7 +262,7 @@ public class MenuPedidos {
                 0. Cancelar
                 Ingrese una opcion:""");
         Integer opcion = Escaner.enteroValido(scanner);
-        if (opcion != 0 ) System.out.print("Ingrese el nuevo valor: ");
+        if (opcion == 0) return;
 
         UpdatePedidoDTO updateDTO = new UpdatePedidoDTO();
         boolean attributeSelected = false;

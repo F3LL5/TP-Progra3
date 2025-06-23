@@ -200,10 +200,7 @@ public class EntidadServicioImpl implements EntidadServicio {
 
     @Transactional
     @Override
-    public EntidadDTO createEntidadYCuentaBancaria(Long puestoId, CreateEntidadDTO createEntidadDTO) {
-        if (createEntidadDTO.getRolEntidad() != RolEntidad.CLIENTE && createEntidadDTO.getRolEntidad() != RolEntidad.PROVEEDOR) {
-            throw new IngresoInvalidoException("Solo se pueden crear entidades con rol CLIENTE o PROVEEDOR para un puesto.");
-        }
+    public EntidadDTO createEntidadYCuentaBancaria(CreateEntidadDTO createEntidadDTO) {
         Entidad entidad = convertirA_Entidad(createEntidadDTO);
         Entidad entidadRegistrada = entidadRepositorio.save(entidad);
 

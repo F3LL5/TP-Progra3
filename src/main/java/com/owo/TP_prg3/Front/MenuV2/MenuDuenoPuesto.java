@@ -1063,7 +1063,8 @@ public class MenuDuenoPuesto {
                 0. Cancelar
                 Ingrese una opción:""");
         Integer opcion = Escaner.enteroValido(scanner);
-        if (opcion != 0 ) System.out.print("Ingrese el nuevo valor: ");
+        if (opcion == 0 ) return;
+        System.out.println("Ingrese nuevo valor: ");
 
         String jsonBody = "";
         switch (opcion){

@@ -25,7 +25,7 @@ public interface EntidadServicio {
     EntidadDTO createEntidadForPuesto(Long puestoId, CreateEntidadDTO createEntidadDTO);
 
     @Transactional
-    EntidadDTO createEntidadYCuentaBancaria(Long puestoId, CreateEntidadDTO createEntidadDTO);
+    EntidadDTO createEntidadYCuentaBancaria(CreateEntidadDTO createEntidadDTO);
 
     @Transactional
     Optional<EntidadDTO> updateEntidadForPuesto(Long id, Long puestoId, UpdateEntidadDTO updateEntidadDTO);

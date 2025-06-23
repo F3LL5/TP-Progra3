@@ -34,9 +34,10 @@ public class MenuEntidades {
                 case "1" -> obtenerTodas();
                 case "2" -> buscarPorId();
                 case "3" -> agregar();
-                case "4" -> eliminar();
-                case "5" -> modificar();
-                case "6" -> filtrarYOrdenar();
+                case "4" -> agregarConCuentaBancaria();
+                case "5" -> eliminar();
+                case "6" -> modificar();
+                case "7" -> filtrarYOrdenar();
                 case "0" -> {} // Salir
                 default -> System.out.println("Opción no válida. Inténtelo de nuevo.");
             }
@@ -51,6 +52,7 @@ public class MenuEntidades {
                 1. Obtener todas
                 2. Buscar por id
                 3. Agregar
+                4. Agregar (con cuenta bancaria automáticamente)
                 4. Eliminar
                 5. Modificar
                 6. Ordenar y Filtrar
@@ -183,7 +185,13 @@ public class MenuEntidades {
         String nombre = Escaner.stringValido(scanner);
         System.out.print("Tipo de Entidad: ");
         String tipoEntidad = Escaner.stringValido(scanner);
-        System.out.print("Roles \n1-CLIENTE \n2-PROVEEDOR \n3-DUENIO  \n4-ADMIN \nIngrese una opcion: ");
+        System.out.print("""
+        TIPO DE ENTIDAD:
+        [1] DUEÑO DE PUESTO
+        [2] CLIENTE
+        [3] PROVEEDOR
+        [4] ADMIN
+        Opción:""");
         int roles = Escaner.enteroValido(scanner);
         String rol = switch (roles) {
             case 1 -> "CLIENTE";
@@ -205,6 +213,50 @@ public class MenuEntidades {
                 EntidadDTO.class,
                 "Item agregado exitosamente.",
                 "Error al agregar item."
+        );
+
+        result.ifPresent(obj -> {
+            EntidadDTO entidadDTO = (EntidadDTO) obj;
+            FlipTableHelper.imprimir(List.of(entidadDTO));
+        });
+    }
+
+    private void agregarConCuentaBancaria() throws IOException, InterruptedException {
+        System.out.println("\n--- Agregar nueva entidad con cuenta bancaria ---");
+        System.out.print("Nombre: "); String nombre = Escaner.stringValido(scanner);
+        System.out.print("Tipo de Entidad: "); String tipoEntidad = Escaner.stringValido(scanner);
+
+        System.out.print("""
+        TIPO DE ENTIDAD:
+        [1] DUEÑO DE PUESTO
+        [2] CLIENTE
+        [3] PROVEEDOR
+        [4] ADMIN
+        Opción:""");
+        int roles = Escaner.enteroValido(scanner);
+        String rol = switch (roles) {
+            case 1 -> "CLIENTE";
+            case 2 -> "PROVEEDOR";
+            case 3 -> "DUENO_PUESTO";
+            case 4 -> "ADMIN";
+            default -> null;
+        };
+
+        System.out.print("Edad: ");
+        Integer edad = Escaner.enteroValido(scanner);
+
+        System.out.print("DNI: ");
+        Integer dni = Escaner.enteroValido(scanner);
+
+        CreateEntidadDTO createEntidadDTO = new CreateEntidadDTO(nombre, RolEntidad.valueOf(rol), tipoEntidad, edad, dni);
+        String jsonBody = new ObjectMapper().writeValueAsString(createEntidadDTO);
+        String url = API_URL + "/v2";
+
+        Optional<Object> result = HandlerResponse.handleResponse(
+                HttpService.realizarPeticion("POST", url, authHeader, jsonBody),
+                EntidadDTO.class,
+                "Entidad y cuenta bancaria creadas exitosamente.",
+                "Error al crear la entidad y la cuenta bancaria."
         );
 
         result.ifPresent(obj -> {
