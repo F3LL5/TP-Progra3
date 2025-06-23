@@ -42,7 +42,7 @@ public abstract class Escaner {
     public static String stringValido(Scanner scanner){
         while(true){
             String s = scanner.nextLine();
-            if (!s.isEmpty()) return s;
+            if (!s.isEmpty()) return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
             System.out.print("Ingrese al menos un caracter: ");
         }
     }
