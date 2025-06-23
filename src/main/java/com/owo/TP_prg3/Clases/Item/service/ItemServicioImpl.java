@@ -88,10 +88,15 @@ public class ItemServicioImpl implements ItemServicio {
 
     @Override
     public boolean deleteProduct(Long id) {
-        if (itemRepositorio.existsById(id)) {
-            itemRepositorio.deleteById(id);
-            return true;
-        } else throw new RecursoNoEncontradoException("Item con ID " + id + " no encontrado para eliminar.");
+        Item item = itemRepositorio.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Item con ID " + id + " no encontrado para eliminar."));
+
+        boolean tieneInventario = inventarioPuestoRepositorio.findAll().stream().anyMatch(inv -> inv.getItemId().equals(id));
+
+        if (tieneInventario) throw new IngresoInvalidoException("No se puede eliminar el item porque tiene inventario asociado.");
+
+        itemRepositorio.delete(item);
+        return true;
     }
 
     @Override
