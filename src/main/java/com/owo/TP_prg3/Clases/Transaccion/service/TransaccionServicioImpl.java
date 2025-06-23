@@ -369,6 +369,9 @@ public class TransaccionServicioImpl implements TransaccionServicio {
                     );
         }
 
+        if (transaccion.getCuentaOrigen().getCuentaBancariaId().equals(transaccion.getCuentaDestino().getCuentaBancariaId()))
+            throw new IngresoInvalidoException("La cuenta de origen y destino no pueden ser la misma.");
+
         Transaccion updatedTransaccion = transaccionRepositorio.save(transaccion);
         return Optional.of(convertirA_DTO(updatedTransaccion));
     }
