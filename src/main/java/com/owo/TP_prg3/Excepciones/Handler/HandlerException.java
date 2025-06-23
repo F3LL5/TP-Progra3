@@ -28,7 +28,7 @@ public class HandlerException {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST); // 400
     }
 
-    // Handles 404 Not Found exceptions
+    // Maneja excepciones de tipo 404 Not Found
     @ExceptionHandler(RecursoNoEncontradoException.class)
     public ResponseEntity<Map<String, String>> handleResourceNotFoundException(RecursoNoEncontradoException ex) {
         Map<String, String> errorResponse = new HashMap<>();

@@ -22,30 +22,29 @@ public abstract class HandlerResponse {
         int statusCode = response.statusCode();
         String responseBody = response.body();
 
-        if (statusCode >= 200 && statusCode < 300) {
+        if (statusCode >= 200 && statusCode < 300) { /// UNA RESPUESTA ENTRE 200 Y 300 ES EXITOSA. EJ: 204 para respuesta EXITOSA sin cuerpo
             System.out.println(successMessage);
-            if (responseBody != null && !responseBody.isBlank()) {
+            if (responseBody != null && !responseBody.isBlank()) { /// RETORNA MENSAJE SI HAY LA RESPUESTA TIENE CUERPO
                 try {
-                    if (responseBody.startsWith("[")) {
-
+                    if (responseBody.startsWith("[")) { /// SI ES UNA LISTA DE OBJETOS (YA QUE EN EL JSON EMPIEZAN CON [])
                         List<?> items = mapper.readValue(responseBody, mapper.getTypeFactory().constructCollectionType(List.class, clazz));
                         return Optional.of(items);
                     } else {
-                        Object item = mapper.readValue(responseBody, clazz);
+                        Object item = mapper.readValue(responseBody, clazz); /// SI NO EMPIEZA CON "[", ES SÓLO UN OBJETO
                         return Optional.of(item);
                     }
                 } catch (IOException e) {
-                    System.out.println("Error al parsear la respuesta JSON: " + e.getMessage());
+                    System.out.println("Error al parsear la respuesta JSON: " + e.getMessage()); /// ERROR EL LEER JSON
                     return Optional.empty();
                 }
             } else {
                 System.out.println("La respuesta del servidor está vacía.");
-                return Optional.empty(); // Retorna Optional vacío si la respuesta está vacía
+                return Optional.empty(); /// OPTIONAL VACÍO SI LA RESPUESTA ES VACÍA
             }
-        } else { // Códigos de error
-            handleErrorResponse(statusCode, responseBody);
+        } else { ///  SI EL SV DEVUELVE +300, ES ERROR (400, 404, 500, ETC)
+            handleErrorResponse(statusCode, responseBody); /// ES OTRO MÉTOD0 QUE DEVUELVE LOS DETALLES DEL ERROR
             System.out.println(errorMessage);
-            return Optional.empty(); // Retorna Optional vacío en caso de error
+            return Optional.empty(); /// OPTIONAL VACÍO EN CASO DE ERROR
         }
     }
 
