@@ -52,6 +52,7 @@ public class EntidadServicioImpl implements EntidadServicio {
         entidad.setNombre(entidadDTO.getNombre());
         entidad.setRolEntidad(entidadDTO.getRolEntidad());
         entidad.setTipoEntidad(entidadDTO.getTipoEntidad());
+        if (entidadDTO.getEdad() < 0) throw new IngresoInvalidoException("La edad no puede ser negativa.");
         entidad.setEdad(entidadDTO.getEdad());
         entidad.setDni(entidadDTO.getDni());
         return entidad;
@@ -237,7 +238,9 @@ public class EntidadServicioImpl implements EntidadServicio {
                     if (updateEntidadDTO.getNombre() != null) entidad.setNombre(updateEntidadDTO.getNombre());
                     if (updateEntidadDTO.getRolEntidad() != null) entidad.setRolEntidad(updateEntidadDTO.getRolEntidad());
                     if (updateEntidadDTO.getTipoEntidad() != null) entidad.setTipoEntidad(updateEntidadDTO.getTipoEntidad());
-                    if (updateEntidadDTO.getEdad() != null) entidad.setEdad(updateEntidadDTO.getEdad());
+                    if (updateEntidadDTO.getEdad() < 0)
+                            throw new IngresoInvalidoException("La edad no puede ser negativa.");
+                    entidad.setEdad(updateEntidadDTO.getEdad());
 
                     if (updateEntidadDTO.getDni() != null) {
                         Integer nuevoDni = updateEntidadDTO.getDni();
