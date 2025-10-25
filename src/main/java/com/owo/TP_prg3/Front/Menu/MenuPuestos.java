@@ -6,7 +6,6 @@ import com.owo.TP_prg3.Clases.Puesto.dto.CreatePuestoDTO;
 import com.owo.TP_prg3.Clases.Puesto.dto.PuestoDTO;
 import com.owo.TP_prg3.Clases.Puesto.dto.UpdatePuestoDTO;
 import com.owo.TP_prg3.Front.Utilidades.HttpService;
-import com.owo.TP_prg3.Front.Menu.MenuAuditoria.MenuHistorial_Duenio;
 import com.owo.TP_prg3.Front.Utilidades.Escaner;
 import com.owo.TP_prg3.Front.Utilidades.FlipTableHelper;
 
@@ -38,10 +37,6 @@ public class MenuPuestos {
                 case "4" -> eliminar();
                 case "5" -> modificar();
                 case "6" -> filtrarYOrdenar();
-                case "7" -> {
-                    MenuHistorial_Duenio auditoria = new MenuHistorial_Duenio(authHeader);
-                    auditoria.gestionar();
-                }
                 case "0" -> {}
                 default -> System.out.println("OPCIÓN INVÁLIDA. VUELVA A INTENTAR");
             }
