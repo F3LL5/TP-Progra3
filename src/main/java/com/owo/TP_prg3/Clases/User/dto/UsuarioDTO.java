@@ -2,7 +2,8 @@ package com.owo.TP_prg3.Clases.User.dto;
 
 import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
 import com.owo.TP_prg3.Clases.User.modelo.RolUsuario;
-import com.owo.TP_prg3.Front.Utilidades.Column;
+import com.owo.TP_prg3.Utilidades.Column;
+
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;

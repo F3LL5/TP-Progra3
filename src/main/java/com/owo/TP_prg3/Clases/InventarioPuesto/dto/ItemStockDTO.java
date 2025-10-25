@@ -1,6 +1,7 @@
 package com.owo.TP_prg3.Clases.InventarioPuesto.dto;
 
-import com.owo.TP_prg3.Front.Utilidades.Column;
+import com.owo.TP_prg3.Utilidades.Column;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

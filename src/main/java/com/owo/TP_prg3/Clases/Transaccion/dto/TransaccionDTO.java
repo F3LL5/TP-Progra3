@@ -1,12 +1,13 @@
 package com.owo.TP_prg3.Clases.Transaccion.dto;
 
-import com.owo.TP_prg3.Front.Utilidades.Column;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import com.owo.TP_prg3.Utilidades.Column;
 
 @Data
 @NoArgsConstructor

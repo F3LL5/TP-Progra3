@@ -1,11 +1,12 @@
 package com.owo.TP_prg3.Clases.DetallePedido.dto;
 
-import com.owo.TP_prg3.Front.Utilidades.Column;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+
+import com.owo.TP_prg3.Utilidades.Column;
 
 @Data
 @NoArgsConstructor

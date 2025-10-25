@@ -1,4 +1,4 @@
-package com.owo.TP_prg3.Front.Auntenticacion;
+package com.owo.TP_prg3.Auntenticacion;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
