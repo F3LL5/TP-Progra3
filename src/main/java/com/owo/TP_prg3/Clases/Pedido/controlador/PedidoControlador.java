@@ -1,6 +1,6 @@
 package com.owo.TP_prg3.Clases.Pedido.controlador;
 
-import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
+import com.owo.TP_prg3.Clases.Producto.dto.ProductoDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.*;
 import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
 import com.owo.TP_prg3.Clases.Pedido.service.PedidoServicio;

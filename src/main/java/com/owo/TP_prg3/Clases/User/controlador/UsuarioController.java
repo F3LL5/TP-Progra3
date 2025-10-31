@@ -1,6 +1,5 @@
 package com.owo.TP_prg3.Clases.User.controlador;
 
-import com.owo.TP_prg3.Clases.Item.dto.ItemDTO;
 import com.owo.TP_prg3.Clases.User.dto.CreateUsuarioDTO;
 import com.owo.TP_prg3.Clases.User.dto.UsuarioDTO;
 import com.owo.TP_prg3.Clases.User.modelo.Usuario;
