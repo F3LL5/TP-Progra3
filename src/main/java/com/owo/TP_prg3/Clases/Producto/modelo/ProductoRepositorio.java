@@ -1,8 +1,8 @@
-package com.owo.TP_prg3.Clases.Item.modelo;
+package com.owo.TP_prg3.Clases.Producto.modelo;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ItemRepositorio extends JpaRepository<Item,Long> {
+public interface ProductoRepositorio extends JpaRepository<Producto,Long> {
 }

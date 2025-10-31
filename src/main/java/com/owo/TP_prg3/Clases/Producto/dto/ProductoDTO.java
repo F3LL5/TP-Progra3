@@ -1,4 +1,4 @@
-package com.owo.TP_prg3.Clases.Item.dto;
+package com.owo.TP_prg3.Clases.Producto.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,9 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ItemDTO {
+public class ProductoDTO {
 
-    protected Long item_id;
+    protected Long producto_id;
 
     protected String nombre;
 

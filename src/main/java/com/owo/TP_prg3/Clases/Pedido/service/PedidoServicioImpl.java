@@ -292,7 +292,7 @@ public class PedidoServicioImpl implements PedidoServicio {
         List<DetallePedido> detalles = detallePedidoRepositorio.findByPedido(pedido);
 
         List<FacturaDTO> facturaItems = detalles.stream().map(det -> {
-            String nombre = det.getItem().getNombre();
+            String nombre = det.getProducto().getNombre();
             int cantidad = det.getCantidad();
             BigDecimal subtotal = det.getPrecioTotal();
             double precioUnitario =subtotal.doubleValue() / cantidad;

@@ -10,10 +10,10 @@ import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
 import com.owo.TP_prg3.Clases.InventarioPuesto.modelo.InventarioPuesto;
 import com.owo.TP_prg3.Clases.InventarioPuesto.modelo.InventarioPuestoRepositorio;
-import com.owo.TP_prg3.Clases.Item.modelo.Item;
-import com.owo.TP_prg3.Clases.Item.modelo.ItemRepositorio;
 import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
 import com.owo.TP_prg3.Clases.Pedido.modelo.PedidoRepositorio;
+import com.owo.TP_prg3.Clases.Producto.modelo.Producto;
+import com.owo.TP_prg3.Clases.Producto.modelo.ProductoRepositorio;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.Transaccion;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.TransaccionRepositorio;
 import com.owo.TP_prg3.Clases.Transaccion.service.TransaccionServicioImpl;
@@ -33,7 +33,7 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
     @Autowired
     private DetallePedidoRepositorio detallePedidoRepositorio;
     @Autowired
-    private ItemRepositorio itemRepositorio;
+    private ProductoRepositorio itemRepositorio;
     @Autowired
     private PedidoRepositorio pedidoRepositorio;
     @Autowired
@@ -47,7 +47,7 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
         return new DetallePedidoDTO(
                 detallePedido.getDetallePedidoId(),
                 detallePedido.getPedido() != null ? detallePedido.getPedido().getPedidoId() : null, // Obtener ID del pedido
-                detallePedido.getItem() != null ? detallePedido.getItem().getItem_id() : null,
+                detallePedido.getProducto() != null ? detallePedido.getProducto().getProducto_id() : null,
                 detallePedido.getCantidad(),
                 detallePedido.getPrecioTotal()
         );
@@ -56,21 +56,21 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
     private DetallePedido convertirA_DetallePedido(CreateDetallePedidoDTO detallePedidoDTO) {
         DetallePedido detallePedido = new DetallePedido();
 
-        Optional<Item> optionalItem = itemRepositorio.findById(detallePedidoDTO.getItemId());
+        Optional<Producto> optionalItem = itemRepositorio.findById(detallePedidoDTO.getItemId());
         Optional<Pedido> optionalPedido = pedidoRepositorio.findById(detallePedidoDTO.getPedidoId());
 
         if (optionalItem.isEmpty() || optionalPedido.isEmpty()) throw new RecursoNoEncontradoException("Item/Pedido con ID " + detallePedidoDTO.getItemId() + " no encontrado.");
 
         Pedido pedido = optionalPedido.get();
         detallePedido.setPedido(pedido);
-        detallePedido.setItem(optionalItem.get());
+        detallePedido.setProducto(optionalItem.get());
 
         //Me fijo si el itemId que está en el DP está en el puesto y obtengo la info del inventario de ese itemId.
         Optional<InventarioPuesto> inventarioItem = inventarioPuestoRepositorio.findAll()
                 .stream()
                 .filter(inv ->
                         inv.getPuesto().getPuestoId().equals(pedido.getPuestoId()) &&
-                                inv.getItemId().equals(optionalItem.get().getItem_id()))
+                                inv.getItemId().equals(optionalItem.get().getProducto_id()))
                 .findFirst();
 
         if (inventarioItem.isEmpty()) throw new RecursoNoEncontradoException("InventarioPuesto no encontrado para el Item ID: " + detallePedidoDTO.getItemId() + " y Puesto ID: " + detallePedido.getPedido().getPuestoId());
@@ -130,7 +130,7 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
         Pedido pedido = optionalPedido.get();
 
         // Validación: Verificar existencia del Item
-        Optional<Item> optionalItem = itemRepositorio.findById(createDetallePedidoDTO.getItemId());
+        Optional<Producto> optionalItem = itemRepositorio.findById(createDetallePedidoDTO.getItemId());
         if (optionalItem.isEmpty()) {
             throw new RecursoNoEncontradoException("Item con ID " + createDetallePedidoDTO.getItemId() + " no encontrado.");
         }
@@ -149,7 +149,7 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
 
 
         actualizarStockInventarioPuesto(
-                savedDetallePedido.getItem().getItem_id(),
+                savedDetallePedido.getDetallePedidoId(),
                 savedDetallePedido.getPedido().getPuestoId(),
                 savedDetallePedido.getCantidad(),
                 pedido.getTransaccion().getTipo()
@@ -182,10 +182,10 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
 
                         Optional<InventarioPuesto> inventarioItem = inventarioPuestoRepositorio.findAll()
                                 .stream()
-                                .filter(inv -> inv.getPuesto().getPuestoId().equals(detallePedido.getPedido().getPuestoId()) && inv.getItemId().equals(detallePedido.getItem().getItem_id()))
+                                .filter(inv -> inv.getPuesto().getPuestoId().equals(detallePedido.getPedido().getPuestoId()) && inv.getItemId().equals(detallePedido.getProducto().getProducto_id()))
                                 .findFirst();
 
-                        if (inventarioItem.isEmpty()) throw new RecursoNoEncontradoException("InventarioPuesto no encontrado para el Item ID: " + detallePedido.getItem().getItem_id() + " y Puesto ID: " + detallePedido.getPedido().getPuestoId());
+                        if (inventarioItem.isEmpty()) throw new RecursoNoEncontradoException("InventarioPuesto no encontrado para el Item ID: " + detallePedido.getProducto().getProducto_id() + " y Puesto ID: " + detallePedido.getPedido().getPuestoId());
 
 
                         BigDecimal cantidad_BD = new BigDecimal(detallePedido.getCantidad());
@@ -215,7 +215,7 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
                     Integer diferenciaCantidad = detallePedidoModificado.getCantidad() - cantidadAnterior;
                     if (diferenciaCantidad != 0) {
                         actualizarStockInventarioPuesto(
-                                detallePedidoModificado.getItem().getItem_id(),
+                                detallePedidoModificado.getProducto().getProducto_id(),
                                 detallePedidoModificado.getPedido().getPuestoId(),
                                 diferenciaCantidad,
                                 detallePedido.getPedido().getTransaccion().getTipo()
@@ -235,7 +235,7 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
         if (optionalDetallePedido.isPresent()) {
             DetallePedido detallePedidoToDelete = optionalDetallePedido.get();
             Long pedidoId = detallePedidoToDelete.getPedido().getPedidoId();
-            Long itemId = detallePedidoToDelete.getItem().getItem_id();
+            Long itemId = detallePedidoToDelete.getProducto().getProducto_id();
             Long puestoId = detallePedidoToDelete.getPedido().getPuestoId();
             Integer cantidadEliminada = detallePedidoToDelete.getCantidad();
             TipoTransaccion tipoTransaccion = detallePedidoToDelete.getPedido().getTransaccion().getTipo();
@@ -291,7 +291,7 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
 
         if (createDetallePedidoDTO.getCantidad() <= 0) throw new IllegalArgumentException("La cantidad debe ser mayor a cero.");
 
-        Optional<Item> optionalItem = itemRepositorio.findById(createDetallePedidoDTO.getItemId());
+        Optional<Producto> optionalItem = itemRepositorio.findById(createDetallePedidoDTO.getItemId());
         if (optionalItem.isEmpty()) {
             throw new RecursoNoEncontradoException("Item con ID " + createDetallePedidoDTO.getItemId() + " no encontrado.");
         }
