@@ -27,6 +27,9 @@ public class SecurityConfig {
         return http
                 .authorizeHttpRequests(authorize -> authorize
 
+                        // ADMIN: acceso total a cualquier endpoint.
+                        .requestMatchers("/api/**").hasRole("ADMIN")
+
                         // Permite el acceso al endpoint de perfil para cualquier usuario autenticado
                         .requestMatchers("/api/auth/profile").authenticated()
 
@@ -105,10 +108,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/detalles-pedido/pedido/{pedidoId}/puesto/{puestoId}").hasAnyRole("DUENO_PUESTO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/detalles-pedido/{pedidoId}/total-venta").hasAnyRole("DUENO_PUESTO", "ADMIN")
 
-
-                        // ADMIN: acceso total a cualquier otro endpoint bajo /api/**
-                        .requestMatchers("/api/**").hasRole("ADMIN")
-
                         // Denegar cualquier otra solicitud que no haya sido permitida explícitamente
                         .anyRequest().denyAll()
                 )
@@ -117,7 +116,6 @@ public class SecurityConfig {
                 .httpBasic(Customizer.withDefaults())
                 .build();
     }
-
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder passwordEncoder) throws Exception {
@@ -131,4 +129,3 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
-
