@@ -24,7 +24,7 @@ public class InventarioPuesto {
     @JoinColumn(name = "puesto_id", referencedColumnName = "puesto_id", nullable = false, updatable = false)
     protected Puesto puesto;
 
-    @Column(name = "producto_id", nullable = false, updatable = false)
+    @Column(name = "item_id", nullable = false, updatable = false)
     protected Long itemId;
 
     @Column(name = "stock_min", nullable = false)
