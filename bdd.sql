@@ -1,99 +1,113 @@
-create database if not exists c5_proyecto_comercio;
-use c5_proyecto_comercio;
+drop database comercio;
+create database if not exists comercio;
+use comercio;
 
-create table if not exists usuarios(
-	usuario_id bigint auto_increment primary key,
-	email varchar(100) not null,
-	contraseña varchar(100) not null unique
+create table if not exists items (
+	item_id bigint auto_increment primary key,
+	nombre varchar(100) not null unique,
+	categoria varchar(100) not null
 );
 
-create table if not exists personas(
-	persona_id bigint auto_increment primary key,
-	nombre varchar(100) not null,
+create table entidades(
+	entidad_id bigint auto_increment primary key,
+	nombre varchar(100),
+	tipo_entidad varchar(100) not null,
+	rol varchar(100) not null,
     edad int not null,
 	dni int not null unique
 );
 
-create table if not exists clientes(
-	cliente_id bigint auto_increment primary key,
-    persona_id bigint not null,
-    foreign key(persona_id) references personas(persona_id)
-    on delete cascade
-    on update cascade
-);
-
-create table if not exists proveedores(
-	proveedor_id bigint auto_increment primary key,
-    persona_id bigint not null,
-    foreign key(persona_id) references personas(persona_id)
-    on delete cascade
-    on update cascade
-);
-
-create table if not exists empleados(
-	empleado_id bigint auto_increment primary key,
-    persona_id bigint not null,
-    foreign key(persona_id) references personas(persona_id)
-    on delete cascade
-    on update cascade
-);
-
-create table if not exists tienda (
-	tienda_id bigint auto_increment primary key,
-    nombre varchar(100) not null,
-    direccion varchar(100) not null,
-	caja decimal not null,
-	persona_id bigint not null,
-	foreign key(persona_id) references personas(persona_id)
-);
-
-create table if not exists productos (
-	producto_id bigint auto_increment primary key,
-    nombre varchar(100) not null,
-    categoria varchar(100) not null
-);
-
-create table if not exists inventario(
-	inventario_id bigint auto_increment primary key,
-	cantidad int not null,
-	producto_id bigint not null,
-	stock_min int not null,
-	precio_venta decimal not null,
-	costo_adquisicion decimal not null,
-	foreign key(producto_id) references productos(producto_id)
+create table if not exists puestos(
+	puesto_id bigint auto_increment primary key,
+	nombre varchar(100) not null,
+	duenio_id bigint null,
+	comision decimal(10,2) not null,
+	foreign key(duenio_id) references entidades(entidad_id)
 	on delete cascade
 	on update cascade
 );
 
-create table if not exists cuenta_bancarias(
+create table if not exists inventario_puesto (
+	inventario_id bigint auto_increment primary key,
+	cantidad int not null,
+	puesto_id bigint not null,
+	item_id bigint not null,
+	stock_min int not null,
+	precio_venta decimal(10,2) not null,
+	costo_adquisicion decimal(10,2) not null,
+	foreign key(puesto_id) references puestos(puesto_id),
+	foreign key(item_id) references items(item_id)
+	on delete cascade
+	on update cascade
+);
+
+create table if not exists cuenta_bancaria(
 	cuenta_bancaria_id bigint auto_increment primary key,
-	duenio_id bigint not null,
-	saldo decimal not null
+	entidad_id bigint,
+	saldo decimal (10,2) not null,
+	foreign key(entidad_id) references entidades(entidad_id)
 );
 
 create table if not exists transacciones(
 	transaccion_id bigint auto_increment primary key,
 	tipo varchar(100) not null,
 	fecha timestamp default current_timestamp,
-	monto decimal not null,
-	origen_id bigint,
-	destino_id bigint not null
+	monto decimal(10,2) not null,
+	cuenta_origen_id bigint,
+	cuenta_destino_id bigint,
+	foreign key(cuenta_origen_id) references cuenta_bancaria(cuenta_bancaria_id),
+	foreign key(cuenta_destino_id) references cuenta_bancaria(cuenta_bancaria_id)
 );
 
 create table if not exists pedidos (
 	pedido_id bigint auto_increment primary key,
 	transaccion_id bigint,
-	foreign key(transaccion_id) references transacciones(transaccion_id)
+	puesto_id bigint,
+	foreign key(transaccion_id) references transacciones(transaccion_id),
+	foreign key(puesto_id) references puestos(puesto_id)
 );
 
 create table if not exists detalles_pedido (
 	detalle_pedido_id bigint auto_increment primary key,
     pedido_id bigint not null,
-	producto_id bigint not null,
+	item_id bigint not null,
 	cantidad int not null,
-	sub_total decimal not null,
+	precio_total decimal(10,2) not null,
 	foreign key(pedido_id) references pedidos(pedido_id),
-	foreign key(producto_id) references productos(producto_id)
+	foreign key(item_id) references items(item_id)
 	on delete cascade
 	on update cascade
 );
+
+create table historial_cambio_duenio (
+    id bigInt primary key auto_increment,
+    puesto_id bigInt not null,
+    duenio_anterior_id bigInt,
+    duenio_nuevo_id bigInt,
+    fecha_cambio timestamp default current_timestamp,
+    foreign key (puesto_id) references puestos(puesto_id),
+    foreign key (duenio_anterior_id) references entidades(entidad_id),
+    foreign key (duenio_nuevo_id) references entidades(entidad_id)
+);
+
+DELIMITER //
+CREATE TRIGGER trigger_cambio_duenio
+BEFORE UPDATE ON puestos
+FOR EACH ROW
+BEGIN
+    IF OLD.duenio_id <> NEW.duenio_id THEN
+        INSERT INTO historial_cambio_duenio (
+            puesto_id,
+            duenio_anterior_id,
+            duenio_nuevo_id,
+            fecha_cambio
+        ) VALUES (
+            OLD.puesto_id,
+            OLD.duenio_id,
+            NEW.duenio_id,
+            now()
+        );
+    END IF;
+END;
+//
+DELIMITER ;
