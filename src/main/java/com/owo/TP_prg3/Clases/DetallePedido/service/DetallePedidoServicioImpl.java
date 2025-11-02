@@ -5,11 +5,11 @@ import com.owo.TP_prg3.Clases.DetallePedido.dto.DetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.UpdateDetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedido;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedidoRepositorio;
+import com.owo.TP_prg3.Clases.Inventario.modelo.Inventario;
+import com.owo.TP_prg3.Clases.Inventario.modelo.InventarioRepositorio;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.TipoTransaccion;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
-import com.owo.TP_prg3.Clases.InventarioPuesto.modelo.InventarioPuesto;
-import com.owo.TP_prg3.Clases.InventarioPuesto.modelo.InventarioPuestoRepositorio;
 import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
 import com.owo.TP_prg3.Clases.Pedido.modelo.PedidoRepositorio;
 import com.owo.TP_prg3.Clases.Producto.modelo.Producto;
@@ -37,7 +37,7 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
     @Autowired
     private PedidoRepositorio pedidoRepositorio;
     @Autowired
-    private InventarioPuestoRepositorio inventarioPuestoRepositorio;
+    private InventarioRepositorio inventarioPuestoRepositorio;
     @Autowired
     TransaccionRepositorio transaccionRepositorio;
     @Autowired
@@ -65,15 +65,15 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
         detallePedido.setPedido(pedido);
         detallePedido.setProducto(optionalItem.get());
 
-        //Me fijo si el itemId que está en el DP está en el puesto y obtengo la info del inventario de ese itemId.
-        Optional<InventarioPuesto> inventarioItem = inventarioPuestoRepositorio.findAll()
-                .stream()
-                .filter(inv ->
-                        inv.getPuesto().getPuestoId().equals(pedido.getPuestoId()) &&
-                                inv.getItemId().equals(optionalItem.get().getProducto_id()))
-                .findFirst();
+        // //Me fijo si el itemId que está en el DP está en el puesto y obtengo la info del inventario de ese itemId.
+        // Optional<Inventario> inventarioItem = inventarioPuestoRepositorio.findAll()
+        //         .stream()
+        //         .filter(inv ->
+        //                 inv.getPuesto().getPuestoId().equals(pedido.getPuestoId()) &&
+        //                         inv.getItemId().equals(optionalItem.get().getProducto_id()))
+        //         .findFirst();
 
-        if (inventarioItem.isEmpty()) throw new RecursoNoEncontradoException("InventarioPuesto no encontrado para el Item ID: " + detallePedidoDTO.getItemId() + " y Puesto ID: " + detallePedido.getPedido().getPuestoId());
+        // if (inventarioItem.isEmpty()) throw new RecursoNoEncontradoException("InventarioPuesto no encontrado para el Item ID: " + detallePedidoDTO.getItemId() + " y Puesto ID: " + detallePedido.getPedido().getPuestoId());
 
         detallePedido.setCantidad(detallePedidoDTO.getCantidad());
 
@@ -84,17 +84,17 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
         BigDecimal precioUnitario;
 
 
-        if (tipoTransaccion == TipoTransaccion.VENTA) {
-            precioUnitario = inventarioItem.get().getPrecioVenta();
-        } else if (tipoTransaccion == TipoTransaccion.COMPRA) {
-            precioUnitario = inventarioItem.get().getCostoAdquisicion();
-        } else {
+        // if (tipoTransaccion == TipoTransaccion.VENTA) {
+        //     precioUnitario = inventarioItem.get().getPrecioVenta();
+        // } else if (tipoTransaccion == TipoTransaccion.COMPRA) {
+        //     precioUnitario = inventarioItem.get().getCostoAdquisicion();
+        // } else {
 
-            throw new IngresoInvalidoException("No se pueden agregar items a pedidos de tipo " + tipoTransaccion);
-        }
+        //     throw new IngresoInvalidoException("No se pueden agregar items a pedidos de tipo " + tipoTransaccion);
+        // }
 
         // Usamos el precio unitario correcto para el cálculo
-        detallePedido.setPrecioTotal(cantidad_BD.multiply(precioUnitario));
+        // detallePedido.setPrecioTotal(cantidad_BD.multiply(precioUnitario));
 
 
         return detallePedido;
@@ -180,31 +180,31 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
                     if (updateDetallePedidoDTO.getCantidad() != null) {
                         detallePedido.setCantidad(updateDetallePedidoDTO.getCantidad());
 
-                        Optional<InventarioPuesto> inventarioItem = inventarioPuestoRepositorio.findAll()
-                                .stream()
-                                .filter(inv -> inv.getPuesto().getPuestoId().equals(detallePedido.getPedido().getPuestoId()) && inv.getItemId().equals(detallePedido.getProducto().getProducto_id()))
-                                .findFirst();
+                        // Optional<Inventario> inventarioItem = inventarioPuestoRepositorio.findAll()
+                        //         .stream()
+                        //         .filter(inv -> inv.getPuesto().getPuestoId().equals(detallePedido.getPedido().getPuestoId()) && inv.getItemId().equals(detallePedido.getProducto().getProducto_id()))
+                        //         .findFirst();
 
-                        if (inventarioItem.isEmpty()) throw new RecursoNoEncontradoException("InventarioPuesto no encontrado para el Item ID: " + detallePedido.getProducto().getProducto_id() + " y Puesto ID: " + detallePedido.getPedido().getPuestoId());
+                        // if (inventarioItem.isEmpty()) throw new RecursoNoEncontradoException("InventarioPuesto no encontrado para el Item ID: " + detallePedido.getProducto().getProducto_id() + " y Puesto ID: " + detallePedido.getPedido().getPuestoId());
 
 
                         BigDecimal cantidad_BD = new BigDecimal(detallePedido.getCantidad());
                         TipoTransaccion tipoTransaccion = detallePedido.getPedido().getTransaccion().getTipo();
                         BigDecimal precioUnitario;
 
-                        if (tipoTransaccion == TipoTransaccion.VENTA) {
-                            precioUnitario = inventarioItem.get().getPrecioVenta();
-                        } else if (tipoTransaccion == TipoTransaccion.COMPRA) {
-                            precioUnitario = inventarioItem.get().getCostoAdquisicion();
-                        } else {
-                            throw new IngresoInvalidoException("No se pueden agregar items a pedidos de tipo " + tipoTransaccion);
-                        }
+                        // if (tipoTransaccion == TipoTransaccion.VENTA) {
+                        //     precioUnitario = inventarioItem.get().getPrecioVenta();
+                        // } else if (tipoTransaccion == TipoTransaccion.COMPRA) {
+                        //     precioUnitario = inventarioItem.get().getCostoAdquisicion();
+                        // } else {
+                        //     throw new IngresoInvalidoException("No se pueden agregar items a pedidos de tipo " + tipoTransaccion);
+                        // }
 
-                        if (precioUnitario == null || precioUnitario.compareTo(BigDecimal.ZERO) <= 0) {
-                            throw new RecursoNoEncontradoException("El precio (venta o adquisición) debe ser mayor a cero.");
-                        }
+                        // if (precioUnitario == null || precioUnitario.compareTo(BigDecimal.ZERO) <= 0) {
+                        //     throw new RecursoNoEncontradoException("El precio (venta o adquisición) debe ser mayor a cero.");
+                        // }
 
-                        detallePedido.setPrecioTotal(cantidad_BD.multiply(precioUnitario));
+                        // detallePedido.setPrecioTotal(cantidad_BD.multiply(precioUnitario));
 
                     }
 
@@ -335,18 +335,18 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
     @Transactional
     @Override
     public void actualizarStockInventarioPuesto(Long itemId, Long puestoId, Integer cantidadAjuste, TipoTransaccion tipo) {
-        Optional<InventarioPuesto> optionalInventarioPuesto = inventarioPuestoRepositorio.findAll()
+        Optional<Inventario> optionalInventarioPuesto = inventarioPuestoRepositorio.findAll()
                 .stream()
-                .filter(inv ->
-                        inv.getPuesto().getPuestoId().equals(puestoId) &&
-                                inv.getItemId().equals(itemId))
+                // .filter(inv ->
+                //         inv.getPuesto().getPuestoId().equals(puestoId) &&
+                //                 inv.getItemId().equals(itemId))
                 .findFirst();
 
         if (optionalInventarioPuesto.isEmpty()) {
             throw new EntityNotFoundException("InventarioPuesto no encontrado para el Item ID: " + itemId + " y Puesto ID: " + puestoId);
         }
 
-        InventarioPuesto inventarioPuesto = optionalInventarioPuesto.get();
+        Inventario inventarioPuesto = optionalInventarioPuesto.get();
         Integer nuevaCantidad;
 
 

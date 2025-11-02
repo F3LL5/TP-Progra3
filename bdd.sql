@@ -53,7 +53,7 @@ create table if not exists productos (
     categoria varchar(100) not null
 );
 
-create table if not exists inventario(
+create table if not exists inventarios(
 	inventario_id bigint auto_increment primary key,
 	cantidad int not null,
 	producto_id bigint not null,

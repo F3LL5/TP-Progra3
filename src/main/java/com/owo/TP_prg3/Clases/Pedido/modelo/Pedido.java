@@ -19,6 +19,6 @@ public class Pedido {
     @JoinColumn(name = "transaccion_id", referencedColumnName = "transaccion_id")
     protected Transaccion transaccion;
 
-    @Column(name = "puesto_id")
+    @Column(name = "tienda_id")
     protected Long puestoId;
 }

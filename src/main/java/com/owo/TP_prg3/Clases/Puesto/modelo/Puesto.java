@@ -16,13 +16,13 @@ import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "puestos")
+@Table(name = "tienda")
 @Data @AllArgsConstructor @NoArgsConstructor
 public class Puesto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "puesto_id")
+    @Column(name = "tienda_id")
     protected Long puestoId;
 
     @Column(nullable = false, length = 100)
