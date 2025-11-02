@@ -7,13 +7,14 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "personas")
+@Inheritance(strategy = InheritanceType.JOINED)
 @Data @AllArgsConstructor @NoArgsConstructor
 public class Persona {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "persona_id", unique = true)
-    protected Long persona_id;
+    protected Long personaId;
 
     @Column(nullable = false)
     protected String nombre;

@@ -34,7 +34,7 @@ public class UsuarioServicio {
         return new UsuarioDTO(
                 usuario.getId(),
                 usuario.getRol(),
-                usuario.getEntidad().getPersona_id(),
+                usuario.getEntidad().getPersonaId(),
                 usuario.getDni()
         );
     }

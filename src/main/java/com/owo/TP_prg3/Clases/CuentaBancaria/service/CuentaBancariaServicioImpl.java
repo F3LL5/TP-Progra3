@@ -30,7 +30,7 @@ public class CuentaBancariaServicioImpl implements CuentaBancariaServicio {
     private CuentaBancariaDTO convertirA_DTO(CuentaBancaria cuentaBancaria) {
         return new CuentaBancariaDTO(
                 cuentaBancaria.getCuentaBancariaId(),
-                cuentaBancaria.getPersona() != null ? cuentaBancaria.getPersona().getPersona_id() : null,
+                cuentaBancaria.getPersona() != null ? cuentaBancaria.getPersona().getPersonaId() : null,
                 cuentaBancaria.getSaldo()
         );
     }
@@ -128,7 +128,7 @@ public class CuentaBancariaServicioImpl implements CuentaBancariaServicio {
         }
 
         return cuentaBancariaRepositorio.findAll().stream()
-                .filter(cuenta -> cuenta.getPersona() != null && cuenta.getPersona().getPersona_id().equals(entidadId))
+                .filter(cuenta -> cuenta.getPersona() != null && cuenta.getPersona().getPersonaId().equals(entidadId))
                 .findFirst()
                 .map(this::convertirA_DTO)
                 .or(() -> {

@@ -34,7 +34,7 @@ public class PersonaServicio implements I_CRUD<Persona, PersonaDTO, FormPersonaD
     @Override
     public PersonaDTO convertir_a_DTO(Persona persona) {
         return new PersonaDTO(
-                persona.getPersona_id(),
+                persona.getPersonaId(),
                 persona.getDni(),
                 persona.getNombre(),
                 persona.getEdad()
@@ -86,7 +86,7 @@ public class PersonaServicio implements I_CRUD<Persona, PersonaDTO, FormPersonaD
             case "nombre"-> comparador = Comparator.comparing(Persona::getNombre);
             case "edad"-> comparador = Comparator.comparing(Persona::getEdad);
             case "dni"-> comparador = Comparator.comparing(Persona::getDni);
-            default -> comparador = Comparator.comparing(Persona::getPersona_id);
+            default -> comparador = Comparator.comparing(Persona::getPersonaId);
         }
         if (!ascendente) comparador = comparador.reversed();
 

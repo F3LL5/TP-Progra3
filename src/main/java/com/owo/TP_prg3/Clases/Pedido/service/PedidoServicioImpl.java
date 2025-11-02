@@ -104,7 +104,7 @@ public class PedidoServicioImpl implements PedidoServicio {
         transaccion.setMonto(BigDecimal.ZERO);
 
         CuentaBancaria cuentaDuenio=cuentaBancariaRepositorio.findAll().stream()
-                .filter(cuentaBancaria -> cuentaBancaria.getPersona().getPersona_id().equals(createPedidoDTO2.getIdEntidad()))
+                .filter(cuentaBancaria -> cuentaBancaria.getPersona().getPersonaId().equals(createPedidoDTO2.getIdEntidad()))
                 .findFirst()
                 .orElseThrow();
 

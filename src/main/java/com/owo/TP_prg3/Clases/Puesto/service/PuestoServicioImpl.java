@@ -36,7 +36,7 @@ public class PuestoServicioImpl implements PuestoServicio {
                         puesto.getPuestoId(),
                         puesto.getNombre(),
                 puesto.getComision(),
-                puesto.getDuenio() != null ? puesto.getDuenio().getPersona_id() : null
+                puesto.getDuenio() != null ? puesto.getDuenio().getPersonaId() : null
                 );
     }
 
@@ -150,7 +150,7 @@ public class PuestoServicioImpl implements PuestoServicio {
                                     .orElseThrow(() -> new RecursoNoEncontradoException("Entidad (dueño) con ID " + updatePuestoDTO.getDuenioId() + " no encontrada."));
 
                             Optional<PuestoDTO> optionalPuesto = getPuestoByDni(nuevoDuenio.getDni());
-                            if (optionalPuesto.isPresent()) throw new RecursoNoEncontradoException("Dueño con ID " + nuevoDuenio.getPersona_id() + " ya posee un puesto asignado.");
+                            if (optionalPuesto.isPresent()) throw new RecursoNoEncontradoException("Dueño con ID " + nuevoDuenio.getPersonaId() + " ya posee un puesto asignado.");
 
                             puesto.setDuenio(nuevoDuenio);
                         }
@@ -212,7 +212,7 @@ public class PuestoServicioImpl implements PuestoServicio {
 
         Long duenioId = entidades.stream()
                 .filter(entidad -> entidad.getDni().equals(dni))
-                .map(Persona::getPersona_id)
+                .map(Persona::getPersonaId)
                 .findFirst()
                 .orElseThrow(() -> new RecursoNoEncontradoException("No se encontró ninguna entidad con DNI " + dni + "."));
 
