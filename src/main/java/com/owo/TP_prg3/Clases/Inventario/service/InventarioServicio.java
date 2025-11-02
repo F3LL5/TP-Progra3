@@ -5,10 +5,13 @@ import com.owo.TP_prg3.Clases.Inventario.dto.FormInventarioDTO;
 import com.owo.TP_prg3.Clases.Inventario.dto.InventarioDTO;
 import com.owo.TP_prg3.Clases.Inventario.modelo.Inventario;
 import com.owo.TP_prg3.Clases.Inventario.modelo.InventarioRepositorio;
+import com.owo.TP_prg3.Clases.Lote.service.LoteServicio;
 
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
@@ -23,28 +26,34 @@ public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, For
     @Autowired
     private InventarioRepositorio inventarioRepositorio;
 
-    // CONVERSION ------------------------------------------------------------------------------------------------------------------------------------------------
-    @Override
-    public Inventario convertir_a_Obj(FormInventarioDTO formDTO) {
-        return new Inventario(
-            null,
-            formDTO.getCantidad(),
-            formDTO.getProducto_id(),
-            formDTO.getStockMin(),
-            formDTO.getPrecioVenta(),
-            formDTO.getCostoAdquisicion()
-        );
-    }
+    @Autowired
+    private LoteServicio loteServicio;
 
+    // CONVERSION -----------------------------------------------------------------------------------------------------------------------------------------------
     @Override
     public InventarioDTO convertir_a_DTO(Inventario inventario) {
+        // 1. Obtiene el stock total real sumando las cantidades de los Lotes activos.
+        Integer stockActual = loteServicio.obtenerStockPorProducto(inventario.getProducto_id());
+
         return new InventarioDTO(
             inventario.getInventario_id(),
-            inventario.getCantidad(),
+            stockActual,
             inventario.getProducto_id(),
             inventario.getStockMin(),
             inventario.getPrecioVenta(),
             inventario.getCostoAdquisicion()
+        );
+    }
+
+    @Override
+    public Inventario convertir_a_Obj(FormInventarioDTO formDTO) {
+        return new Inventario(
+            null, //El id lo autogenera la base de datos
+            0, // La cantidad no es editable mediante formulario
+            formDTO.getProducto_id(),
+            formDTO.getStockMin(),
+            formDTO.getPrecioVenta(),
+            BigDecimal.ZERO //El costo se calcula en un metodo
         );
     }
 
@@ -117,6 +126,8 @@ public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, For
     public boolean eliminar(Long id) {
         Optional<Inventario> optional = inventarioRepositorio.findById(id);
         if(optional.isEmpty()) return false;
+        if(loteServicio.existenLotesActivos(optional.get().getProducto_id())) return false; // No se puede eliminar si hay stock para ese producto.
+        
         else inventarioRepositorio.delete(optional.get());
         return true;
     }
@@ -131,12 +142,22 @@ public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, For
         Inventario inventario = optional.get();
         inventario.setPrecioVenta(updateDTO.getPrecioVenta());
         inventario.setStockMin(updateDTO.getStockMin());
-        inventario.setCantidad(updateDTO.getCantidad());
+        //No se puede modificar ni el costo ni la cantidad
 
-        //Serio (capaz se cambia)
-        inventario.setCostoAdquisicion(updateDTO.getCostoAdquisicion());
-    
         inventarioRepositorio.save(inventario);
         return true;
     }
+
+    //Metodos logica del negocio
+    @Transactional
+    public void ajustarStockConsolidado(Long productoId, int delta) {
+        // Asumiendo que InventarioRepositorio tiene findByProductoId
+        Inventario inventario = inventarioRepositorio.findByProductoId(productoId)
+                .orElseThrow(() -> new RuntimeException("Inventario no encontrado para Producto ID: " + productoId));
+                
+        // El campo 'cantidad' se actualiza internamente y refleja el stock consolidado (suma de lotes).
+        inventario.setCantidad(inventario.getCantidad() + delta);
+        inventarioRepositorio.save(inventario);
+    }
+
 }

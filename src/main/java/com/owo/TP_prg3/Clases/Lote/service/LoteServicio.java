@@ -1,6 +1,8 @@
 package com.owo.TP_prg3.Clases.Lote.service;
 
+import java.math.BigDecimal;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -13,6 +15,8 @@ import com.owo.TP_prg3.Clases.Lote.dto.LoteDTO;
 import com.owo.TP_prg3.Clases.Lote.modelo.Lote;
 import com.owo.TP_prg3.Clases.Lote.modelo.LoteRepositorio;
 import com.owo.TP_prg3.Clases.Producto.modelo.Producto;
+
+import jakarta.transaction.Transactional;
 
 public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
     
@@ -96,11 +100,6 @@ public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
                     .collect(Collectors.toSet());
     }
 
-    // Método que implementa la búsqueda ordenada por FIFO directamente a la base de datos para evitar Stream complejos
-    public Set<Lote> obtenerLotesDisponiblesFIFO(Long productoId) {
-        return loteRepositorio.findByProductoIdAndCantidadDisponibleGreaterThanOrderByFechaIngresoAsc(productoId, 0).stream().collect(Collectors.toSet());
-    }
-
     // POST
     @Override
     public boolean cargar(FormLoteDTO cDTO) {
@@ -131,4 +130,37 @@ public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
         else loteRepositorio.delete(optional.get());
         return true;
     }
+
+    // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // METODOS CONTROL DE STOCK Y MANEJO DE INVENTARIO ---------------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    // Método que implementa la búsqueda ordenada por FIFO directamente a la base de datos para evitar Stream complejos
+    public Set<Lote> obtenerLotesDisponiblesFIFO(Long productoId) {
+        return loteRepositorio.findByProductoIdAndCantidadDisponibleGreaterThanOrderByFechaIngresoAsc(productoId, 0).stream().collect(Collectors.toSet());
+    }
+
+    // Método que calcula y devuelve el stock para un Producto específico.
+    public Integer obtenerStockPorProducto(Long productoId) {
+        // Obtenemos todos los lotes del producto que tienen stock > 0
+        List<Lote> lotesActivos = loteRepositorio.findByProductoIdAndCantidadDisponibleGreaterThan(productoId, 0); 
+        
+        // Sumamos la cantidad de cada lote
+        return lotesActivos.stream()
+                           .mapToInt(Lote::getCantidadDisponible)
+                           .sum();
+    }
+
+    public boolean existenLotesActivos(Long productoId) {
+        return obtenerStockPorProducto(productoId) > 0;
+    }
+
+    @Transactional
+    public Lote registrarEntradaStock(Producto producto, int cantidad, BigDecimal costoUnitario) {
+        // 1. Crear el nuevo Lote
+        // 2. Notificar a InventarioServicio (ajustarStockConsolidado)
+        // 3. Notificar a InventarioServicio (actualizarCostoAdquisicion) después de recalcular el CPP.
+        return null;
+    }
 }
+

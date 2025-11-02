@@ -15,7 +15,7 @@ public class Inventario {
     @Column(name = "inventario_id")
     protected Long inventario_id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     protected Integer cantidad;
 
     @Column(name = "producto_id", nullable = false, updatable = false)
