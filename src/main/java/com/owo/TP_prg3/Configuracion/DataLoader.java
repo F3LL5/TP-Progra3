@@ -1,22 +1,25 @@
 package com.owo.TP_prg3.Configuracion;
 
-import com.owo.TP_prg3.Clases.User.dto.CreateUsuarioDTO;
-import com.owo.TP_prg3.Clases.User.modelo.UsuarioRepositorio;
-import com.owo.TP_prg3.Clases.User.service.UsuarioServicio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-
+import com.owo.TP_prg3.Clases.Usuario.modelo.RolUsuario;
+import com.owo.TP_prg3.Clases.Usuario.modelo.Usuario;
+import com.owo.TP_prg3.Clases.Usuario.modelo.UsuarioRepositorio;
 
 @Component
 public class DataLoader implements CommandLineRunner {
 
-    @Autowired
-    private UsuarioServicio usuarioServicio;
+    private final PasswordEncoder passwordEncoder;
+    // Esta clase sirve para inicializar el sistema, si no hay ningún dato crea un usuario administrador default.
 
     @Autowired
     private UsuarioRepositorio usuarioRepositorio;
 
+    DataLoader(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
     public void run(String... args) throws Exception {
@@ -24,26 +27,21 @@ public class DataLoader implements CommandLineRunner {
         if (usuarioRepositorio.count() == 0) {
             System.out.println("No se encontraron usuarios. Creando usuario administrador inicial...");
 
-            Integer adminDni = 123; // DNI del administrador inicial
-            String adminPassword = "0000"; // Contraseña temporal
+            String adminMail = "123";
+            String adminPassword = "0000"; 
+            String encodedPassword = passwordEncoder.encode(adminPassword);
 
-            // 2. Crear el usuario si no existe ya un usuario con ese DNI.
-            if (!usuarioRepositorio.existsByDni(adminDni)) {
-                CreateUsuarioDTO adminDto = new CreateUsuarioDTO();
-                adminDto.setDni(adminDni);
-                adminDto.setPassword(adminPassword);
+            Usuario usuario = new Usuario(
+                null,
+                adminMail,
+                encodedPassword,
+                RolUsuario.ROLE_ADMIN
+            );
+            usuarioRepositorio.save(usuario);
 
-                try {
-                    usuarioServicio.crearUsuario(adminDto);
-                    System.out.println("Usuario ADMINISTRADOR '" + adminPassword + "' creado con DNI: " + adminDni);
-                } catch (RuntimeException e) {
-                    System.err.println("Error al crear el usuario administrador inicial: " + e.getMessage());
-                }
-            } else {
-                System.out.println("El usuario con DNI " + adminDni + " ya existe. No se creará un nuevo administrador inicial.");
-            }
-        } else {
-            System.out.println("Ya existen usuarios en la base de datos. No se requiere la creación de un administrador inicial.");
+            System.out.println("Usuario ADMINISTRADOR '" + adminPassword + "' creado con email: " + adminMail);
+            System.out.println("Recomendamos encarecidamente que cambie la contraseña una vez ingresado en el sistema.");
+
         }
     }
 }

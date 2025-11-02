@@ -1,6 +1,5 @@
 package com.owo.TP_prg3.Clases.CuentaBancaria.dto;
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;

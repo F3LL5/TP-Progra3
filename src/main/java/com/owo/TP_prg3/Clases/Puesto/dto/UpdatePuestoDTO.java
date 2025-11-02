@@ -1,7 +1,6 @@
 package com.owo.TP_prg3.Clases.Puesto.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.micrometer.common.lang.Nullable;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;

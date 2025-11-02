@@ -1,12 +1,7 @@
 package com.owo.TP_prg3.Clases.Pedido.controlador;
 
-import com.owo.TP_prg3.Clases.Producto.dto.ProductoDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.*;
-import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
-import com.owo.TP_prg3.Clases.Pedido.service.PedidoServicio;
 import com.owo.TP_prg3.Clases.Pedido.service.PedidoServicioImpl;
-import com.owo.TP_prg3.Clases.Puesto.modelo.Puesto;
-import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
