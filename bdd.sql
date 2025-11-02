@@ -53,6 +53,17 @@ create table if not exists productos (
     categoria varchar(100) not null
 );
 
+create table if not exists lotes (
+	lote_id bigint auto_increment primary key,
+    cantidadDisponible int not null,
+	costoUnitario decimal not null,
+	fechaIngreso date,
+	producto_id bigint not null
+	foreign key(producto_id) references productos(producto_id)
+	on delete cascade
+	on update cascade
+);
+
 create table if not exists inventarios(
 	inventario_id bigint auto_increment primary key,
 	cantidad int not null,

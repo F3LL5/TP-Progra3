@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "inventarios")
-@Data @AllArgsConstructor @NoArgsConstructor @Getter @Setter @DynamicUpdate
+@Data @AllArgsConstructor @DynamicUpdate
 public class Inventario {
 
     @Id

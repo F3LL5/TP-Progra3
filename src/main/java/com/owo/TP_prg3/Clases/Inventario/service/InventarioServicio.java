@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
-public class InventarioService implements I_CRUD<Inventario, InventarioDTO, FormInventarioDTO> {
+public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, FormInventarioDTO> {
 
     // ATRIBUTOS ------------------------------------------------------------------------------------------------------------------------------------------------
     @Autowired
@@ -70,12 +70,12 @@ public class InventarioService implements I_CRUD<Inventario, InventarioDTO, Form
 
         Predicate<Inventario> filtro;
         switch (campo.toLowerCase()) {
-            case "cantidad" -> { filtro = i -> i.getCantidad().equals(valor); }
-            case "producto_id" -> { filtro = i -> i.getProducto_id().equals(valor); }
-            case "stockMin" -> { filtro = i -> i.getStockMin().equals(valor); }
-            case "precioVenta" -> { filtro = i -> i.getPrecioVenta().equals(valor); }
-            case "costoAdquisicion" -> { filtro = i -> i.getCostoAdquisicion().equals(valor); }
-            default -> { filtro = i -> false; }
+            case "cantidad"-> filtro = i -> i.getCantidad().equals(valor); 
+            case "producto_id"-> filtro = i -> i.getProducto_id().equals(valor); 
+            case "stockMin"-> filtro = i -> i.getStockMin().equals(valor); 
+            case "precioVenta"-> filtro = i -> i.getPrecioVenta().equals(valor); 
+            case "costoAdquisicion"-> filtro = i -> i.getCostoAdquisicion().equals(valor); 
+            default-> filtro = i -> false;
         }
 
         return stream.filter(filtro)
@@ -89,11 +89,11 @@ public class InventarioService implements I_CRUD<Inventario, InventarioDTO, Form
 
         Comparator<Inventario> comparador;
         switch (campo.toLowerCase()) {
-            case "cantidad" -> comparador = Comparator.comparing(Inventario::getCantidad);
-            case "producto_id" -> comparador = Comparator.comparing(Inventario::getProducto_id);
-            case "stockMin" -> comparador = Comparator.comparing(Inventario::getProducto_id);
-            case "precioVenta" -> comparador = Comparator.comparing(Inventario::getPrecioVenta);
-            case "costoAdquisicion" -> comparador = Comparator.comparing(Inventario::getCostoAdquisicion);
+            case "cantidad"-> comparador = Comparator.comparing(Inventario::getCantidad);
+            case "producto_id"-> comparador = Comparator.comparing(Inventario::getProducto_id);
+            case "stockMin"-> comparador = Comparator.comparing(Inventario::getProducto_id);
+            case "precioVenta"-> comparador = Comparator.comparing(Inventario::getPrecioVenta);
+            case "costoAdquisicion"-> comparador = Comparator.comparing(Inventario::getCostoAdquisicion);
             default -> comparador = Comparator.comparing(Inventario::getInventario_id);
         }
         

@@ -3,7 +3,7 @@ package com.owo.TP_prg3.Clases.Inventario.controlador;
 import com.owo.TP_prg3.Clases.Interfaces.I_Controlador;
 import com.owo.TP_prg3.Clases.Inventario.dto.FormInventarioDTO;
 import com.owo.TP_prg3.Clases.Inventario.dto.InventarioDTO;
-import com.owo.TP_prg3.Clases.Inventario.service.InventarioService;
+import com.owo.TP_prg3.Clases.Inventario.service.InventarioServicio;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,7 +16,7 @@ import java.util.Set;
 public class InventarioControlador implements I_Controlador<InventarioDTO, FormInventarioDTO>{
 
     @Autowired
-    private InventarioService inventarioServicio;
+    private InventarioServicio inventarioServicio;
 
     // --- Métodos GET ---
     @Override

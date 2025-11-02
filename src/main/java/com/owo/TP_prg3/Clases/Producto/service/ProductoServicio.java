@@ -2,7 +2,7 @@ package com.owo.TP_prg3.Clases.Producto.service;
 
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 import com.owo.TP_prg3.Clases.Inventario.dto.FormInventarioDTO;
-import com.owo.TP_prg3.Clases.Inventario.service.InventarioService;
+import com.owo.TP_prg3.Clases.Inventario.service.InventarioServicio;
 import com.owo.TP_prg3.Clases.Producto.dto.FormProductoDTO;
 import com.owo.TP_prg3.Clases.Producto.dto.ProductoDTO;
 import com.owo.TP_prg3.Clases.Producto.modelo.Producto;
@@ -24,15 +24,15 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
     @Autowired
     private ProductoRepositorio productoRepositorio;
     @Autowired
-    private InventarioService inventarioService;
+    private InventarioServicio inventarioService;
 
     // CONVERSION ------------------------------------------------------------------------------------------------------------------------------------------------
     @Override
-    public Producto convertir_a_Obj(FormProductoDTO pDTO){
+    public Producto convertir_a_Obj(FormProductoDTO fDTO){
         return new Producto(
             null,
-            pDTO.getNombre(),
-            pDTO.getCategoria()
+            fDTO.getNombre(),
+            fDTO.getCategoria()
         );
     }
     @Override
@@ -70,13 +70,9 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
         // 2. Creamos un filtro dependiendo del campo
         Predicate<Producto> filtro;
         switch (campo.toLowerCase()) {
-            case "nombre" -> {
-                filtro = p -> p.getNombre().equals( valor);
-            }
-            case "categoria" -> {
-                filtro = p -> p.getCategoria().equals( valor);
-            }
-            default -> { filtro = i -> false; }
+            case "nombre"-> filtro = p -> p.getNombre().equals(valor);
+            case "categoria" -> filtro = p -> p.getCategoria().equals(valor);
+            default -> filtro = p -> false;
         }
 
         // 3. Aplicamos el filtro al Stream, mapeamos a DTO
@@ -92,8 +88,8 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
         // 2. Creamos un Comparator dependiendo del campo
         Comparator<Producto> comparador;
         switch (campo.toLowerCase()) {
-            case "nombre" -> comparador = Comparator.comparing(Producto::getNombre);
-            case "categoria" -> comparador = Comparator.comparing(Producto::getNombre);
+            case "nombre"-> comparador = Comparator.comparing(Producto::getNombre);
+            case "categoria"-> comparador = Comparator.comparing(Producto::getNombre);
             default -> comparador = Comparator.comparing(Producto::getProducto_id);
         }
         // 3. Lo da vuelta si no es ascendente
@@ -108,12 +104,11 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
     // POST
     @Override
     @Transactional
-    public boolean cargar(FormProductoDTO createItemDTO) {
-        Producto producto = convertir_a_Obj(createItemDTO);
-        producto = productoRepositorio.save(producto);
+    public boolean cargar(FormProductoDTO cDTO) {
+        Producto p = productoRepositorio.save(convertir_a_Obj(cDTO));
 
         //Crea un inventario defualt a ese Producto
-        return inventarioService.cargar(new FormInventarioDTO(producto.getProducto_id()));
+        return inventarioService.cargar(new FormInventarioDTO(p.getProducto_id()));
     }
 
     // PUT
