@@ -123,6 +123,7 @@ public class PersonaServicio implements I_CRUD<Persona, PersonaDTO, FormPersonaD
 
     @Override
     public boolean cargar(FormPersonaDTO cDTO) {
+        if (this.buscarPorDNI(cDTO.getDni()).isPresent()) return false;
         personaRepositorio.save(convertir_a_Obj(cDTO));
         return true;
     }
