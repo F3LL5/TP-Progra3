@@ -96,6 +96,11 @@ public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
                     .collect(Collectors.toSet());
     }
 
+    // Método que implementa la búsqueda ordenada por FIFO directamente a la base de datos para evitar Stream complejos
+    public Set<Lote> obtenerLotesDisponiblesFIFO(Long productoId) {
+        return loteRepositorio.findByProductoIdAndCantidadDisponibleGreaterThanOrderByFechaIngresoAsc(productoId, 0).stream().collect(Collectors.toSet());
+    }
+
     // POST
     @Override
     public boolean cargar(FormLoteDTO cDTO) {
