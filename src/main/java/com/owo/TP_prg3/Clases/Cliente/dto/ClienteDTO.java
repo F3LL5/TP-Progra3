@@ -1,4 +1,4 @@
-package com.owo.TP_prg3.Clases.Persona.Cliente.dto;
+package com.owo.TP_prg3.Clases.Cliente.dto;
 
 import com.owo.TP_prg3.Clases.Persona.dto.PersonaDTO;
 import lombok.Data;

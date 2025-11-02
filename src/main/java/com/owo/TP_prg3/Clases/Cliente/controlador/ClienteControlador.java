@@ -1,12 +1,12 @@
-package com.owo.TP_prg3.Clases.Persona.Cliente.controlador;
+package com.owo.TP_prg3.Clases.Cliente.controlador;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.owo.TP_prg3.Clases.Cliente.dto.ClienteDTO;
+import com.owo.TP_prg3.Clases.Cliente.service.ClienteServicio;
 import com.owo.TP_prg3.Clases.Interfaces.I_Controlador;
-import com.owo.TP_prg3.Clases.Persona.Cliente.dto.ClienteDTO;
-import com.owo.TP_prg3.Clases.Persona.Cliente.service.ClienteServicio;
 import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
 import java.util.Set;
 

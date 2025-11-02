@@ -1,8 +1,5 @@
 package com.owo.TP_prg3.Configuracion;
 
-
-import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
-import com.owo.TP_prg3.Clases.Persona.modelo.PersonaRepositorio;
 import com.owo.TP_prg3.Clases.User.dto.CreateUsuarioDTO;
 import com.owo.TP_prg3.Clases.User.modelo.UsuarioRepositorio;
 import com.owo.TP_prg3.Clases.User.service.UsuarioServicio;
@@ -20,8 +17,6 @@ public class DataLoader implements CommandLineRunner {
     @Autowired
     private UsuarioRepositorio usuarioRepositorio;
 
-    @Autowired
-    private PersonaRepositorio entidadRepositorio;
 
     @Override
     public void run(String... args) throws Exception {

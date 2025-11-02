@@ -1,4 +1,4 @@
-package com.owo.TP_prg3.Clases.Persona.Cliente.modelo;
+package com.owo.TP_prg3.Clases.Proveedor.modelo;
 
 import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
 
@@ -15,12 +15,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "clientes")
+@Table(name = "proveedores")
 @Data @NoArgsConstructor @AllArgsConstructor
-public class Cliente {
+public class Proveedor {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long clienteId;
+    private Long proveedorId;
 
     @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "persona_id", nullable = false)

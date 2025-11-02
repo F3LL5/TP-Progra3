@@ -1,4 +1,4 @@
-package com.owo.TP_prg3.Clases.Persona.Cliente.service;
+package com.owo.TP_prg3.Clases.Cliente.service;
 
 import java.util.Comparator;
 import java.util.Optional;
@@ -9,10 +9,10 @@ import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
+import com.owo.TP_prg3.Clases.Cliente.dto.ClienteDTO;
+import com.owo.TP_prg3.Clases.Cliente.modelo.Cliente;
+import com.owo.TP_prg3.Clases.Cliente.modelo.ClienteRepositorio;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
-import com.owo.TP_prg3.Clases.Persona.Cliente.dto.ClienteDTO;
-import com.owo.TP_prg3.Clases.Persona.Cliente.modelo.Cliente;
-import com.owo.TP_prg3.Clases.Persona.Cliente.modelo.ClienteRepositorio;
 
 @Service
 public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaDTO>{
@@ -94,8 +94,10 @@ public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaD
                     .collect(Collectors.toSet());
     }
 
+    // POST
     @Override
     public boolean cargar(FormPersonaDTO createDTO) {
+        if (this.buscarPorDNI(createDTO.getDni()).isPresent()) return false;
         // JPA automáticamente realiza el INSERT en la tabla 'personas' y luego en 'clientes'
         clienteRepositorio.save(convertir_a_Obj(createDTO));
         return true;

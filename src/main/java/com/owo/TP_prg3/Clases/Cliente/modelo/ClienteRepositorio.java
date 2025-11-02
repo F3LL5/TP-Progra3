@@ -1,4 +1,4 @@
-package com.owo.TP_prg3.Clases.Persona.Cliente.modelo;
+package com.owo.TP_prg3.Clases.Cliente.modelo;
 
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;

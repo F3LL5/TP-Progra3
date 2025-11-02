@@ -2,7 +2,6 @@ package com.owo.TP_prg3.Clases.User.controlador;
 
 import com.owo.TP_prg3.Clases.User.dto.CreateUsuarioDTO;
 import com.owo.TP_prg3.Clases.User.dto.UsuarioDTO;
-import com.owo.TP_prg3.Clases.User.modelo.Usuario;
 import com.owo.TP_prg3.Clases.User.service.UsuarioServicio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
