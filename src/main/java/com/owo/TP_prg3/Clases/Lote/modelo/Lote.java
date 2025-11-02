@@ -6,9 +6,10 @@ import com.owo.TP_prg3.Clases.Producto.modelo.Producto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity @Table(name = "lotes")
-@Data @AllArgsConstructor
+@Data @AllArgsConstructor @NoArgsConstructor
 public class Lote {
     
     @Id
@@ -16,7 +17,7 @@ public class Lote {
     private Long lote_id;
 
     @ManyToOne
-    @JoinColumn(name = "productos", nullable = false)
+    @JoinColumn(name = "producto_id", nullable = false)
     private Producto producto;
 
     @Column(name = "cantidadDisponible", nullable = false)

@@ -9,15 +9,16 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 import com.owo.TP_prg3.Clases.Lote.dto.FormLoteDTO;
 import com.owo.TP_prg3.Clases.Lote.dto.LoteDTO;
 import com.owo.TP_prg3.Clases.Lote.modelo.Lote;
 import com.owo.TP_prg3.Clases.Lote.modelo.LoteRepositorio;
 import com.owo.TP_prg3.Clases.Producto.modelo.Producto;
-
 import jakarta.transaction.Transactional;
 
+@Service
 public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
     
     // ATRIBUTOS ------------------------------------------------------------------------------------------------------------------------------------------------
@@ -71,7 +72,7 @@ public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
         Predicate<Lote> filtro;
         switch (campo.toLowerCase()) {
             case "cantidad"-> filtro = l -> l.getCantidadDisponible().equals(valor);
-            case "producto"-> filtro = l -> l.getProducto().getProducto_id().equals(valor); //Filtra por id de producto
+            case "producto"-> filtro = l -> l.getProducto().getProductoId().equals(valor); //Filtra por id de producto
             case "costoUnitario"-> filtro = l -> l.getCostoUnitario().equals(valor);
             case "fechaIngreso"-> filtro = l -> l.getFechaIngreso().equals(valor);
             default-> filtro = l -> false;
@@ -88,7 +89,7 @@ public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
         Comparator<Lote> comparador;
         switch (campo.toLowerCase()) {
             case "cantidad" -> comparador = Comparator.comparing(Lote::getCantidadDisponible);
-            case "producto"-> comparador = Comparator.comparing(Lote::getProducto, Comparator.comparing(Producto::getProducto_id)); 
+            case "producto"-> comparador = Comparator.comparing(Lote::getProducto, Comparator.comparing(Producto::getProductoId)); 
             case "costoUnitario"-> comparador = Comparator.comparing(Lote::getCostoUnitario);
             case "fechaIngreso"-> comparador = Comparator.comparing(Lote::getFechaIngreso);
             default-> comparador = Comparator.comparing(Lote::getLote_id);
@@ -137,13 +138,13 @@ public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
 
     // Método que implementa la búsqueda ordenada por FIFO directamente a la base de datos para evitar Stream complejos
     public Set<Lote> obtenerLotesDisponiblesFIFO(Long productoId) {
-        return loteRepositorio.findByProductoIdAndCantidadDisponibleGreaterThanOrderByFechaIngresoAsc(productoId, 0).stream().collect(Collectors.toSet());
+        return loteRepositorio.findByProducto_ProductoIdAndCantidadDisponibleGreaterThanOrderByFechaIngresoAsc(productoId, 0).stream().collect(Collectors.toSet());
     }
 
     // Método que calcula y devuelve el stock para un Producto específico.
     public Integer obtenerStockPorProducto(Long productoId) {
         // Obtenemos todos los lotes del producto que tienen stock > 0
-        List<Lote> lotesActivos = loteRepositorio.findByProductoIdAndCantidadDisponibleGreaterThan(productoId, 0); 
+        List<Lote> lotesActivos = loteRepositorio.findByProducto_ProductoIdAndCantidadDisponibleGreaterThan(productoId, 0); 
         
         // Sumamos la cantidad de cada lote
         return lotesActivos.stream()

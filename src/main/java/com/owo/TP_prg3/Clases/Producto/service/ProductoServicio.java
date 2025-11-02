@@ -38,7 +38,7 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
     @Override
     public ProductoDTO convertir_a_DTO(Producto producto){
         return new ProductoDTO(
-                producto.getProducto_id(),
+                producto.getProductoId(),
                 producto.getNombre(),
                 producto.getCategoria()
         );
@@ -90,7 +90,7 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
         switch (campo.toLowerCase()) {
             case "nombre"-> comparador = Comparator.comparing(Producto::getNombre);
             case "categoria"-> comparador = Comparator.comparing(Producto::getNombre);
-            default -> comparador = Comparator.comparing(Producto::getProducto_id);
+            default -> comparador = Comparator.comparing(Producto::getProductoId);
         }
         // 3. Lo da vuelta si no es ascendente
         if (!ascendente) comparador = comparador.reversed();
@@ -104,11 +104,11 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
     // POST
     @Override
     @Transactional
-    public boolean cargar(FormProductoDTO cDTO) {
-        Producto p = productoRepositorio.save(convertir_a_Obj(cDTO));
+    public boolean cargar(FormProductoDTO createDTO) {
+        Producto p = productoRepositorio.save(convertir_a_Obj(createDTO));
 
         //Crea un inventario defualt a ese Producto
-        return inventarioService.cargar(new FormInventarioDTO(p.getProducto_id()));
+        return inventarioService.cargar(new FormInventarioDTO(p.getProductoId()));
     }
 
     // PUT
@@ -125,7 +125,7 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
         return true;
     }
 
-    //DELETE
+    // DELETE
     @Override
     public boolean eliminar(Long id) {
         Optional<Producto> optional = productoRepositorio.findById(id);

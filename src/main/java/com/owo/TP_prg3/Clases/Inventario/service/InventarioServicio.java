@@ -33,12 +33,12 @@ public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, For
     @Override
     public InventarioDTO convertir_a_DTO(Inventario inventario) {
         // 1. Obtiene el stock total real sumando las cantidades de los Lotes activos.
-        Integer stockActual = loteServicio.obtenerStockPorProducto(inventario.getProducto_id());
+        Integer stockActual = loteServicio.obtenerStockPorProducto(inventario.getProductoId());
 
         return new InventarioDTO(
             inventario.getInventario_id(),
             stockActual,
-            inventario.getProducto_id(),
+            inventario.getProductoId(),
             inventario.getStockMin(),
             inventario.getPrecioVenta(),
             inventario.getCostoAdquisicion()
@@ -80,7 +80,7 @@ public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, For
         Predicate<Inventario> filtro;
         switch (campo.toLowerCase()) {
             case "cantidad"-> filtro = i -> i.getCantidad().equals(valor); 
-            case "producto_id"-> filtro = i -> i.getProducto_id().equals(valor); 
+            case "producto_id"-> filtro = i -> i.getProductoId().equals(valor); 
             case "stockMin"-> filtro = i -> i.getStockMin().equals(valor); 
             case "precioVenta"-> filtro = i -> i.getPrecioVenta().equals(valor); 
             case "costoAdquisicion"-> filtro = i -> i.getCostoAdquisicion().equals(valor); 
@@ -99,8 +99,8 @@ public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, For
         Comparator<Inventario> comparador;
         switch (campo.toLowerCase()) {
             case "cantidad"-> comparador = Comparator.comparing(Inventario::getCantidad);
-            case "producto_id"-> comparador = Comparator.comparing(Inventario::getProducto_id);
-            case "stockMin"-> comparador = Comparator.comparing(Inventario::getProducto_id);
+            case "producto_id"-> comparador = Comparator.comparing(Inventario::getProductoId);
+            case "stockMin"-> comparador = Comparator.comparing(Inventario::getStockMin);
             case "precioVenta"-> comparador = Comparator.comparing(Inventario::getPrecioVenta);
             case "costoAdquisicion"-> comparador = Comparator.comparing(Inventario::getCostoAdquisicion);
             default -> comparador = Comparator.comparing(Inventario::getInventario_id);
@@ -126,7 +126,7 @@ public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, For
     public boolean eliminar(Long id) {
         Optional<Inventario> optional = inventarioRepositorio.findById(id);
         if(optional.isEmpty()) return false;
-        if(loteServicio.existenLotesActivos(optional.get().getProducto_id())) return false; // No se puede eliminar si hay stock para ese producto.
+        if(loteServicio.existenLotesActivos(optional.get().getProductoId())) return false; // No se puede eliminar si hay stock para ese producto.
         
         else inventarioRepositorio.delete(optional.get());
         return true;
@@ -150,12 +150,10 @@ public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, For
 
     //Metodos logica del negocio
     @Transactional
-    public void ajustarStockConsolidado(Long productoId, int delta) {
-        // Asumiendo que InventarioRepositorio tiene findByProductoId
-        Inventario inventario = inventarioRepositorio.findByProductoId(productoId)
-                .orElseThrow(() -> new RuntimeException("Inventario no encontrado para Producto ID: " + productoId));
+    public void ajustarStock(Long productoId, int delta) {
+        Inventario inventario = inventarioRepositorio.findByProductoId(productoId).orElseThrow(() -> new RuntimeException("Inventario no encontrado para Producto ID: " + productoId));
                 
-        // El campo 'cantidad' se actualiza internamente y refleja el stock consolidado (suma de lotes).
+        // Cantidad se actualiza internamente y refleja el stock total
         inventario.setCantidad(inventario.getCantidad() + delta);
         inventarioRepositorio.save(inventario);
     }

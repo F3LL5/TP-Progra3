@@ -1,9 +1,8 @@
 package com.owo.TP_prg3.Configuracion;
 
 
-import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
-import com.owo.TP_prg3.Clases.Entidad.modelo.EntidadRepositorio;
-import com.owo.TP_prg3.Clases.Entidad.modelo.RolEntidad;
+import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
+import com.owo.TP_prg3.Clases.Persona.modelo.PersonaRepositorio;
 import com.owo.TP_prg3.Clases.User.dto.CreateUsuarioDTO;
 import com.owo.TP_prg3.Clases.User.modelo.UsuarioRepositorio;
 import com.owo.TP_prg3.Clases.User.service.UsuarioServicio;
@@ -22,7 +21,7 @@ public class DataLoader implements CommandLineRunner {
     private UsuarioRepositorio usuarioRepositorio;
 
     @Autowired
-    private EntidadRepositorio entidadRepositorio;
+    private PersonaRepositorio entidadRepositorio;
 
     @Override
     public void run(String... args) throws Exception {
@@ -32,18 +31,6 @@ public class DataLoader implements CommandLineRunner {
 
             Integer adminDni = 123; // DNI del administrador inicial
             String adminPassword = "0000"; // Contraseña temporal
-
-            // 1. Verificar si ya existe una entidad con el DNI del administrador, si no, crearla.
-            if (entidadRepositorio.findByDni(adminDni).isEmpty()) {
-                Entidad adminEntidad = new Entidad();
-                adminEntidad.setDni(adminDni);
-                adminEntidad.setNombre("1");
-                adminEntidad.setRolEntidad(RolEntidad.ADMIN);
-                adminEntidad.setEdad(0);
-                adminEntidad.setTipoEntidad("ROLE_ADMIN");
-                entidadRepositorio.save(adminEntidad);
-                System.out.println("Entidad ADMINISTRADOR creada para DNI: " + adminDni);
-            }
 
             // 2. Crear el usuario si no existe ya un usuario con ese DNI.
             if (!usuarioRepositorio.existsByDni(adminDni)) {

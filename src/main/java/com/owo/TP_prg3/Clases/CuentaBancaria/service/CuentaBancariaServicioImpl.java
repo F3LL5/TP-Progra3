@@ -5,8 +5,8 @@ import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CuentaBancariaDTO;
 import com.owo.TP_prg3.Clases.CuentaBancaria.dto.UpdateCuentaBancariaDTO;
 import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancaria;
 import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancariaRepositorio;
-import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
-import com.owo.TP_prg3.Clases.Entidad.modelo.EntidadRepositorio;
+import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
+import com.owo.TP_prg3.Clases.Persona.modelo.PersonaRepositorio;
 import com.owo.TP_prg3.Excepciones.ConflictoDeDatosException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
@@ -24,13 +24,13 @@ public class CuentaBancariaServicioImpl implements CuentaBancariaServicio {
     @Autowired
     private CuentaBancariaRepositorio cuentaBancariaRepositorio;
     @Autowired
-    private EntidadRepositorio entidadRepositorio;
+    private PersonaRepositorio entidadRepositorio;
 
     //Conversion
     private CuentaBancariaDTO convertirA_DTO(CuentaBancaria cuentaBancaria) {
         return new CuentaBancariaDTO(
                 cuentaBancaria.getCuentaBancariaId(),
-                cuentaBancaria.getEntidad() != null ? cuentaBancaria.getEntidad().getEntidad_id() : null,
+                cuentaBancaria.getPersona() != null ? cuentaBancaria.getPersona().getPersona_id() : null,
                 cuentaBancaria.getSaldo()
         );
     }
@@ -40,7 +40,7 @@ public class CuentaBancariaServicioImpl implements CuentaBancariaServicio {
 
         entidadRepositorio.findById(cuentaBancariaDTO.getEntidadId())
                 .ifPresentOrElse(
-                        cuentaBancaria::setEntidad,
+                        cuentaBancaria::setPersona,
                         () -> { throw new RecursoNoEncontradoException("Entidad con ID " + cuentaBancariaDTO.getEntidadId() + " no encontrada."); }
                 );
 
@@ -66,7 +66,7 @@ public class CuentaBancariaServicioImpl implements CuentaBancariaServicio {
 
     @Override
     public CuentaBancariaDTO createCuentaBancaria(CreateCuentaBancariaDTO createCuentaBancariaDTO) {
-        Entidad entidadAsociada = entidadRepositorio.findById(createCuentaBancariaDTO.getEntidadId())
+        Persona entidadAsociada = entidadRepositorio.findById(createCuentaBancariaDTO.getEntidadId())
                 .orElseThrow(() -> new RecursoNoEncontradoException("No existe entidad con ID proporcionado."));
 
         int edad = entidadAsociada.getEdad();
@@ -96,7 +96,7 @@ public class CuentaBancariaServicioImpl implements CuentaBancariaServicio {
                     if (updateCuentaBancariaDTO.getEntidadId() != null) {
                         entidadRepositorio.findById(updateCuentaBancariaDTO.getEntidadId())
                                 .ifPresentOrElse(
-                                        cuentaBancaria::setEntidad,
+                                        cuentaBancaria::setPersona,
                                         () -> { throw new RecursoNoEncontradoException("Entidad con ID " + updateCuentaBancariaDTO.getEntidadId() + " no encontrada."); }
                                 );
                     }
@@ -128,7 +128,7 @@ public class CuentaBancariaServicioImpl implements CuentaBancariaServicio {
         }
 
         return cuentaBancariaRepositorio.findAll().stream()
-                .filter(cuenta -> cuenta.getEntidad() != null && cuenta.getEntidad().getEntidad_id().equals(entidadId))
+                .filter(cuenta -> cuenta.getPersona() != null && cuenta.getPersona().getPersona_id().equals(entidadId))
                 .findFirst()
                 .map(this::convertirA_DTO)
                 .or(() -> {

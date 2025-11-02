@@ -1,6 +1,7 @@
 package com.owo.TP_prg3.Clases.User.modelo;
 
-import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
+import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -26,6 +27,6 @@ public class Usuario {
 
     // Relación uno a uno: Un Usuario corresponde a una y solo una Entidad.
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "entidad_id", referencedColumnName = "entidad_id")
-    private Entidad entidad;
+    @JoinColumn(name = "persona_id", referencedColumnName = "persona_id")
+    private Persona entidad;
 }

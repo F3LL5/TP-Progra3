@@ -21,7 +21,8 @@ public class ProductoControlador implements I_Controlador<ProductoDTO, FormProdu
     @Override
     @GetMapping
     public ResponseEntity<Set<ProductoDTO>> obtenerTodos(){
-        return ResponseEntity.ok(productoServicio.obtenerTodos());
+        Set<ProductoDTO> productos = productoServicio.obtenerTodos();
+        return ResponseEntity.ok(productos);
     }
 
     @Override

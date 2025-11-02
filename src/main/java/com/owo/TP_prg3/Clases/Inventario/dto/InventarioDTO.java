@@ -2,12 +2,9 @@ package com.owo.TP_prg3.Clases.Inventario.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Data @AllArgsConstructor
 public class InventarioDTO {
 
     private Long inventario_id;

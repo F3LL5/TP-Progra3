@@ -1,15 +1,16 @@
 package com.owo.TP_prg3.Clases.Puesto.service;
 
-import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
 import com.owo.TP_prg3.Excepciones.ConflictoDeDatosException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
+import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
+import com.owo.TP_prg3.Clases.Persona.modelo.PersonaRepositorio;
 import com.owo.TP_prg3.Clases.Puesto.dto.CreatePuestoDTO;
 import com.owo.TP_prg3.Clases.Puesto.dto.PuestoDTO;
 import com.owo.TP_prg3.Clases.Puesto.dto.UpdatePuestoDTO;
 import com.owo.TP_prg3.Clases.Puesto.modelo.Puesto;
 import com.owo.TP_prg3.Clases.Puesto.modelo.PuestoRepositorio;
-import com.owo.TP_prg3.Clases.Entidad.modelo.EntidadRepositorio; // Para inyectar el repositorio de Entidad
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +28,7 @@ public class PuestoServicioImpl implements PuestoServicio {
     @Autowired
     private PuestoRepositorio puestoRepositorio;
     @Autowired
-    private EntidadRepositorio entidadRepositorio; // Necesario para buscar la entidad dueña
+    private PersonaRepositorio entidadRepositorio; // Necesario para buscar la entidad dueña
 
 
     private PuestoDTO convertirA_DTO(Puesto puesto) {
@@ -35,7 +36,7 @@ public class PuestoServicioImpl implements PuestoServicio {
                         puesto.getPuestoId(),
                         puesto.getNombre(),
                 puesto.getComision(),
-                puesto.getDuenio() != null ? puesto.getDuenio().getEntidad_id() : null
+                puesto.getDuenio() != null ? puesto.getDuenio().getPersona_id() : null
                 );
     }
 
@@ -71,7 +72,7 @@ public class PuestoServicioImpl implements PuestoServicio {
     @Override
     @Transactional
     public PuestoDTO createPuesto(CreatePuestoDTO createPuestoDTO) {
-        Entidad entidadAsociada = entidadRepositorio.findById(createPuestoDTO.getDuenioId())
+        Persona entidadAsociada = entidadRepositorio.findById(createPuestoDTO.getDuenioId())
                 .orElseThrow(() -> new RecursoNoEncontradoException("No existe entidad con ID proporcionado."));
 
         int edad = entidadAsociada.getEdad();
@@ -114,7 +115,7 @@ public class PuestoServicioImpl implements PuestoServicio {
                         if (updatePuestoDTO.getDuenioId() == 0) {
                             puesto.setDuenio(null);
                         } else {
-                            Entidad duenio = entidadRepositorio.findById(updatePuestoDTO.getDuenioId())
+                            Persona duenio = entidadRepositorio.findById(updatePuestoDTO.getDuenioId())
                                     .orElseThrow(() -> new RecursoNoEncontradoException("Entidad (dueño) con ID " + updatePuestoDTO.getDuenioId() + " no encontrada."));
                             puesto.setDuenio(duenio);
                         }
@@ -132,8 +133,8 @@ public class PuestoServicioImpl implements PuestoServicio {
     public Optional<PuestoDTO> updateMiPuesto(Long idPuesto, UpdatePuestoDTO updatePuestoDTO, Long idDuenio) {
         return puestoRepositorio.findById(idPuesto)
                 .map(puesto -> {
-                    Optional<Entidad> optionalEntidad = entidadRepositorio.findById(idDuenio);
-                    Entidad duenioActual = optionalEntidad.orElseThrow(() -> new RecursoNoEncontradoException("Dueño con ID " + idDuenio + " no encontrado."));
+                    Optional<Persona> optionalEntidad = entidadRepositorio.findById(idDuenio);
+                    Persona duenioActual = optionalEntidad.orElseThrow(() -> new RecursoNoEncontradoException("Dueño con ID " + idDuenio + " no encontrado."));
 
                     // Si se ingresó, actualiza el nombre
                     if (updatePuestoDTO.getNombre() != null) {
@@ -145,11 +146,11 @@ public class PuestoServicioImpl implements PuestoServicio {
                         if (Long.valueOf(0).equals(updatePuestoDTO.getDuenioId())) {
                             puesto.setDuenio(null);
                         } else {
-                            Entidad nuevoDuenio = entidadRepositorio.findById(updatePuestoDTO.getDuenioId())
+                            Persona nuevoDuenio = entidadRepositorio.findById(updatePuestoDTO.getDuenioId())
                                     .orElseThrow(() -> new RecursoNoEncontradoException("Entidad (dueño) con ID " + updatePuestoDTO.getDuenioId() + " no encontrada."));
 
                             Optional<PuestoDTO> optionalPuesto = getPuestoByDni(nuevoDuenio.getDni());
-                            if (optionalPuesto.isPresent()) throw new RecursoNoEncontradoException("Dueño con ID " + nuevoDuenio.getEntidad_id() + " ya posee un puesto asignado.");
+                            if (optionalPuesto.isPresent()) throw new RecursoNoEncontradoException("Dueño con ID " + nuevoDuenio.getPersona_id() + " ya posee un puesto asignado.");
 
                             puesto.setDuenio(nuevoDuenio);
                         }
@@ -207,11 +208,11 @@ public class PuestoServicioImpl implements PuestoServicio {
 
     @Override
     public Optional<PuestoDTO> getPuestoByDni(int dni) {
-        List<Entidad> entidades = entidadRepositorio.findAll();
+        List<Persona> entidades = entidadRepositorio.findAll();
 
         Long duenioId = entidades.stream()
                 .filter(entidad -> entidad.getDni().equals(dni))
-                .map(Entidad::getEntidad_id)
+                .map(Persona::getPersona_id)
                 .findFirst()
                 .orElseThrow(() -> new RecursoNoEncontradoException("No se encontró ninguna entidad con DNI " + dni + "."));
 

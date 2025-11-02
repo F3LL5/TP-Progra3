@@ -11,9 +11,10 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
 
 import java.math.BigDecimal;
+
+import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
 
 @Entity
 @Table(name = "cuenta_bancaria")
@@ -26,8 +27,8 @@ public class CuentaBancaria {
     protected Long cuentaBancariaId;
 
     @ManyToOne
-    @JoinColumn(name = "entidad_id", referencedColumnName = "entidad_id")
-    protected Entidad entidad;
+    @JoinColumn(name = "persona_id", referencedColumnName = "persona_id")
+    protected Persona persona;
 
     @Column(nullable = false, precision = 10, scale = 2)
     protected BigDecimal saldo;

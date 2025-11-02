@@ -57,7 +57,7 @@ create table if not exists lotes (
 	lote_id bigint auto_increment primary key,
     cantidadDisponible int not null,
 	costoUnitario decimal not null,
-	fechaIngreso date,
+	fechaIngreso date not null,
 	producto_id bigint not null
 	foreign key(producto_id) references productos(producto_id)
 	on delete cascade

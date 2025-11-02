@@ -47,7 +47,7 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
         return new DetallePedidoDTO(
                 detallePedido.getDetallePedidoId(),
                 detallePedido.getPedido() != null ? detallePedido.getPedido().getPedidoId() : null, // Obtener ID del pedido
-                detallePedido.getProducto() != null ? detallePedido.getProducto().getProducto_id() : null,
+                detallePedido.getProducto() != null ? detallePedido.getProducto().getProductoId() : null,
                 detallePedido.getCantidad(),
                 detallePedido.getPrecioTotal()
         );
@@ -215,7 +215,7 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
                     Integer diferenciaCantidad = detallePedidoModificado.getCantidad() - cantidadAnterior;
                     if (diferenciaCantidad != 0) {
                         actualizarStockInventarioPuesto(
-                                detallePedidoModificado.getProducto().getProducto_id(),
+                                detallePedidoModificado.getProducto().getProductoId(),
                                 detallePedidoModificado.getPedido().getPuestoId(),
                                 diferenciaCantidad,
                                 detallePedido.getPedido().getTransaccion().getTipo()
@@ -235,7 +235,7 @@ public class DetallePedidoServicioImpl implements DetallePedidoServicio {
         if (optionalDetallePedido.isPresent()) {
             DetallePedido detallePedidoToDelete = optionalDetallePedido.get();
             Long pedidoId = detallePedidoToDelete.getPedido().getPedidoId();
-            Long itemId = detallePedidoToDelete.getProducto().getProducto_id();
+            Long itemId = detallePedidoToDelete.getProducto().getProductoId();
             Long puestoId = detallePedidoToDelete.getPedido().getPuestoId();
             Integer cantidadEliminada = detallePedidoToDelete.getCantidad();
             TipoTransaccion tipoTransaccion = detallePedidoToDelete.getPedido().getTransaccion().getTipo();

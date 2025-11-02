@@ -1,9 +1,8 @@
 package com.owo.TP_prg3.Clases.User.service;
 
 
-import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
-import com.owo.TP_prg3.Clases.Entidad.modelo.EntidadRepositorio;
-import com.owo.TP_prg3.Clases.Entidad.modelo.RolEntidad;
+import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
+import com.owo.TP_prg3.Clases.Persona.modelo.PersonaRepositorio;
 import com.owo.TP_prg3.Clases.User.dto.CreateUsuarioDTO;
 import com.owo.TP_prg3.Clases.User.dto.UsuarioDTO;
 import com.owo.TP_prg3.Clases.User.modelo.RolUsuario;
@@ -25,7 +24,7 @@ public class UsuarioServicio {
     private UsuarioRepositorio usuarioRepositorio;
 
     @Autowired
-    private EntidadRepositorio entidadRepositorio;
+    private PersonaRepositorio entidadRepositorio;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -35,7 +34,7 @@ public class UsuarioServicio {
         return new UsuarioDTO(
                 usuario.getId(),
                 usuario.getRol(),
-                usuario.getEntidad().getEntidad_id(),
+                usuario.getEntidad().getPersona_id(),
                 usuario.getDni()
         );
     }
@@ -43,14 +42,14 @@ public class UsuarioServicio {
     //Metodos
     public Usuario crearUsuario(CreateUsuarioDTO dto) {
         // 1. Verificar que la entidad exista
-        Entidad entidadAsociada = entidadRepositorio.findByDni(dto.getDni())
+        Persona entidadAsociada = entidadRepositorio.findByDni(dto.getDni())
                 .orElseThrow(() -> new RecursoNoEncontradoException("No existe una entidad con el DNI proporcionado."));
 
-        // 2. Verificar que la entidad tenga un tipo válido para crear un usuario
-        RolEntidad tipo = entidadAsociada.getRolEntidad();
-        if (tipo != RolEntidad.DUENO_PUESTO && tipo != RolEntidad.ADMIN) {
-            throw new IngresoInvalidoException("No se puede crear un usuario para una entidad de tipo " + tipo);
-        }
+        // // 2. Verificar que la entidad tenga un tipo válido para crear un usuario
+        // RolEntidad tipo = entidadAsociada.getRolEntidad();
+        // if (tipo != RolEntidad.DUENO_PUESTO && tipo != RolEntidad.ADMIN) {
+        //     throw new IngresoInvalidoException("No se puede crear un usuario para una entidad de tipo " + tipo);
+        // }
 
         // 3. Verificar que no exista ya un usuario con ese DNI
         if (usuarioRepositorio.existsByDni(dto.getDni())) {
@@ -62,12 +61,13 @@ public class UsuarioServicio {
         nuevoUsuario.setPassword(passwordEncoder.encode(dto.getPassword())); // Codificar contraseña
         nuevoUsuario.setEntidad(entidadAsociada);
 
-        // 4. Asignar rol basado en el rol de la entidad
-        if (tipo == RolEntidad.ADMIN) {
-            nuevoUsuario.setRol(RolUsuario.ROLE_ADMIN);
-        } else {
-            nuevoUsuario.setRol(RolUsuario.ROLE_DUENO_PUESTO);
-        }
+        // // 4. Asignar rol basado en el rol de la entidad
+        // if (tipo == RolEntidad.ADMIN) {
+        //     nuevoUsuario.setRol(RolUsuario.ROLE_ADMIN);
+        // } else {
+        //     nuevoUsuario.setRol(RolUsuario.ROLE_DUENO_PUESTO);
+        // }
+        nuevoUsuario.setRol(RolUsuario.ROLE_ADMIN);
 
         return usuarioRepositorio.save(nuevoUsuario);
     }

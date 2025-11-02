@@ -104,7 +104,7 @@ public class PedidoServicioImpl implements PedidoServicio {
         transaccion.setMonto(BigDecimal.ZERO);
 
         CuentaBancaria cuentaDuenio=cuentaBancariaRepositorio.findAll().stream()
-                .filter(cuentaBancaria -> cuentaBancaria.getEntidad().getEntidad_id().equals(createPedidoDTO2.getIdEntidad()))
+                .filter(cuentaBancaria -> cuentaBancaria.getPersona().getPersona_id().equals(createPedidoDTO2.getIdEntidad()))
                 .findFirst()
                 .orElseThrow();
 
@@ -284,9 +284,9 @@ public class PedidoServicioImpl implements PedidoServicio {
         String cliente;
 
         if (transaccion.getTipo() == TipoTransaccion.VENTA) {
-            cliente = transaccion.getCuentaDestino().getEntidad().getNombre();
+            cliente = transaccion.getCuentaDestino().getPersona().getNombre();
         } else {
-            cliente = transaccion.getCuentaOrigen().getEntidad().getNombre();
+            cliente = transaccion.getCuentaOrigen().getPersona().getNombre();
         }
 
         List<DetallePedido> detalles = detallePedidoRepositorio.findByPedido(pedido);

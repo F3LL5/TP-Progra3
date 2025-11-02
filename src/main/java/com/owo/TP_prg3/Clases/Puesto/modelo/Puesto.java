@@ -11,9 +11,10 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.owo.TP_prg3.Clases.Entidad.modelo.Entidad;
 
 import java.math.BigDecimal;
+
+import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
 
 @Entity
 @Table(name = "tienda")
@@ -29,8 +30,8 @@ public class Puesto {
     protected String nombre;
 
     @ManyToOne
-    @JoinColumn(name = "duenio_id", referencedColumnName = "entidad_id")
-    protected Entidad duenio;
+    @JoinColumn(name = "persona_id", referencedColumnName = "persona_id")
+    protected Persona duenio;
 
     @Column(nullable = false)
     protected BigDecimal comision;

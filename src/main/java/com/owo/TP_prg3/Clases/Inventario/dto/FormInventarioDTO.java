@@ -22,6 +22,7 @@ public class FormInventarioDTO {
 
     //Constructor default para productos
     public FormInventarioDTO(Long producto_id){
+        this.producto_id = producto_id;
         cantidad = 0;
         stockMin = 0;
         precioVenta = BigDecimal.ZERO;

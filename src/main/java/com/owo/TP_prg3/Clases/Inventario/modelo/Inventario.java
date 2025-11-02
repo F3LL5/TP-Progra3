@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "inventarios")
-@Data @AllArgsConstructor @DynamicUpdate
+@Data @AllArgsConstructor @NoArgsConstructor @DynamicUpdate
 public class Inventario {
 
     @Id
@@ -19,12 +19,12 @@ public class Inventario {
     protected Integer cantidad;
 
     @Column(name = "producto_id", nullable = false, updatable = false)
-    protected Long producto_id;
+    protected Long productoId;
 
-    @Column(name = "stock_min", nullable = false)
+    @Column(name = "stock_min")
     protected Integer stockMin;
 
-    @Column(name = "precio_venta", nullable = false, precision = 10, scale = 2)
+    @Column(name = "precio_venta", precision = 10, scale = 2)
     protected BigDecimal precioVenta;
 
     @Column(name = "costo_adquisicion", nullable = false, precision = 10, scale = 2)
