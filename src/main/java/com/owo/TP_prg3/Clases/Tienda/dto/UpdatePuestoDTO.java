@@ -1,7 +1,7 @@
-package com.owo.TP_prg3.Clases.Puesto.dto;
+package com.owo.TP_prg3.Clases.Tienda.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -13,16 +13,14 @@ import java.math.BigDecimal;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreatePuestoDTO {
-    @NotBlank(message = "El nombre es obligatorio.")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class UpdatePuestoDTO {
     @Size(max = 100, message = "El nombre no debe pasar los 100 caracteres.")
     protected String nombre;
 
-    @NotNull(message = "El ID del dueño es obligatorio.")
-    @Positive(message = "El ID del dueño debe ser un número positivo.")
+    @Min(value = 0, message = "La comisión debe ser un número positivo o 0.")
     protected Long duenioId;
 
-    @NotNull(message = "La comisión es obligatoria.")
     @Positive(message = "La comisión debe ser un número positivo.")
     protected BigDecimal comision;
 }

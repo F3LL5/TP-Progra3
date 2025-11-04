@@ -50,7 +50,7 @@ create table if not exists duenios(
     on update cascade
 );
 
-create table if not exists tienda (
+create table if not exists tiendas (
 	tienda_id bigint auto_increment primary key,
     nombre varchar(100) not null,
     direccion varchar(100) not null,
@@ -79,7 +79,8 @@ create table if not exists inventario(
 
 create table if not exists cuenta_bancarias(
 	cuenta_bancaria_id bigint auto_increment primary key,
-	duenio_id bigint not null,
+	tienda_id bigint not null,
+	cbu bigint not null,
 	saldo decimal not null
 );
 

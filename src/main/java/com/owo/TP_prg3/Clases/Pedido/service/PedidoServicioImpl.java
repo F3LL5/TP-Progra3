@@ -6,10 +6,10 @@ import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedido;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedidoRepositorio;
 import com.owo.TP_prg3.Clases.DetallePedido.service.DetallePedidoServicioImpl;
 import com.owo.TP_prg3.Clases.Pedido.dto.*;
-import com.owo.TP_prg3.Clases.Puesto.modelo.PuestoRepositorio;
 import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
 import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
 import com.owo.TP_prg3.Clases.Pedido.modelo.PedidoRepositorio;
+import com.owo.TP_prg3.Clases.Tienda.modelo.TiendaRepositorio;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.TipoTransaccion;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.Transaccion;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.TransaccionRepositorio;
@@ -37,7 +37,7 @@ public class PedidoServicioImpl implements PedidoServicio {
     @Autowired
     private CuentaBancariaRepositorio cuentaBancariaRepositorio;
     @Autowired
-    private PuestoRepositorio puestoRepositorio;
+    private TiendaRepositorio puestoRepositorio;
 
     @Autowired
     private DetallePedidoServicioImpl detallePedidoServicio;
@@ -103,16 +103,16 @@ public class PedidoServicioImpl implements PedidoServicio {
         transaccion.setTipo(TipoTransaccion.valueOf(createPedidoDTO2.getTipoTransaccion()));
         transaccion.setMonto(BigDecimal.ZERO);
 
-        CuentaBancaria cuentaDuenio=cuentaBancariaRepositorio.findAll().stream()
-                .filter(cuentaBancaria -> cuentaBancaria.getPersona().getPersonaId().equals(createPedidoDTO2.getIdEntidad()))
-                .findFirst()
-                .orElseThrow();
+        // CuentaBancaria cuentaDuenio=cuentaBancariaRepositorio.findAll().stream()
+        //         .filter(cuentaBancaria -> cuentaBancaria.getPersona().getPersonaId().equals(createPedidoDTO2.getIdEntidad()))
+        //         .findFirst()
+        //         .orElseThrow();
 
         if(cuentaBancariaRepositorio.findById(createPedidoDTO2.getIdCuentaDestino()).isEmpty() && createPedidoDTO2.getIdCuentaDestino()!= 0) {
             throw new RecursoNoEncontradoException("Transaccion con ID " + createPedidoDTO2.getIdCuentaDestino() + " no encontrada.");
         }
 
-        transaccion.setCuentaOrigen(cuentaDuenio);
+        // transaccion.setCuentaOrigen(cuentaDuenio);
         if (createPedidoDTO2.getIdCuentaDestino() == 0)transaccion.setCuentaDestino(new CuentaBancaria());
         else transaccion.setCuentaDestino(cuentaBancariaRepositorio.findById(createPedidoDTO2.getIdCuentaDestino()).get());
         transaccion.setFecha(LocalDateTime.now());
@@ -283,24 +283,24 @@ public class PedidoServicioImpl implements PedidoServicio {
         String tipoTransaccion = transaccion.getTipo().toString();
         String cliente;
 
-        if (transaccion.getTipo() == TipoTransaccion.VENTA) {
-            cliente = transaccion.getCuentaDestino().getPersona().getNombre();
-        } else {
-            cliente = transaccion.getCuentaOrigen().getPersona().getNombre();
-        }
+        // if (transaccion.getTipo() == TipoTransaccion.VENTA) {
+        //     cliente = transaccion.getCuentaDestino().getPersona().getNombre();
+        // } else {
+        //     cliente = transaccion.getCuentaOrigen().getPersona().getNombre();
+        // }
 
-        List<DetallePedido> detalles = detallePedidoRepositorio.findByPedido(pedido);
+        // List<DetallePedido> detalles = detallePedidoRepositorio.findByPedido(pedido);
 
-        List<FacturaDTO> facturaItems = detalles.stream().map(det -> {
-            String nombre = det.getProducto().getNombre();
-            int cantidad = det.getCantidad();
-            BigDecimal subtotal = det.getPrecioTotal();
-            double precioUnitario =subtotal.doubleValue() / cantidad;
+        // List<FacturaDTO> facturaItems = detalles.stream().map(det -> {
+        //     String nombre = det.getProducto().getNombre();
+        //     int cantidad = det.getCantidad();
+        //     BigDecimal subtotal = det.getPrecioTotal();
+        //     double precioUnitario =subtotal.doubleValue() / cantidad;
 
-            return new FacturaDTO(cliente, tipoTransaccion, nombre, cantidad, precioUnitario, subtotal);
-        }).toList();
+        //     return new FacturaDTO(cliente, tipoTransaccion, nombre, cantidad, precioUnitario, subtotal);
+        // }).toList();
 
-        return facturaItems;
+        return null;
     }
 
 }

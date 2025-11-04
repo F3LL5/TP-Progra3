@@ -6,7 +6,7 @@ import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
 import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
 import com.owo.TP_prg3.Clases.Pedido.modelo.PedidoRepositorio;
-import com.owo.TP_prg3.Clases.Puesto.modelo.PuestoRepositorio;
+import com.owo.TP_prg3.Clases.Tienda.modelo.TiendaRepositorio;
 import com.owo.TP_prg3.Clases.Transaccion.dto.CreateTransaccionDTO;
 import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
 import com.owo.TP_prg3.Clases.Transaccion.dto.UpdateTransaccionDTO;
@@ -35,7 +35,7 @@ public class TransaccionServicioImpl implements TransaccionServicio {
     @Autowired
     private CuentaBancariaRepositorio cuentaBancariaRepositorio;
     @Autowired
-    private PuestoRepositorio puestoRepositorio;
+    private TiendaRepositorio puestoRepositorio;
     @Autowired
     private PedidoRepositorio pedidoRepositorio;
 

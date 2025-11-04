@@ -1,35 +1,29 @@
 package com.owo.TP_prg3.Clases.CuentaBancaria.modelo;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
+import com.owo.TP_prg3.Clases.Tienda.modelo.Tienda;
 
-import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
 
 @Entity
-@Table(name = "cuenta_bancaria")
+@Table(name = "cuenta_bancarias")
 @Data @AllArgsConstructor @NoArgsConstructor
 public class CuentaBancaria {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "cuenta_bancaria_id")
-    protected Long cuentaBancariaId;
+    private Long cuentaBancariaId;
 
-    @ManyToOne
-    @JoinColumn(name = "persona_id", referencedColumnName = "persona_id")
-    protected Persona persona;
+    @Column(name = "cbu", nullable = false, unique = true)
+    private Integer cbu;
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    protected BigDecimal saldo;
+    @Column(name = "saldo", nullable = false)
+    private BigDecimal saldo;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tienda_id", nullable = false)
+    private Tienda tienda;
 }

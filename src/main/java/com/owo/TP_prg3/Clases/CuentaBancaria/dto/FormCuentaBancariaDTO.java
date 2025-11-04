@@ -6,11 +6,11 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 @Data @NoArgsConstructor @AllArgsConstructor
-public class CuentaBancariaDTO {
-
-    protected Long cuentaBancariaId;
+public class FormCuentaBancariaDTO {
 
     private Integer cbu;
 
     protected BigDecimal saldo;
+
 }
+

@@ -1,4 +1,4 @@
-package com.owo.TP_prg3.Clases.Puesto.dto;
+package com.owo.TP_prg3.Clases.Tienda.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

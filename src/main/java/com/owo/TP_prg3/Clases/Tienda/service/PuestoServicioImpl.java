@@ -1,15 +1,15 @@
-package com.owo.TP_prg3.Clases.Puesto.service;
+package com.owo.TP_prg3.Clases.Tienda.service;
 
 import com.owo.TP_prg3.Excepciones.ConflictoDeDatosException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
 import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
 import com.owo.TP_prg3.Clases.Persona.modelo.PersonaRepositorio;
-import com.owo.TP_prg3.Clases.Puesto.dto.CreatePuestoDTO;
-import com.owo.TP_prg3.Clases.Puesto.dto.PuestoDTO;
-import com.owo.TP_prg3.Clases.Puesto.dto.UpdatePuestoDTO;
-import com.owo.TP_prg3.Clases.Puesto.modelo.Puesto;
-import com.owo.TP_prg3.Clases.Puesto.modelo.PuestoRepositorio;
+import com.owo.TP_prg3.Clases.Tienda.dto.CreatePuestoDTO;
+import com.owo.TP_prg3.Clases.Tienda.dto.PuestoDTO;
+import com.owo.TP_prg3.Clases.Tienda.dto.UpdatePuestoDTO;
+import com.owo.TP_prg3.Clases.Tienda.modelo.Tienda;
+import com.owo.TP_prg3.Clases.Tienda.modelo.TiendaRepositorio;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,12 +26,12 @@ import java.util.stream.Stream;
 public class PuestoServicioImpl implements PuestoServicio {
 
     @Autowired
-    private PuestoRepositorio puestoRepositorio;
+    private TiendaRepositorio puestoRepositorio;
     @Autowired
     private PersonaRepositorio entidadRepositorio; // Necesario para buscar la entidad dueña
 
 
-    private PuestoDTO convertirA_DTO(Puesto puesto) {
+    private PuestoDTO convertirA_DTO(Tienda puesto) {
         return new PuestoDTO(
                         puesto.getPuestoId(),
                         puesto.getNombre(),
@@ -40,8 +40,8 @@ public class PuestoServicioImpl implements PuestoServicio {
                 );
     }
 
-    private Puesto convertirA_Puesto(CreatePuestoDTO puestoDTO) {
-        Puesto puesto = new Puesto();
+    private Tienda convertirA_Puesto(CreatePuestoDTO puestoDTO) {
+        Tienda puesto = new Tienda();
         puesto.setNombre(puestoDTO.getNombre());
         puesto.setComision(puestoDTO.getComision());
 
@@ -90,8 +90,8 @@ public class PuestoServicioImpl implements PuestoServicio {
         if (existe.isPresent()) {
             throw new ConflictoDeDatosException("Entidad de dicho ID ya posee un puesto");
         }
-        Puesto puesto = convertirA_Puesto(createPuestoDTO);
-        Puesto savedPuesto = puestoRepositorio.save(puesto);
+        Tienda puesto = convertirA_Puesto(createPuestoDTO);
+        Tienda savedPuesto = puestoRepositorio.save(puesto);
         return convertirA_DTO(savedPuesto);
     }
 
@@ -121,7 +121,7 @@ public class PuestoServicioImpl implements PuestoServicio {
                         }
                     }
 
-                    Puesto updatedPuesto = puestoRepositorio.save(puesto);
+                    Tienda updatedPuesto = puestoRepositorio.save(puesto);
                     return convertirA_DTO(updatedPuesto);
                 }).or(() -> {
                     throw new RecursoNoEncontradoException("Puesto con ID " + id + " no encontrado.");
@@ -163,7 +163,7 @@ public class PuestoServicioImpl implements PuestoServicio {
                     puesto.setComision(updatePuestoDTO.getComision());
 
                     // Guarda los cambios y devuelve el registro modificado
-                    Puesto actualizado = puestoRepositorio.save(puesto);
+                    Tienda actualizado = puestoRepositorio.save(puesto);
                     return convertirA_DTO(actualizado);
                 }).or(() -> {
                     throw new RecursoNoEncontradoException("Puesto con ID " + idPuesto + " no encontrado.");

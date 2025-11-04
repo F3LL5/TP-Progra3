@@ -1,9 +1,10 @@
-package com.owo.TP_prg3.Clases.Puesto.service;
+package com.owo.TP_prg3.Clases.Tienda.service;
 
-import com.owo.TP_prg3.Clases.Puesto.dto.CreatePuestoDTO;
-import com.owo.TP_prg3.Clases.Puesto.dto.PuestoDTO;
-import com.owo.TP_prg3.Clases.Puesto.dto.UpdatePuestoDTO;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.owo.TP_prg3.Clases.Tienda.dto.CreatePuestoDTO;
+import com.owo.TP_prg3.Clases.Tienda.dto.PuestoDTO;
+import com.owo.TP_prg3.Clases.Tienda.dto.UpdatePuestoDTO;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,10 +1,11 @@
-package com.owo.TP_prg3.Clases.Puesto.controlador;
+package com.owo.TP_prg3.Clases.Tienda.controlador;
 
+import com.owo.TP_prg3.Clases.Tienda.dto.CreatePuestoDTO;
+import com.owo.TP_prg3.Clases.Tienda.dto.PuestoDTO;
+import com.owo.TP_prg3.Clases.Tienda.dto.UpdatePuestoDTO;
+import com.owo.TP_prg3.Clases.Tienda.service.PuestoServicioImpl;
 import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
-import com.owo.TP_prg3.Clases.Puesto.dto.CreatePuestoDTO;
-import com.owo.TP_prg3.Clases.Puesto.dto.PuestoDTO;
-import com.owo.TP_prg3.Clases.Puesto.dto.UpdatePuestoDTO;
-import com.owo.TP_prg3.Clases.Puesto.service.PuestoServicioImpl;
+
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
