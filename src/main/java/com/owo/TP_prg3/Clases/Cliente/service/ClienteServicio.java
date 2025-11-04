@@ -52,7 +52,7 @@ public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaD
     }
 
     @Override
-    public Optional<ClienteDTO> buscarPorID(Long id) {
+    public Optional<ClienteDTO> buscarPorID( Long id) {
         return clienteRepositorio.findById(id).map(this::convertir_a_DTO);
     }
 
@@ -62,7 +62,6 @@ public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaD
 
     @Override
     public Set<ClienteDTO> filtrar(String campo, Object valor) {
-
         Stream<Cliente> stream = clienteRepositorio.findAll().stream();
 
         Predicate<Cliente> filtro;

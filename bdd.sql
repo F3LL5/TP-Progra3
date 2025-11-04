@@ -3,8 +3,8 @@ use c5_proyecto_comercio;
 
 create table if not exists usuarios(
 	usuario_id bigint auto_increment primary key,
-	email varchar(100) not null,
-	contraseña varchar(100) not null unique
+	email varchar(100) not null unique,
+	contraseña varchar(100) not null 
 );
 
 create table if not exists personas(
@@ -33,7 +33,19 @@ create table if not exists proveedores(
 create table if not exists empleados(
 	empleado_id bigint auto_increment primary key,
     persona_id bigint not null,
-    foreign key(persona_id) references personas(persona_id)
+	usuario_id bigint not null,
+    foreign key(persona_id) references personas(persona_id),
+    foreign key(usuario_id) references usuarios(usuario_id)
+    on delete cascade
+    on update cascade
+);
+
+create table if not exists duenios(
+	duenio_id bigint auto_increment primary key,
+    persona_id bigint not null,
+	usuario_id bigint not null,
+    foreign key(persona_id) references personas(persona_id),
+    foreign key(usuario_id) references usuarios(usuario_id)
     on delete cascade
     on update cascade
 );

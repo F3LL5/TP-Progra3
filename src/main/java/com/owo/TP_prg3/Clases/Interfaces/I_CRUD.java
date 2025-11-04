@@ -5,8 +5,8 @@ import java.util.Set;
 
 public interface I_CRUD<T, Dto, FormDto> {
     // Conversión
-    T convertir_a_Obj(FormDto pDTO);
-    Dto convertir_a_DTO(T producto);
+    T convertir_a_Obj(FormDto fDTO);
+    Dto convertir_a_DTO(T t);
     
     // Lectura
     Set<Dto> obtenerTodos();
@@ -15,7 +15,7 @@ public interface I_CRUD<T, Dto, FormDto> {
     Set<Dto> ordenar(String campo, boolean ascendente);
 
     // Escritura
-    boolean cargar(FormDto createItemDTO);
-    boolean actualizar(Long id, FormDto formItemDTO);
+    boolean cargar(FormDto createDTO);
+    boolean actualizar(Long id, FormDto updateDTO);
     boolean eliminar(Long id);
 }
