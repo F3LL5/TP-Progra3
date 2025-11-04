@@ -3,7 +3,10 @@ package com.owo.TP_prg3.Clases.CuentaBancaria.modelo;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+
 import java.math.BigDecimal;
 import com.owo.TP_prg3.Clases.Tienda.modelo.Tienda;
 
@@ -23,6 +26,7 @@ public class CuentaBancaria {
     @Column(name = "saldo", nullable = false)
     private BigDecimal saldo;
 
+    @EqualsAndHashCode.Exclude @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tienda_id", nullable = false)
     private Tienda tienda;

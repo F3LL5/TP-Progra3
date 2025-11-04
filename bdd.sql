@@ -55,8 +55,8 @@ create table if not exists tiendas (
     nombre varchar(100) not null,
     direccion varchar(100) not null,
 	caja decimal not null,
-	persona_id bigint not null,
-	foreign key(persona_id) references personas(persona_id)
+	duenio_id bigint not null,
+	foreign key(duenio_id) references duenios(duenio_id)
 );
 
 create table if not exists productos (
@@ -81,7 +81,8 @@ create table if not exists cuenta_bancarias(
 	cuenta_bancaria_id bigint auto_increment primary key,
 	tienda_id bigint not null,
 	cbu bigint not null,
-	saldo decimal not null
+	saldo decimal not null,
+	foreign key(tienda_id) references tiendas(tienda_id)
 );
 
 create table if not exists transacciones(
