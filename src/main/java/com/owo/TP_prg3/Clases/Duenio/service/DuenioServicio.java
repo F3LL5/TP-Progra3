@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.owo.TP_prg3.Clases.Duenio.dto.DuenioDTO;
@@ -23,6 +24,9 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
     @Autowired
     private DuenioRepositorio duenioRepositorio;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     // Conversion
     @Override
     public Duenio convertir_a_Obj(FormDuenioDTO fDTO) {
@@ -30,7 +34,7 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
         duenio.setNombre(fDTO.getNombre());
         duenio.setEdad(fDTO.getEdad());
         duenio.setDni(fDTO.getDni());
-        Usuario usuario = new Usuario(null, fDTO.getEmail(), fDTO.getContraseña(), RolUsuario.ROLE_DUENIO);
+        Usuario usuario = new Usuario(null, fDTO.getEmail(), passwordEncoder.encode(fDTO.getContraseña()), RolUsuario.ROLE_DUENIO);
         duenio.setUsuario(usuario);
         return duenio;
     }

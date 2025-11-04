@@ -31,7 +31,7 @@ public class UsuarioServicio implements I_CRUD<Usuario, UsuarioDTO, FormUsuarioD
         return new Usuario(
             null,
             fDTO.getEmail(),
-            passwordEncoder.encode(fDTO.getContraseña()),
+            fDTO.getContraseña(),
             fDTO.getRol()
         );
     }

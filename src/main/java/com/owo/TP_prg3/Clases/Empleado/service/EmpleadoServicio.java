@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.owo.TP_prg3.Clases.Empleado.dto.EmpleadoDTO;
 import com.owo.TP_prg3.Clases.Empleado.dto.FormEmpleadoDTO;
@@ -22,6 +23,9 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
     @Autowired
     private EmpleadoRepositorio empleadoRepositorio;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     // Conversion
     @Override
     public Empleado convertir_a_Obj(FormEmpleadoDTO fDTO) {
@@ -29,7 +33,7 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
         empleado.setNombre(fDTO.getNombre());
         empleado.setEdad(fDTO.getEdad());
         empleado.setDni(fDTO.getDni());
-        Usuario usuario = new Usuario(null, fDTO.getEmail(), fDTO.getContraseña(), RolUsuario.ROLE_EMPLEADO);
+        Usuario usuario = new Usuario(null, fDTO.getEmail(), passwordEncoder.encode(fDTO.getContraseña()), RolUsuario.ROLE_EMPLEADO);
         empleado.setUsuario(usuario);
         return empleado;
     }
