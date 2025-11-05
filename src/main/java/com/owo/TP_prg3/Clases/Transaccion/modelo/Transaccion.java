@@ -4,10 +4,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancaria;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import com.owo.TP_prg3.Clases.Enum.TipoTransaccion;
 
 @Entity
 @Table(name = "transacciones")
@@ -16,24 +15,22 @@ public class Transaccion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "transaccion_id")
-    protected Long transaccionId;
+    private Long transaccion_id;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 100)
-    protected TipoTransaccion tipo;
+    @Column(nullable = false)
+    private TipoTransaccion tipo;
 
     @Column(nullable = false)
-    protected LocalDateTime fecha;
+    private LocalDateTime fecha = LocalDateTime.now(); 
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    protected BigDecimal monto;
+    @Column(nullable = false)
+    private BigDecimal monto;
 
-    @ManyToOne
-    @JoinColumn(name = "cuenta_origen_id", referencedColumnName = "cuenta_bancaria_id")
-    protected CuentaBancaria cuentaOrigen;
+    // ID del MetodoDePago origen. Puede ser NULL si es un ingreso externo (ej. venta en efectivo).
+    @Column(name = "origen_id", nullable = true) 
+    private Long origen_id; 
 
-    @ManyToOne
-    @JoinColumn(name = "cuenta_destino_id", referencedColumnName = "cuenta_bancaria_id")
-    protected CuentaBancaria cuentaDestino;
+    @Column(name = "destino_id", nullable = false)
+    private Long destino_id;
 }

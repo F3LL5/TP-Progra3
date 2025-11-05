@@ -24,14 +24,18 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(authorize -> authorize
+                        
+                        .requestMatchers(
+                            "/api/lotes/**", // Acceso público a Lotes
+                            "/api/auth/login",
+                            "/api/auth/register"
+                        ).permitAll()
 
-                        // ADMIN: acceso total a cualquier endpoint.
-                        .requestMatchers("/api/**").hasRole("ADMIN")
-
-                        // Permite el acceso al endpoint de perfil para cualquier usuario autenticado
                         .requestMatchers("/api/auth/profile").authenticated()
 
-                        // Denegar cualquier otra solicitud que no haya sido permitida explícitamente
+                        .requestMatchers("/api/**").hasRole("ADMIN")
+
+                        .anyRequest().denyAll()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -45,7 +49,7 @@ public class SecurityConfig {
         authenticationManagerBuilder.userDetailsService(customUserDetailsService).passwordEncoder(passwordEncoder);
         return authenticationManagerBuilder.build();
     }
-
+    
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

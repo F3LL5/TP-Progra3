@@ -61,7 +61,7 @@ public class InventarioControlador implements I_Controlador<InventarioDTO, FormI
 
     // --- Métodos PUT ---
     @Override
-    @PatchMapping("/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<Boolean> actualizar(@PathVariable Long id, @RequestBody FormInventarioDTO dto){
         return ResponseEntity.ok(inventarioServicio.actualizar(id, dto));
     }

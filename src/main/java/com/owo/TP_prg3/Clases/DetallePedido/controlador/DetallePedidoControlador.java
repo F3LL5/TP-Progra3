@@ -1,117 +1,74 @@
 package com.owo.TP_prg3.Clases.DetallePedido.controlador;
 
-import com.owo.TP_prg3.Clases.DetallePedido.dto.CreateDetallePedidoDTO;
-import com.owo.TP_prg3.Clases.DetallePedido.dto.DetallePedidoDTO;
-import com.owo.TP_prg3.Clases.DetallePedido.dto.UpdateDetallePedidoDTO;
-import com.owo.TP_prg3.Clases.DetallePedido.service.DetallePedidoServicioImpl;
-import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.owo.TP_prg3.Clases.Interfaces.I_Controlador;
+import com.owo.TP_prg3.Clases.DetallePedido.dto.DetallePedidoDTO;
+import com.owo.TP_prg3.Clases.DetallePedido.dto.FormDetallePedidoDTO;
+import com.owo.TP_prg3.Clases.DetallePedido.service.DetallePedidoServicio;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 
 @RestController
-@RequestMapping("/api/detalles-pedido")
-public class DetallePedidoControlador {
+@RequestMapping("/api/detallespedido")
+public class DetallePedidoControlador implements I_Controlador<DetallePedidoDTO, FormDetallePedidoDTO> {
 
     @Autowired
-    private DetallePedidoServicioImpl detallePedidoServicio;
+    private DetallePedidoServicio detallePedidoServicio;
 
-    ///  GET ------------------------------------------------------------------------------------
+    // --- Métodos GET ---
+    @Override
     @GetMapping
-    public ResponseEntity<List<DetallePedidoDTO>> getAllDetallesPedido(){
-        List<DetallePedidoDTO> detallesPedido = detallePedidoServicio.getAllDetallesPedido();
-        return ResponseEntity.ok(detallesPedido);
+    public ResponseEntity<Set<DetallePedidoDTO>> obtenerTodos(){
+        return ResponseEntity.ok(detallePedidoServicio.obtenerTodos());
     }
 
+    @Override
     @GetMapping("/{id}")
-    public ResponseEntity<DetallePedidoDTO> getDetallePedidoById(@PathVariable Long id){
-        DetallePedidoDTO detallePedidoDTO = detallePedidoServicio.getDetallePedidoById(id)
-                .orElse(null);
-        return ResponseEntity.ok(detallePedidoDTO);
+    public ResponseEntity<DetallePedidoDTO> buscarPorID(@PathVariable Long id) {
+        return ResponseEntity.ok(detallePedidoServicio.buscarPorID(id).orElse(null));
+    }
+    
+    // Nuevo endpoint: Buscar detalles por ID de Pedido
+    @GetMapping("/porpedido/{pedidoId}")
+    public ResponseEntity<Set<DetallePedidoDTO>> buscarPorPedidoId(@PathVariable Long pedidoId) {
+        return ResponseEntity.ok(detallePedidoServicio.buscarPorPedidoId(pedidoId));
     }
 
-    @GetMapping("/pedido/{pedidoId}/puesto/{puestoId}")
-    public ResponseEntity<List<DetallePedidoDTO>> getDetallesPedidoByPedidoIdAndPuestoId(@PathVariable Long pedidoId, @PathVariable Long puestoId) {
-        List<DetallePedidoDTO> detallesPedido = detallePedidoServicio.getDetallesPedidoByPedidoIdAndPuestoId(pedidoId, puestoId);
-        return ResponseEntity.ok(detallesPedido);
+    @Override
+    @GetMapping("/filtrar")
+    public ResponseEntity<Set<DetallePedidoDTO>> filtrar(@RequestParam String campo, @RequestParam Object valor) {
+        return ResponseEntity.ok(detallePedidoServicio.filtrar(campo, valor));
     }
 
-    @GetMapping("/{pedidoId}/total-venta")
-    public ResponseEntity<BigDecimal> getTotalSalesForPedido(@PathVariable Long pedidoId) {
-        BigDecimal totalVenta = detallePedidoServicio.calcularTotalVenta(pedidoId);
-        return ResponseEntity.ok(totalVenta);
+    @Override
+    @GetMapping("/ordenar")
+    public ResponseEntity<Set<DetallePedidoDTO>> ordenar(@RequestParam String campo, @RequestParam boolean ascendente) {
+        return ResponseEntity.ok(detallePedidoServicio.ordenar(campo, ascendente));
     }
 
-    ///  POST --------------------------------------------------------------------------------------
+    // --- Métodos POST ---
+    @Override
     @PostMapping
-    public ResponseEntity<DetallePedidoDTO> createDetallePedido(@Valid @RequestBody CreateDetallePedidoDTO createDetallePedidoDTO){
-        DetallePedidoDTO newEntidad = detallePedidoServicio.createDetallePedido(createDetallePedidoDTO);
-        return new ResponseEntity<>(newEntidad, HttpStatus.CREATED);
+    public ResponseEntity<Boolean> cargar(@RequestBody FormDetallePedidoDTO dto) {
+        boolean exito = detallePedidoServicio.cargar(dto);
+        if (exito) return ResponseEntity.status(HttpStatus.CREATED).body(true); 
+        else return ResponseEntity.badRequest().body(false);
     }
 
-    @PostMapping("/puesto/{puestoId}")
-    public ResponseEntity<DetallePedidoDTO> createDetallePedidoForPuesto(
-            @PathVariable Long puestoId,
-            @Valid @RequestBody CreateDetallePedidoDTO createDetallePedidoDTO) {
-        DetallePedidoDTO newDetallePedido = detallePedidoServicio.createDetallePedidoForPuesto(puestoId, createDetallePedidoDTO);
-        return new ResponseEntity<>(newDetallePedido, HttpStatus.CREATED);
+    // --- Métodos PUT ---
+    @Override
+    @PutMapping("/{id}")
+    public ResponseEntity<Boolean> actualizar(@PathVariable Long id, @RequestBody FormDetallePedidoDTO dto) {
+        return ResponseEntity.ok(detallePedidoServicio.actualizar(id, dto)); 
     }
 
-    ///  DELETE -----------------------------------------------------------------------------------------------------
+    // --- Métodos DELETE ---
+    @Override
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> deleteDetallePedido(@PathVariable Long id){
-        detallePedidoServicio.deleteDetallePedido(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Boolean> eliminar(@PathVariable Long id) {
+        return ResponseEntity.ok(detallePedidoServicio.eliminar(id));
     }
-
-    @DeleteMapping("/{id}/puesto/{puestoId}")
-    public Optional<DetallePedidoDTO> deleteDetallePedidoForPuesto(@PathVariable Long id, @PathVariable Long puestoId){
-        // Primero, verifica si el detalle de pedido pertenece al puesto
-        Optional<DetallePedidoDTO> detalle = detallePedidoServicio.getDetallePedidoByIdAndPuestoId(id, puestoId);
-        if (detalle.isPresent()) {
-            if(detallePedidoServicio.deleteDetallePedido(id))
-            {
-                return detalle;
-            };
-        }
-        throw new RecursoNoEncontradoException("DetallePedido con ID " + id + " no encontrado para eliminar.");
-    }
-
-
-    ///  PATCH ----------------------------------------------------------------------------------------------------------
-    @PatchMapping("/{id}/puesto/{puestoId}")
-    public Optional<DetallePedidoDTO> updateDetallePedidoForPuesto(@PathVariable Long id, @PathVariable Long puestoId, @Valid @RequestBody UpdateDetallePedidoDTO updateDetallePedidoDTO){
-        // Primero, verifica si el detalle de pedido pertenece al puesto
-        Optional<DetallePedidoDTO> detalle = detallePedidoServicio.getDetallePedidoByIdAndPuestoId(id, puestoId);
-        if (detalle.isPresent()) {
-            return detallePedidoServicio.updateDetallePedido(id, updateDetallePedidoDTO);
-        }
-        return Optional.empty();
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<DetallePedidoDTO> updateDetallePedido(@PathVariable Long id, @Valid @RequestBody UpdateDetallePedidoDTO updateDetallePedidoDTO){
-        DetallePedidoDTO detallePedidoDTO = detallePedidoServicio.updateDetallePedido(id, updateDetallePedidoDTO)
-                .orElseThrow(null);
-        return ResponseEntity.ok(detallePedidoDTO);
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

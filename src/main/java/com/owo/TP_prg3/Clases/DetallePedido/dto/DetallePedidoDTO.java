@@ -4,19 +4,16 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
+import com.owo.TP_prg3.Clases.Producto.dto.ProductoDTO;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Data @NoArgsConstructor @AllArgsConstructor
 public class DetallePedidoDTO {
 
     protected Long detallePedidoId;
 
-    protected Long pedidoId;
-
-    protected Long itemId;
+    protected ProductoDTO productoDTO;
 
     protected Integer cantidad;
 
-    protected BigDecimal precioTotal;
+    protected BigDecimal subtotal;
 }

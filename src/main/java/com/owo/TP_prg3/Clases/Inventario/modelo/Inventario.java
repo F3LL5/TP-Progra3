@@ -15,10 +15,10 @@ public class Inventario {
     @Column(name = "inventario_id")
     protected Long inventario_id;
 
-    @Column(nullable = false, updatable = false)
+    @Column(name = "cantidad", updatable = true)
     protected Integer cantidad;
 
-    @Column(name = "producto_id", nullable = false, updatable = false)
+    @Column(name = "producto_id", nullable = false, updatable = true)
     protected Long productoId;
 
     @Column(name = "stock_min")

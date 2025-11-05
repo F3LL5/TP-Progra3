@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class FormProductoDTO {
 
-    protected String nombre;
+    private String nombre;
 
-    protected String categoria;
+    private String categoria;
 
 }

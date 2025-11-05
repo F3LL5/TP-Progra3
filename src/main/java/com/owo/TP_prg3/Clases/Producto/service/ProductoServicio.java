@@ -9,6 +9,7 @@ import com.owo.TP_prg3.Clases.Producto.modelo.Producto;
 import com.owo.TP_prg3.Clases.Producto.modelo.ProductoRepositorio;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import java.util.Comparator;
 import java.util.Optional;
@@ -24,6 +25,7 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
     @Autowired
     private ProductoRepositorio productoRepositorio;
     @Autowired
+    @Lazy
     private InventarioServicio inventarioService;
 
     // CONVERSION ------------------------------------------------------------------------------------------------------------------------------------------------
@@ -47,6 +49,21 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
 
     // METODOS ------------------------------------------------------------------------------------------------------------------------------------------------
     
+    @Transactional
+    public Producto obtenerOCrearProducto(FormProductoDTO dto) {
+        Optional<Producto> existente = productoRepositorio.findByNombreAndCategoria(dto.getNombre(), dto.getCategoria());
+        
+        if (existente.isPresent()) {
+            return existente.get(); 
+        } else {
+            if (this.cargar(dto)) {
+                return productoRepositorio.findByNombreAndCategoria(dto.getNombre(), dto.getCategoria())
+                       .orElseThrow(() -> new RuntimeException("Error al crear el producto."));
+            }
+            throw new RuntimeException("Error al intentar cargar el nuevo producto.");
+        }
+    }
+
     // GET
     @Override
     public Set<ProductoDTO> obtenerTodos() {

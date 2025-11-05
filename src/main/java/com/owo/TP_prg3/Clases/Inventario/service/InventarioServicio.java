@@ -6,11 +6,10 @@ import com.owo.TP_prg3.Clases.Inventario.dto.InventarioDTO;
 import com.owo.TP_prg3.Clases.Inventario.modelo.Inventario;
 import com.owo.TP_prg3.Clases.Inventario.modelo.InventarioRepositorio;
 import com.owo.TP_prg3.Clases.Lote.service.LoteServicio;
-
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.Optional;
@@ -27,6 +26,7 @@ public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, For
     private InventarioRepositorio inventarioRepositorio;
 
     @Autowired
+    @Lazy
     private LoteServicio loteServicio;
 
     // CONVERSION -----------------------------------------------------------------------------------------------------------------------------------------------
@@ -49,11 +49,11 @@ public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, For
     public Inventario convertir_a_Obj(FormInventarioDTO formDTO) {
         return new Inventario(
             null, //El id lo autogenera la base de datos
-            0, // La cantidad no es editable mediante formulario
+            formDTO.getCantidad(),
             formDTO.getProducto_id(),
             formDTO.getStockMin(),
             formDTO.getPrecioVenta(),
-            BigDecimal.ZERO //El costo se calcula en un metodo
+            formDTO.getCostoAdquisicion()
         );
     }
 
@@ -142,7 +142,8 @@ public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, For
         Inventario inventario = optional.get();
         inventario.setPrecioVenta(updateDTO.getPrecioVenta());
         inventario.setStockMin(updateDTO.getStockMin());
-        //No se puede modificar ni el costo ni la cantidad
+        inventario.setCantidad(updateDTO.getCantidad());
+        inventario.setCostoAdquisicion(updateDTO.getCostoAdquisicion());
 
         inventarioRepositorio.save(inventario);
         return true;
@@ -157,5 +158,54 @@ public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, For
         inventario.setCantidad(inventario.getCantidad() + delta);
         inventarioRepositorio.save(inventario);
     }
+
+
+    public BigDecimal obtenerPrecioVentaPorProductoId(Long productoId) {
+    Inventario inventario = inventarioRepositorio.findByProductoId(productoId)
+        .orElseThrow(() -> new RuntimeException("Precio de Venta no encontrado: Producto ID " + productoId + " no tiene registro de Inventario."));
+    
+    if (inventario.getPrecioVenta() == null) {
+        throw new RuntimeException("El Producto ID " + productoId + " no tiene un precio de venta configurado.");
+    }
+    
+    return inventario.getPrecioVenta();
+    }
+
+    /* 
+        Calcula y actualiza el Costo Promedio Ponderado (CPP). 
+        CPP = [ (Stock Anterior * Costo Anterior) + (Cantidad Nueva * Costo Nuevo) ] / (Stock Total Final) 
+    */
+    @Transactional
+    public void actualizarCostoPromedioPonderado(Long productoId, BigDecimal costoNuevo, int cantidadNueva) {
+        Inventario inventario = inventarioRepositorio.findByProductoId(productoId).orElseThrow(() -> new RuntimeException("Inventario no encontrado para Producto ID: " + productoId));
+
+        BigDecimal stockTotalFinal = new BigDecimal(inventario.getCantidad()); 
+        
+        // Si el stock total es igual a la nueva cantidad, significa que era cero antes.
+        if (stockTotalFinal.compareTo(new BigDecimal(cantidadNueva)) == 0) {
+            inventario.setCostoAdquisicion(costoNuevo);
+            inventarioRepositorio.save(inventario);
+            return;
+        }
+
+        // Stock y Costo Anteriores
+        BigDecimal stockAntesDeEstaEntrada = stockTotalFinal.subtract(new BigDecimal(cantidadNueva));
+        BigDecimal costoAnterior = inventario.getCostoAdquisicion() != null ? inventario.getCostoAdquisicion() : BigDecimal.ZERO;
+
+        // 1. Stock Anterior * Costo Anterior
+        BigDecimal valorAnterior = stockAntesDeEstaEntrada.multiply(costoAnterior);
+
+        // 2. Cantidad Nueva * Costo Nuevo
+        BigDecimal valorNuevo = costoNuevo.multiply(new BigDecimal(cantidadNueva));
+
+        // 3. Valorización Total
+        BigDecimal valorTotal = valorAnterior.add(valorNuevo);
+
+        // 4. Nuevo CPP: Valor Total / Stock Total Final
+        BigDecimal nuevoCPP = valorTotal.divide(stockTotalFinal, 2, java.math.RoundingMode.HALF_UP);
+        
+        inventario.setCostoAdquisicion(nuevoCPP);
+        inventarioRepositorio.save(inventario);
+    } 
 
 }

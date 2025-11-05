@@ -10,6 +10,8 @@ import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.owo.TP_prg3.Clases.Caja.Caja;
 import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancaria;
 import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancariaRepositorio;
 import com.owo.TP_prg3.Clases.Duenio.modelo.Duenio;
@@ -97,7 +99,7 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
         Tienda tienda = optional.get();
         tienda.setNombre(updateDTO.getNombre());
         tienda.setDireccion(updateDTO.getDireccion());
-        //TODO tienda.setCaja()
+        tienda.setCaja(new Caja(updateDTO.getCaja()));
         
         Integer duenioDni = updateDTO.getDuenioDni();
         tienda.setDuenio(duenioRepositorio.findByPersona_Dni(duenioDni).orElse(new Duenio(null, new Persona(), new Usuario())));

@@ -1,116 +1,67 @@
 package com.owo.TP_prg3.Clases.Transaccion.controlador;
 
-import com.owo.TP_prg3.Excepciones.RecursoNoEncontradoException;
-import com.owo.TP_prg3.Clases.Transaccion.dto.CreateTransaccionDTO;
+import com.owo.TP_prg3.Clases.Interfaces.I_Controlador;
+import com.owo.TP_prg3.Clases.Transaccion.dto.FormTransaccionDTO;
 import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
-import com.owo.TP_prg3.Clases.Transaccion.dto.UpdateTransaccionDTO;
-import com.owo.TP_prg3.Clases.Transaccion.service.TransaccionServicioImpl;
-import jakarta.validation.Valid;
+import com.owo.TP_prg3.Clases.Transaccion.service.TransaccionServicio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/transacciones")
-public class TransaccionControlador {
+public class TransaccionControlador implements I_Controlador<TransaccionDTO, FormTransaccionDTO> {
 
     @Autowired
-    private TransaccionServicioImpl transaccionServicio;
+    private TransaccionServicio transaccionServicio;
 
+    // --- Métodos GET (Lectura) ---
+    @Override
     @GetMapping
-    public ResponseEntity<List<TransaccionDTO>> getAllTransacciones(){
-        List<TransaccionDTO> transacciones = transaccionServicio.getAllTransacciones();
-        return ResponseEntity.ok(transacciones);
+    public ResponseEntity<Set<TransaccionDTO>> obtenerTodos() {
+        return ResponseEntity.ok(transaccionServicio.obtenerTodos());
     }
 
+    @Override
     @GetMapping("/{id}")
-    public ResponseEntity<TransaccionDTO> getCuentaBancariaById(@PathVariable Long id) {
-        return transaccionServicio.getTransaccionById(id)
-                .map(ResponseEntity::ok)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Transacción con ID " + id + " no encontrada."));
+    public ResponseEntity<TransaccionDTO> buscarPorID(@PathVariable Long id) {
+        return ResponseEntity.ok(transaccionServicio.buscarPorID(id).orElse(null));
     }
 
+    @Override
+    @GetMapping("/filtrar")
+    public ResponseEntity<Set<TransaccionDTO>> filtrar(@RequestParam String campo, @RequestParam Object valor) {
+        return ResponseEntity.ok(transaccionServicio.filtrar(campo, valor));
+    }
+
+    @Override
+    @GetMapping("/ordenar")
+    public ResponseEntity<Set<TransaccionDTO>> ordenar(@RequestParam String campo, @RequestParam boolean ascendente) {
+        return ResponseEntity.ok(transaccionServicio.ordenar(campo, ascendente));
+    }
+
+    // --- Métodos POST (Creación) ---
+    @Override
     @PostMapping
-    public ResponseEntity<TransaccionDTO> createTransaccion(@Valid @RequestBody CreateTransaccionDTO createTransaccionDTO){
-        TransaccionDTO transaccionDTO = transaccionServicio.createTransaccion(createTransaccionDTO);
-        return new ResponseEntity<>(transaccionDTO, HttpStatus.CREATED);
+    public ResponseEntity<Boolean> cargar(@RequestBody FormTransaccionDTO dto) {
+        boolean exito = transaccionServicio.cargar(dto);
+        if (exito) return ResponseEntity.status(HttpStatus.CREATED).body(true);
+        else return ResponseEntity.badRequest().body(false);
     }
 
+    // --- Métodos PUT (Actualización) ---
+    @Override
+    @PutMapping("/{id}")
+    public ResponseEntity<Boolean> actualizar(@PathVariable Long id, @RequestBody FormTransaccionDTO dto) {
+        return ResponseEntity.ok(transaccionServicio.actualizar(id, dto));
+    }
+
+    // --- Métodos DELETE (Eliminación) ---
+    @Override
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteCuentaBancaria(@PathVariable Long id){
-        transaccionServicio.deleteTransaccion(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Boolean> eliminar(@PathVariable Long id) {
+        return ResponseEntity.ok(transaccionServicio.eliminar(id));
     }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<TransaccionDTO> updateTransaccion(@PathVariable Long id, @Valid @RequestBody UpdateTransaccionDTO updateTransaccionDTO) {
-        TransaccionDTO updated = transaccionServicio.updateTransaccion(id, updateTransaccionDTO)
-                .orElse(null);
-        return ResponseEntity.ok(updated);
-    }
-
-    @GetMapping("/filtrarYOrdenar")
-    public ResponseEntity<List<TransaccionDTO>> filtrarYOrdenar(
-            @RequestParam(required = false) String tipo_transaccion,
-            @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false) String sortDir
-
-    ) {
-        List<TransaccionDTO> transaccion = transaccionServicio.filtrarYOrdenar(tipo_transaccion, sortBy, sortDir);
-        return ResponseEntity.ok(transaccion);
-    }
-
-
-    @GetMapping("/{id}/puesto/{puestoId}")
-    public ResponseEntity<TransaccionDTO> getTransaccionByIdAndPuestoId(@PathVariable Long id, @PathVariable Long puestoId) {
-        TransaccionDTO transaccionDTO = transaccionServicio.getTransaccionByIdAndPuestoId(id, puestoId)
-                .orElse(null);
-        return ResponseEntity.ok(transaccionDTO);
-    }
-
-    @GetMapping("/puesto/{puestoId}/filtrarYOrdenar")
-    public ResponseEntity<List<TransaccionDTO>> filtrarYOrdenarTransaccionesByPuestoId(
-            @PathVariable Long puestoId,
-            @RequestParam(required = false) String tipo_transaccion,
-            @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false) String sortDir
-    ) {
-        List<TransaccionDTO> transacciones = transaccionServicio.filtrarYOrdenarTransaccionesByPuestoId(
-                puestoId, tipo_transaccion, sortBy, sortDir
-        );
-        return ResponseEntity.ok(transacciones);
-    }
-
-    @GetMapping("/puesto/{puestoId}")
-    public ResponseEntity<List<TransaccionDTO>> getTransaccionesByPuestoId(@PathVariable Long puestoId) {
-        List<TransaccionDTO> transacciones = transaccionServicio.getTransaccionesByPuestoId(puestoId);
-        return ResponseEntity.ok(transacciones);
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

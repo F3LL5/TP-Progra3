@@ -1,11 +1,9 @@
 package com.owo.TP_prg3.Clases.Pedido.dto;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Set;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.FormDetallePedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.modelo.TipoPedido;
-import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
+import com.owo.TP_prg3.Clases.Transaccion.dto.FormTransaccionDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,13 +11,14 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PedidoDTO {
+public class FormPedidoDTO {
 
-    private Long pedidoId;
-    private TransaccionDTO transaccion;
     private TipoPedido tipo;
-    private LocalDateTime fechaCreacion;
-    private BigDecimal total;
+
     private Long remitenteId;
+    
+    private FormTransaccionDTO transaccion; 
+
     private Set<FormDetallePedidoDTO> detalles;
+
 }

@@ -3,13 +3,14 @@ use c5_proyecto_comercio;
 
 create table if not exists usuarios(
 	usuario_id bigint auto_increment primary key,
-	email varchar(100) not null unique,
-	contraseña varchar(100) not null 
+	email varchar(255) not null unique,
+	contraseña varchar(255) not null,
+	rol enum ('ROLE_ADMIN','ROLE_DUENIO','ROLE_EMPLEADO') not null
 );
 
 create table if not exists personas(
 	persona_id bigint auto_increment primary key,
-	nombre varchar(100) not null,
+	nombre varchar(255) not null,
     edad int not null,
 	dni int not null unique
 );
@@ -52,26 +53,26 @@ create table if not exists duenios(
 
 create table if not exists tiendas (
 	tienda_id bigint auto_increment primary key,
-    nombre varchar(100) not null,
-    direccion varchar(100) not null,
-	caja decimal not null,
+    nombre varchar(255) not null,
+    direccion varchar(255) not null,
+	caja decimal(38,2) not null,
 	duenio_id bigint not null,
 	foreign key(duenio_id) references duenios(duenio_id)
 );
 
 create table if not exists productos (
 	producto_id bigint auto_increment primary key,
-    nombre varchar(100) not null,
-    categoria varchar(100) not null
+    nombre varchar(255) not null,
+    categoria varchar(255) not null
 );
 
-create table if not exists inventario(
+create table if not exists inventarios(
 	inventario_id bigint auto_increment primary key,
 	cantidad int not null,
-	producto_id bigint not null,
-	stock_min int not null,
-	precio_venta decimal not null,
-	costo_adquisicion decimal not null,
+	producto_id bigint not null unique,
+	stock_min int,
+	precio_venta decimal(10,2) null,
+	costo_adquisicion decimal(10,2) not null,
 	foreign key(producto_id) references productos(producto_id)
 	on delete cascade
 	on update cascade
@@ -81,33 +82,54 @@ create table if not exists cuenta_bancarias(
 	cuenta_bancaria_id bigint auto_increment primary key,
 	tienda_id bigint not null,
 	cbu bigint not null,
-	saldo decimal not null,
+	saldo decimal(38,2) not null,
 	foreign key(tienda_id) references tiendas(tienda_id)
 );
 
 create table if not exists transacciones(
 	transaccion_id bigint auto_increment primary key,
 	tipo varchar(100) not null,
-	fecha timestamp default current_timestamp,
-	monto decimal not null,
+	fecha datetime default current_timestamp,
+	monto decimal(38,2) not null,
 	origen_id bigint,
 	destino_id bigint not null
 );
 
 create table if not exists pedidos (
 	pedido_id bigint auto_increment primary key,
+    cliente_id bigint,
 	transaccion_id bigint,
-	foreign key(transaccion_id) references transacciones(transaccion_id)
+	tipo enum ('COMPRA','VENTA') not null,
+	remitente_id bigint not null,
+	fecha_creacion datetime not null,
+	total decimal(10,2) not null,
+	foreign key(transaccion_id) references transacciones(transaccion_id),
+    foreign key(cliente_id) references clientes(cliente_id)
 );
 
+-- Tabla para los detalles de cada pedido
 create table if not exists detalles_pedido (
 	detalle_pedido_id bigint auto_increment primary key,
     pedido_id bigint not null,
-	producto_id bigint not null,
-	cantidad int not null,
-	sub_total decimal not null,
-	foreign key(pedido_id) references pedidos(pedido_id),
-	foreign key(producto_id) references productos(producto_id)
-	on delete cascade
-	on update cascade
+    producto_id bigint not null,
+    cantidad int not null,
+    subtotal decimal(10,2) not null,
+    foreign key(pedido_id) references pedidos(pedido_id)
+    on delete cascade
+    on update cascade,
+    foreign key(producto_id) references productos(producto_id)
+    on delete restrict
+    on update cascade
 );
+
+create table if not exists lotes (
+	lote_id bigint not null auto_increment,
+	producto_id bigint not null,
+    cantidad_disponible integer not null,
+    costo_unitario decimal(38,2) not null,
+    fecha_ingreso date,
+    primary key (lote_id),
+    foreign key(producto_id) references productos(producto_id)
+    on delete restrict
+    on update cascade
+)

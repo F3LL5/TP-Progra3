@@ -8,12 +8,16 @@ import java.time.LocalDateTime;
 import com.owo.TP_prg3.Clases.Enum.TipoTransaccion;
 
 @Data @NoArgsConstructor @AllArgsConstructor
-public class TransaccionDTO {
-
-    private Long transaccion_id;
+public class FormTransaccionDTO {
+    
     private TipoTransaccion tipo;
-    private LocalDateTime fecha;
+    
+    // La fecha puede ser opcional, el servicio pondrá LocalDateTime.now() si es null.
+    private LocalDateTime fecha; 
+    
     private BigDecimal monto;
+    
     private Long origen_id; 
-    private Long destino_id; 
+
+    private Long destino_id;
 }
