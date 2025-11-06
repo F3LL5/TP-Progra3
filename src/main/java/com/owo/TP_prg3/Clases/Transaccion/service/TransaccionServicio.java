@@ -8,6 +8,8 @@ import com.owo.TP_prg3.Clases.Transaccion.modelo.TransaccionRepositorio;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.Optional;
@@ -27,13 +29,16 @@ public class TransaccionServicio implements I_CRUD<Transaccion, TransaccionDTO, 
     @Override
     public Transaccion convertir_a_Obj(FormTransaccionDTO fDTO) {
         Transaccion t = new Transaccion();
-        t.setTransaccion_id(null);
+        
         t.setTipo(fDTO.getTipo());
-        // Si no se proporciona fecha, usa la actual
+        
+        // 1. Inicialización de campos obligatorios (fecha) con valores seguros
         t.setFecha(fDTO.getFecha() != null ? fDTO.getFecha() : LocalDateTime.now());
-        t.setMonto(fDTO.getMonto());
-        t.setOrigen_id(fDTO.getOrigen_id());
-        t.setDestino_id(fDTO.getDestino_id());
+        t.setMonto(BigDecimal.ZERO);
+
+        t.setOrigen_id(fDTO.getOrigen_id()); 
+        t.setDestino_id(fDTO.getDestino_id()); 
+        
         return t;
     }
 
@@ -112,15 +117,18 @@ public class TransaccionServicio implements I_CRUD<Transaccion, TransaccionDTO, 
         if (optional.isEmpty()) return false;
 
         Transaccion transaccion = optional.get();
-        transaccion.setTipo(updateDTO.getTipo());
-        transaccion.setMonto(updateDTO.getMonto());
-        transaccion.setFecha(updateDTO.getFecha() != null ? updateDTO.getFecha() : transaccion.getFecha());
-        transaccion.setOrigen_id(updateDTO.getOrigen_id());
-        transaccion.setDestino_id(updateDTO.getDestino_id());
+        
+        if (updateDTO.getTipo() != null) transaccion.setTipo(updateDTO.getTipo());
+        
+        if (updateDTO.getFecha() != null) transaccion.setFecha(updateDTO.getFecha());
+        
+        if (updateDTO.getOrigen_id() != null) transaccion.setOrigen_id(updateDTO.getOrigen_id());
+        
+        if (updateDTO.getDestino_id() != null) transaccion.setDestino_id(updateDTO.getDestino_id());
 
         transaccionRepositorio.save(transaccion);
         return true;
-    }
+}
 
     // ELIMINACION (DELETE) ------------------------------------------------------------------------------------------------------------------------------------------------
     @Override

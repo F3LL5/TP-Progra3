@@ -19,6 +19,8 @@ import com.owo.TP_prg3.Clases.Lote.modelo.Lote;
 import com.owo.TP_prg3.Clases.Lote.modelo.LoteRepositorio;
 import com.owo.TP_prg3.Clases.Producto.modelo.Producto;
 import com.owo.TP_prg3.Clases.Producto.service.ProductoServicio;
+import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.StockInsuficienteException;
 
 import jakarta.transaction.Transactional;
 
@@ -184,25 +186,55 @@ public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
     }
 
     @Transactional
-public Lote registrarEntradaStock(Producto producto, int cantidad, BigDecimal costoUnitario) {
-    // 1. Crear el nuevo Lote
-    Lote nuevoLote = new Lote();
-    nuevoLote.setProducto(producto);
-    nuevoLote.setCantidadDisponible(cantidad);
-    nuevoLote.setCostoUnitario(costoUnitario);
-    nuevoLote.setFechaIngreso(LocalDate.now()); 
-    nuevoLote = loteRepositorio.save(nuevoLote); // Guardamos el lote
+    public Lote registrarEntradaStock(Producto producto, int cantidad, BigDecimal costoUnitario) {
+        if (cantidad <= 0) throw new IngresoInvalidoException("La cantidad a ingresar debe ser positiva.");
 
-    // 2. Ajustar stock
-    inventarioServicio.ajustarStock(producto.getProductoId(), cantidad); 
-    
-    // 3. Notificar a InventarioServicio (actualizarCostoAdquisicion) después de recalcular el CPP.
-    inventarioServicio.actualizarCostoPromedioPonderado(
-        producto.getProductoId(), 
-        costoUnitario, 
-        cantidad
-    );
+        // 1. Crear el nuevo Lote
+        Lote nuevoLote = new Lote();
+        nuevoLote.setProducto(producto);
+        nuevoLote.setCantidadDisponible(cantidad);
+        nuevoLote.setCostoUnitario(costoUnitario);
+        nuevoLote.setFechaIngreso(LocalDate.now());
 
-    return nuevoLote;
-}
+        nuevoLote = loteRepositorio.save(nuevoLote); // Guardamos el lote
+
+        // Ajustar stock
+        inventarioServicio.ajustarStock(producto.getProductoId(), cantidad); 
+        
+        // Actualizar el costo
+        inventarioServicio.actualizarCostoPromedioPonderado(producto.getProductoId(), costoUnitario, cantidad);
+
+        return nuevoLote;
+    }
+
+    @Transactional
+    public void registrarSalidaStockFIFO(Long productoId, int cantidadARetirar) {
+        if (cantidadARetirar <= 0) return;
+
+        // 1. Verificar si hay suficiente stock consolidado
+        Integer stockActual = obtenerStockPorProducto(productoId);
+        if (stockActual < cantidadARetirar) throw new StockInsuficienteException("Stock insuficiente. Se solicitó " + cantidadARetirar + " unidades, pero solo hay " + stockActual + " disponibles.");
+
+
+        Set<Lote> lotesFIFO = obtenerLotesDisponiblesFIFO(productoId);
+        int restante = cantidadARetirar;
+
+        // 3. Consumir lotes por orden FIFO
+        for (Lote lote : lotesFIFO) {
+            if (restante <= 0) break; 
+            
+            int cantidadLote = lote.getCantidadDisponible();
+            int cantidadAUsar = Math.min(cantidadLote, restante);
+
+            // Actualizar el lote
+            lote.setCantidadDisponible(cantidadLote - cantidadAUsar);
+            loteRepositorio.save(lote);
+
+            // Reducir la cantidad restante
+            restante -= cantidadAUsar;
+        }
+
+        // Ajustar stock
+        inventarioServicio.ajustarStock(productoId, -cantidadARetirar);
+    }
 }

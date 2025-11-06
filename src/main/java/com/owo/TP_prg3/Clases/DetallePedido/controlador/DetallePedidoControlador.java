@@ -71,4 +71,19 @@ public class DetallePedidoControlador implements I_Controlador<DetallePedidoDTO,
     public ResponseEntity<Boolean> eliminar(@PathVariable Long id) {
         return ResponseEntity.ok(detallePedidoServicio.eliminar(id));
     }
+
+    // LOGICA DE NEGOCIO
+    // Permite agregar un detalle a un Pedido ya existente.
+    @PostMapping("/pedido/{pedidoId}")
+    public ResponseEntity<Boolean> agregarDetalleAPedido(
+        @PathVariable Long pedidoId, 
+        @RequestBody FormDetallePedidoDTO dto) 
+    {
+        // El servicio se encarga de: 
+        // 1. Obtener el Pedido por ID.
+        // 2. Ejecutar la lógica de stock (FIFO) o costo (COMPRA).
+        // 3. Recalcular el total del Pedido y la Transacción asociada.
+        Boolean exito = detallePedidoServicio.agregarDetalleAPedido(pedidoId, dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(exito);
+    }
 }

@@ -1,21 +1,25 @@
 package com.owo.TP_prg3.Clases.Pedido.service;
 
+import com.owo.TP_prg3.Clases.CuentaBancaria.service.CuentaBancariaServicio;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.FormDetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedido;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedidoRepositorio;
+import com.owo.TP_prg3.Clases.DetallePedido.service.DetallePedidoServicio;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 import com.owo.TP_prg3.Clases.Inventario.service.InventarioServicio;
 import com.owo.TP_prg3.Clases.Pedido.dto.*;
 import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
 import com.owo.TP_prg3.Clases.Pedido.modelo.PedidoRepositorio;
-import com.owo.TP_prg3.Clases.Producto.modelo.Producto;
+import com.owo.TP_prg3.Clases.Pedido.modelo.TipoPedido;
 import com.owo.TP_prg3.Clases.Producto.modelo.ProductoRepositorio;
+import com.owo.TP_prg3.Clases.Tienda.service.TiendaServicio;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.Transaccion;
 import com.owo.TP_prg3.Clases.Transaccion.service.TransaccionServicio;
+import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
@@ -32,34 +36,78 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
 
     @Autowired
     PedidoRepositorio pedidoRepositorio;
+    
     @Autowired
     ProductoRepositorio productoRepositorio;
+
     @Autowired
     DetallePedidoRepositorio detallePedidoRepositorio;
+    @Autowired
+    @Lazy
+    DetallePedidoServicio detallePedidoServicio;
+
     @Autowired
     TransaccionServicio transaccionServicio;
     @Autowired
     InventarioServicio inventarioServicio;
+    @Autowired
+    TiendaServicio tiendaServicio;
+    @Autowired
+    CuentaBancariaServicio cuentaBancariaServicio;
 
     //CONVERSION
     private FormDetallePedidoDTO convertirDetalleA_DTO(DetallePedido d) {
+    
+        // Por defecto, el costo de compra es null (VENTA).
+        BigDecimal costoUnitarioCompra = null; 
+
+        // Verificamos si el pedido asociado es de tipo COMPRA.
+        if (d.getPedido() != null && d.getPedido().getTipo() == TipoPedido.COMPRA) {
+            // Si es una COMPRA, el subtotal representa el costo de adquisición.
+            // Lo calculamos (Subtotal / Cantidad).
+            costoUnitarioCompra = d.getSubtotal().divide(
+                new BigDecimal(d.getCantidad()), 
+                4,
+                RoundingMode.HALF_UP
+            );
+        }
+ 
         return new FormDetallePedidoDTO(
-                d.getProducto().getProductoId(),
-                d.getCantidad()
+            d.getProducto().getProductoId(),
+            d.getCantidad(),
+            costoUnitarioCompra
         );
     }
 
     @Override
+    @Transactional
     public Pedido convertir_a_Obj(FormPedidoDTO fDTO) {
+        
+        // 1. Inicializar el Pedido (con total en 0.00)
         Pedido p = new Pedido();
-        p.setPedidoId(null);
         p.setTipo(fDTO.getTipo());
         p.setRemitenteId(fDTO.getRemitenteId());
+        p.setDestinatarioId(fDTO.getDestinatarioId());
+        p.setTotal(BigDecimal.ZERO);
         
-        // 1. Convertir y asignar la Transaccion
+        // 2. Crear la Transaccion base
         Transaccion t = transaccionServicio.convertir_a_Obj(fDTO.getTransaccion());
-        p.setTransaccion(t);
 
+        // 3. Completar el ID faltante (Cliente o Proveedor)
+        if (fDTO.getTipo() == TipoPedido.VENTA) t.setOrigen_id(fDTO.getRemitenteId()); // Origen debe ser el ID del Cliente (RemitenteId).
+        else t.setDestino_id(fDTO.getDestinatarioId());
+        
+        // 4. Conectar la Transacción y guardar el Pedido
+        p.setTransaccion(t);
+        pedidoRepositorio.save(p); 
+        
+        // 5. Cargar Detalles y Recalcular Total (necesario para un Pedido de creación)
+        if (fDTO.getDetalles() != null && !fDTO.getDetalles().isEmpty()) {
+            fDTO.getDetalles().forEach(formDetalle -> {
+                detallePedidoServicio.crearDetalleYAsociar(p, formDetalle);
+            });
+        }
+        
         return p;
     }
 
@@ -136,45 +184,16 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
     @Override
     @Transactional
     public boolean cargar(FormPedidoDTO cDTO) {
+        // 1. Validar
+        if (cDTO.getTipo() == null || cDTO.getRemitenteId() == null || cDTO.getTransaccion() == null) throw new IngresoInvalidoException("El Tipo de Pedido, Remitente y la información base de la Transacción son obligatorios para iniciar un Pedido.");
+        
         Pedido pedido = convertir_a_Obj(cDTO);
-        BigDecimal totalCalculado = BigDecimal.ZERO;
-
-        if (cDTO.getDetalles() != null) {
-            for (FormDetallePedidoDTO detalleDTO : cDTO.getDetalles()) {
-                
-                // 1. Obtener el Producto y verificar si existe
-                Producto producto = productoRepositorio.findById(detalleDTO.getProductoId())
-                    .orElseThrow(() -> new RuntimeException("Producto con ID " + detalleDTO.getProductoId() + " no encontrado."));
-                
-                // 2. Obtener el precio de venta de ese inventario
-                BigDecimal precioUnitario = inventarioServicio.obtenerPrecioVentaPorProductoId(detalleDTO.getProductoId());
-                
-                // 3. Calcula el subtotal
-                BigDecimal subtotalCalculado = precioUnitario
-                    .multiply(new BigDecimal(detalleDTO.getCantidad()))
-                    .setScale(2, RoundingMode.HALF_UP); // Asegurar precisión de 2 decimales
-                
-                DetallePedido detalle = new DetallePedido();
-                detalle.setProducto(producto);
-                detalle.setCantidad(detalleDTO.getCantidad());
-                
-                // 4. Asignar el subtotal calculado
-                detalle.setSubtotal(subtotalCalculado);
-                
-                // 5. Vinculacion bi direccional
-                detalle.setPedido(pedido); 
-                pedido.addDetalle(detalle);
-                
-                // 6. Suma al total
-                totalCalculado = totalCalculado.add(subtotalCalculado);
-            }
-        }
         
-        // 7. Asignar datos generados/calculados por el sistema
+        // 3. Asignar datos generados
         pedido.setFechaCreacion(LocalDateTime.now());
-        pedido.setTotal(totalCalculado);
-        
-        pedidoRepositorio.save(pedido);
+
+
+        recalcularTotal(pedido.getPedidoId());
         return true;
     }
 
@@ -215,18 +234,61 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
         return true;
     }
 
-    public void recalcularTotal(Pedido pedido) {
-        // Si el set de detalles es nulo, o si está vacío, el total es cero.
-        if (pedido.getDetalles() == null || pedido.getDetalles().isEmpty()) {
-            pedido.setTotal(BigDecimal.ZERO);
-        } else {
-            BigDecimal nuevoTotal = pedido.getDetalles().stream()
-                .map(d -> d.getSubtotal() != null ? d.getSubtotal() : BigDecimal.ZERO) 
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-            pedido.setTotal(nuevoTotal);
+    public void recalcularTotal(Long pedidoId) {
+        Pedido pedido = pedidoRepositorio.findById(pedidoId).orElseThrow(() -> new RuntimeException("Pedido no encontrado con ID: " + pedidoId));
+        
+        // 1. Recalcular el total sumando TODOS los subtotales, comenzando desde CERO (BigDecimal.ZERO).
+        BigDecimal nuevoTotal = BigDecimal.ZERO;
+        for (DetallePedido detalle : pedido.getDetalles()) {
+            nuevoTotal = nuevoTotal.add(detalle.getSubtotal());
         }
+        System.out.println(nuevoTotal);
+
+        // 2. Actualizar Pedido.total
+        pedido.setTotal(nuevoTotal);
         pedidoRepositorio.save(pedido);
 
+        // 3. Actualizar Transaccion.monto
+        Transaccion transaccion = pedido.getTransaccion();
+        if (transaccion != null) {
+            if (transaccion.getMonto().compareTo(nuevoTotal) != 0) { 
+                transaccion.setMonto(nuevoTotal);
+            }
+        }
+    }
+
+
+    // FINAL BOSS. Si esto anda bien soy god, el pedido service tiene muchos repos y service que vincular
+    @Transactional
+    public boolean finalizarPedido(Long pedidoId) {
+        // Busca el pedido o lanza excepción
+        Pedido pedido = pedidoRepositorio.findById(pedidoId).orElseThrow(() -> new RuntimeException("Pedido no encontrado con ID: " + pedidoId));
+
+        Transaccion transaccion = pedido.getTransaccion();
+        BigDecimal monto = pedido.getTotal(); 
         
+        // Si el monto no está actualizado, lo actualiza.
+        if (transaccion.getMonto().compareTo(monto) != 0) transaccion.setMonto(monto);
+        
+        // Determina si es VENTA (entra dinero) o COMPRA (sale dinero)
+        boolean esVenta = pedido.getTipo() == TipoPedido.VENTA;
+        
+        // El ID de la Transacción que representa la Caja/Cuenta Bancaria de la Tienda
+        Long metodoPagoId = esVenta ? transaccion.getDestino_id() : transaccion.getOrigen_id();
+        
+        // Mueve el dinero según TipoTransaccion y TipoPedido (Acredita o Debita)
+        switch (transaccion.getTipo()) {
+            case EFECTIVO -> {
+                if (esVenta) tiendaServicio.acreditarMontoCaja(metodoPagoId, monto);
+                else tiendaServicio.debitarMontoCaja(metodoPagoId, monto);
+            }
+            case DEBITO -> {
+                if (esVenta) cuentaBancariaServicio.acreditarMonto(metodoPagoId, monto);
+                else cuentaBancariaServicio.debitarMonto(metodoPagoId, monto);
+            }
+            default -> throw new UnsupportedOperationException("Tipo de Transacción no soportado: " + transaccion.getTipo());
+        }
+
+        return true;
     }
 }

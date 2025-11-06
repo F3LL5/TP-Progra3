@@ -70,4 +70,16 @@ public class PedidoControlador implements I_Controlador<PedidoDTO, FormPedidoDTO
         if (exito) return ResponseEntity.ok(true);
         else return ResponseEntity.notFound().build();
     }
+
+    @PutMapping("/{id}/finalizar")
+    public ResponseEntity<Boolean> finalizarPedido(@PathVariable Long id) {
+        try {
+            boolean exito = pedidoServicio.finalizarPedido(id);
+            if (exito) return ResponseEntity.ok(true);
+            else return ResponseEntity.badRequest().body(false);
+        } catch (Exception e) {
+            System.err.println("Error al finalizar pedido: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+        }
+    }
 }

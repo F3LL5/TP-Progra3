@@ -17,6 +17,8 @@ public class FormPedidoDTO {
 
     private Long remitenteId;
     
+    private Long destinatarioId;
+    
     private FormTransaccionDTO transaccion; 
 
     private Set<FormDetallePedidoDTO> detalles;

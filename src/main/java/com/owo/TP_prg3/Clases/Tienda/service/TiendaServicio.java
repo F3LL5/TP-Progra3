@@ -23,6 +23,7 @@ import com.owo.TP_prg3.Clases.Tienda.dto.TiendaDTO;
 import com.owo.TP_prg3.Clases.Tienda.modelo.Tienda;
 import com.owo.TP_prg3.Clases.Tienda.modelo.TiendaRepositorio;
 import com.owo.TP_prg3.Clases.Usuario.modelo.Usuario;
+import com.owo.TP_prg3.Excepciones.StockInsuficienteException;
 
 @Service
 public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> {
@@ -144,5 +145,37 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
         return stream.sorted(comparador)
                     .map(this::convertir_a_DTO)
                     .collect(Collectors.toSet());
+    }
+
+    @Transactional
+    public void acreditarMontoCaja(Long tiendaId, BigDecimal monto) {
+        if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) return;
+
+        Tienda tienda = tiendaRepositorio.findById(tiendaId).orElseThrow(() -> new RuntimeException("Tienda no encontrada con ID: " + tiendaId));
+
+        Caja caja = tienda.getCaja();
+        
+        // Si la caja es nula, aunque no debería serlo, la re hace
+        if (caja == null) { 
+            caja = new Caja(BigDecimal.ZERO);
+            tienda.setCaja(caja);
+        }
+
+        // Sumar el monto al saldo actual
+        caja.setSaldo(caja.getSaldo().add(monto));
+        tiendaRepositorio.save(tienda);
+    }
+
+    @Transactional
+    public void debitarMontoCaja(Long tiendaId, BigDecimal monto) {
+        if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) return; // Validación
+        Tienda tienda = tiendaRepositorio.findById(tiendaId).orElseThrow(() -> new RuntimeException("Tienda no encontrada con ID: " + tiendaId));
+        Caja caja = tienda.getCaja();
+        
+        if (caja == null) throw new RuntimeException("La Caja de la Tienda no existe para debitar."); // Validación Caja
+        if (caja.getSaldo().compareTo(monto) < 0) throw new StockInsuficienteException("Saldo insuficiente en Caja para la compra."); // Validación Saldo
+
+        caja.setSaldo(caja.getSaldo().subtract(monto)); // Restar monto
+        tiendaRepositorio.save(tienda);
     }
 }
