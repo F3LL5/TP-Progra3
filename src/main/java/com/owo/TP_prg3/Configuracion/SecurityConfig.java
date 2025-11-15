@@ -32,15 +32,14 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(authorize -> authorize
                         
-                        .requestMatchers(
-                            "/api/lotes/**", // Acceso público a Lotes
+                        .requestMatchers( // Acceso público
                             "/api/auth/login",
                             "/api/auth/register"
                         ).permitAll()
 
                         .requestMatchers("/api/auth/profile").authenticated()
 
-                        .requestMatchers("/api/**").hasRole("ADMIN")
+                        .requestMatchers("/api/**").hasAnyRole("ADMIN","DUENIO")
 
                         .anyRequest().denyAll()
                 )
