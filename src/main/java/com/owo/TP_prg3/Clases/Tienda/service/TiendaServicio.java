@@ -10,10 +10,7 @@ import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.owo.TP_prg3.Clases.Caja.Caja;
-import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancaria;
-import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancariaRepositorio;
 import com.owo.TP_prg3.Clases.Duenio.modelo.Duenio;
 import com.owo.TP_prg3.Clases.Duenio.modelo.DuenioRepositorio;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
@@ -32,25 +29,12 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
     private TiendaRepositorio tiendaRepositorio;
     @Autowired
     private DuenioRepositorio duenioRepositorio;
-    @Autowired
-    private CuentaBancariaRepositorio cbRepositorio;
 
     @Override
     public Tienda convertir_a_Obj(FormTiendaDTO tiendaDTO) {
         Tienda tienda = new Tienda();
         tienda.setNombre(tiendaDTO.getNombre());
         tienda.setDireccion(tiendaDTO.getDireccion());
-        
-        //Buscar y asignar la CB
-        Integer cbu = tiendaDTO.getCbu();
-        if (cbu !=null) {
-            Optional<CuentaBancaria> optionalCb = cbRepositorio.findByCbu(cbu);
-            CuentaBancaria cuenta;
-            if (optionalCb.isPresent()) cuenta = optionalCb.get();
-            else cuenta = new CuentaBancaria(null, cbu, BigDecimal.ZERO, tienda);
-            cuenta.setTienda(tienda);
-            tienda.getCuentaBancaria().add(cuenta);
-        }
         
         //Buscar y asignar el duenio
         Integer duenioDni = tiendaDTO.getDuenioDni();
@@ -101,9 +85,13 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
         tienda.setNombre(updateDTO.getNombre());
         tienda.setDireccion(updateDTO.getDireccion());
         tienda.setCaja(new Caja(updateDTO.getCaja()));
+
+        //Atributos que pueden ser modificados pero entran null desde el dto porque no es viable mostrarlos
         
-        Integer duenioDni = updateDTO.getDuenioDni();
-        tienda.setDuenio(duenioRepositorio.findByPersona_Dni(duenioDni).orElse(new Duenio(null, new Persona(), new Usuario())));
+        if(updateDTO.getDuenioDni()!=null){
+            Integer duenioDni = updateDTO.getDuenioDni();
+            tienda.setDuenio(duenioRepositorio.findByPersona_Dni(duenioDni).orElse(new Duenio(null, new Persona(), new Usuario())));
+        }
 
         tiendaRepositorio.save(tienda);
         return true;
