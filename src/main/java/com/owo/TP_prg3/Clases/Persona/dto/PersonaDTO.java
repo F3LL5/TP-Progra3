@@ -7,7 +7,7 @@ import lombok.Data;
 @Data @AllArgsConstructor
 public class PersonaDTO {
 
-    protected Long persona_id;
+    protected Long personaId;
 
     protected Integer dni;
 
