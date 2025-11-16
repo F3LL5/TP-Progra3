@@ -97,14 +97,11 @@ create table if not exists transacciones(
 
 create table if not exists pedidos (
 	pedido_id bigint auto_increment primary key,
-    cliente_id bigint,
 	transaccion_id bigint,
 	tipo enum ('COMPRA','VENTA') not null,
-	remitente_id bigint not null,
 	fecha_creacion datetime not null,
 	total decimal(10,2) not null,
-	foreign key(transaccion_id) references transacciones(transaccion_id),
-    foreign key(cliente_id) references clientes(cliente_id)
+	foreign key(transaccion_id) references transacciones(transaccion_id)
 );
 
 -- Tabla para los detalles de cada pedido

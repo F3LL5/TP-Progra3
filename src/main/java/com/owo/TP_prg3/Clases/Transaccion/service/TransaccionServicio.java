@@ -5,6 +5,8 @@ import com.owo.TP_prg3.Clases.Transaccion.dto.FormTransaccionDTO;
 import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.Transaccion;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.TransaccionRepositorio;
+import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,8 +30,11 @@ public class TransaccionServicio implements I_CRUD<Transaccion, TransaccionDTO, 
     // CONVERSION ------------------------------------------------------------------------------------------------------------------------------------------------
     @Override
     public Transaccion convertir_a_Obj(FormTransaccionDTO fDTO) {
+        if (fDTO.getOrigen_id() == null && fDTO.getDestino_id() == null) {
+            throw new IngresoInvalidoException("Una Transacción debe especificar al menos un ID de Origen o un ID de Destino.");
+        }
         Transaccion t = new Transaccion();
-        
+
         t.setTipo(fDTO.getTipo());
         
         // 1. Inicialización de campos obligatorios (fecha) con valores seguros

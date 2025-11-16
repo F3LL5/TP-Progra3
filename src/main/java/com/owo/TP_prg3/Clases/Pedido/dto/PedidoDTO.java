@@ -1,7 +1,5 @@
 package com.owo.TP_prg3.Clases.Pedido.dto;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Set;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.FormDetallePedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.modelo.TipoPedido;
@@ -18,8 +16,5 @@ public class PedidoDTO {
     private Long pedidoId;
     private TransaccionDTO transaccion;
     private TipoPedido tipo;
-    private LocalDateTime fechaCreacion;
-    private BigDecimal total;
-    private Long remitenteId;
     private Set<FormDetallePedidoDTO> detalles;
 }

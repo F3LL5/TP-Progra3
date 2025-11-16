@@ -19,6 +19,5 @@ public class FormTiendaDTO {
 
     protected Integer duenioDni;
 
-    protected Integer cbu;
 
 }

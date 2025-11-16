@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
@@ -86,27 +85,13 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
         // 1. Inicializar el Pedido (con total en 0.00)
         Pedido p = new Pedido();
         p.setTipo(fDTO.getTipo());
-        p.setRemitenteId(fDTO.getRemitenteId());
-        p.setDestinatarioId(fDTO.getDestinatarioId());
-        p.setTotal(BigDecimal.ZERO);
         
         // 2. Crear la Transaccion base
         Transaccion t = transaccionServicio.convertir_a_Obj(fDTO.getTransaccion());
-
-        // 3. Completar el ID faltante (Cliente o Proveedor)
-        if (fDTO.getTipo() == TipoPedido.VENTA) t.setOrigen_id(fDTO.getRemitenteId()); // Origen debe ser el ID del Cliente (RemitenteId).
-        else t.setDestino_id(fDTO.getDestinatarioId());
         
         // 4. Conectar la Transacción y guardar el Pedido
         p.setTransaccion(t);
         pedidoRepositorio.save(p); 
-        
-        // 5. Cargar Detalles y Recalcular Total (necesario para un Pedido de creación)
-        if (fDTO.getDetalles() != null && !fDTO.getDetalles().isEmpty()) {
-            fDTO.getDetalles().forEach(formDetalle -> {
-                detallePedidoServicio.crearDetalleYAsociar(p, formDetalle);
-            });
-        }
         
         return p;
     }
@@ -121,9 +106,6 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
             pedido.getPedidoId(),
             transaccionServicio.convertir_a_DTO(pedido.getTransaccion()),
             pedido.getTipo(),
-            pedido.getFechaCreacion(),
-            pedido.getTotal(),
-            pedido.getRemitenteId(),
             detallesDTO
         );
     }
@@ -152,7 +134,6 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
 
         Predicate<Pedido> filtro = switch (campo.toLowerCase()) {
             case "tipo" -> p -> p.getTipo().toString().equalsIgnoreCase(String.valueOf(valor));
-            case "remitenteid" -> p -> p.getRemitenteId().equals(Long.valueOf(String.valueOf(valor)));
             default -> p -> false;
         };
 
@@ -167,8 +148,6 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
         Comparator<Pedido> comparador;
 
         comparador = switch (campo.toLowerCase()) {
-            case "total" -> Comparator.comparing(Pedido::getTotal);
-            case "fecha" -> Comparator.comparing(Pedido::getFechaCreacion);
             case "tipo" -> Comparator.comparing(Pedido::getTipo);
             default -> Comparator.comparing(Pedido::getPedidoId);
         };
@@ -185,13 +164,9 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
     @Transactional
     public boolean cargar(FormPedidoDTO cDTO) {
         // 1. Validar
-        if (cDTO.getTipo() == null || cDTO.getRemitenteId() == null || cDTO.getTransaccion() == null) throw new IngresoInvalidoException("El Tipo de Pedido, Remitente y la información base de la Transacción son obligatorios para iniciar un Pedido.");
+        if (cDTO.getTipo() == null || cDTO.getTransaccion() == null) throw new IngresoInvalidoException("El Tipo de Pedido y la información base de la Transacción son obligatorios para iniciar un Pedido.");
         
         Pedido pedido = convertir_a_Obj(cDTO);
-        
-        // 3. Asignar datos generados
-        pedido.setFechaCreacion(LocalDateTime.now());
-
 
         recalcularTotal(pedido.getPedidoId());
         return true;
@@ -209,7 +184,6 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
         
         // 1. Actualizar campos del Pedido
         pedido.setTipo(updateDTO.getTipo());
-        pedido.setRemitenteId(updateDTO.getRemitenteId());
 
         // 2. Actualizar Transaccion asociada
         if (updateDTO.getTransaccion() != null) {
@@ -242,11 +216,6 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
         for (DetallePedido detalle : pedido.getDetalles()) {
             nuevoTotal = nuevoTotal.add(detalle.getSubtotal());
         }
-        System.out.println(nuevoTotal);
-
-        // 2. Actualizar Pedido.total
-        pedido.setTotal(nuevoTotal);
-        pedidoRepositorio.save(pedido);
 
         // 3. Actualizar Transaccion.monto
         Transaccion transaccion = pedido.getTransaccion();
@@ -265,11 +234,8 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
         Pedido pedido = pedidoRepositorio.findById(pedidoId).orElseThrow(() -> new RuntimeException("Pedido no encontrado con ID: " + pedidoId));
 
         Transaccion transaccion = pedido.getTransaccion();
-        BigDecimal monto = pedido.getTotal(); 
-        
-        // Si el monto no está actualizado, lo actualiza.
-        if (transaccion.getMonto().compareTo(monto) != 0) transaccion.setMonto(monto);
-        
+        BigDecimal monto = transaccion.getMonto(); 
+          
         // Determina si es VENTA (entra dinero) o COMPRA (sale dinero)
         boolean esVenta = pedido.getTipo() == TipoPedido.VENTA;
         

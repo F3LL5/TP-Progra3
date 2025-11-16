@@ -13,7 +13,6 @@ import com.owo.TP_prg3.Clases.Pedido.modelo.TipoPedido;
 import com.owo.TP_prg3.Clases.Pedido.service.PedidoServicio;
 import com.owo.TP_prg3.Clases.Producto.modelo.Producto;
 import com.owo.TP_prg3.Clases.Producto.modelo.ProductoRepositorio;
-import com.owo.TP_prg3.Clases.Producto.service.ProductoServicio;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +35,6 @@ public class DetallePedidoServicio implements I_CRUD<DetallePedido, DetallePedid
     
     @Autowired
     private ProductoRepositorio productoRepositorio;
-    @Autowired
-    private ProductoServicio productoServicio;
 
     @Autowired
     private PedidoServicio pedidoServicio;
@@ -65,7 +62,8 @@ public class DetallePedidoServicio implements I_CRUD<DetallePedido, DetallePedid
     public DetallePedidoDTO convertir_a_DTO(DetallePedido detalle) {
         return new DetallePedidoDTO(
             detalle.getDetallePedidoId(),
-            productoServicio.convertir_a_DTO(detalle.getProducto()), 
+            detalle.getProducto().getProductoId(), 
+            detalle.getProducto().getNombre(), 
             detalle.getCantidad(),
             detalle.getSubtotal()
         );
