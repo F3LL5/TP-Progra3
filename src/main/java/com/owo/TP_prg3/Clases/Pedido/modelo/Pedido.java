@@ -6,9 +6,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,20 +28,6 @@ public class Pedido {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TipoPedido tipo;
-    
-    @Column(nullable = false)
-    private LocalDateTime fechaCreacion = LocalDateTime.now();
-
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal total;
-
-    // ID de la Persona o Tienda que remite el pedido.
-    @Column(name = "remitente_id", nullable = false)
-    private Long remitenteId; 
-
-    // ID de la Persona, Tienda o Proveedor que recibe el pedido. 
-    @Column(name = "destinatario_id", nullable = false)
-    private Long destinatarioId; 
     
     // CascadeType.ALL asegura que los detalles se guarden/eliminen con el pedido.
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)

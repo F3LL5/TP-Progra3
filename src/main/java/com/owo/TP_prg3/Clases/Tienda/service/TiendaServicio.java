@@ -35,6 +35,7 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
         Tienda tienda = new Tienda();
         tienda.setNombre(tiendaDTO.getNombre());
         tienda.setDireccion(tiendaDTO.getDireccion());
+        tienda.setCaja(new Caja(tiendaDTO.getCaja()));
         
         //Buscar y asignar el duenio
         Integer duenioDni = tiendaDTO.getDuenioDni();
