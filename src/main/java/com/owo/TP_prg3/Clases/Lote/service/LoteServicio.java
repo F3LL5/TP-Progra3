@@ -20,7 +20,6 @@ import com.owo.TP_prg3.Clases.Lote.modelo.LoteRepositorio;
 import com.owo.TP_prg3.Clases.Producto.modelo.Producto;
 import com.owo.TP_prg3.Clases.Producto.service.ProductoServicio;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
-import com.owo.TP_prg3.Excepciones.StockInsuficienteException;
 
 import jakarta.transaction.Transactional;
 

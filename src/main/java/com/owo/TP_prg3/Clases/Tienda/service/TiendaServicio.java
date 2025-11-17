@@ -20,7 +20,7 @@ import com.owo.TP_prg3.Clases.Tienda.dto.TiendaDTO;
 import com.owo.TP_prg3.Clases.Tienda.modelo.Tienda;
 import com.owo.TP_prg3.Clases.Tienda.modelo.TiendaRepositorio;
 import com.owo.TP_prg3.Clases.Usuario.modelo.Usuario;
-import com.owo.TP_prg3.Excepciones.StockInsuficienteException;
+import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 
 @Service
 public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> {
@@ -162,7 +162,7 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
         Caja caja = tienda.getCaja();
         
         if (caja == null) throw new RuntimeException("La Caja de la Tienda no existe para debitar."); // Validación Caja
-        if (caja.getSaldo().compareTo(monto) < 0) throw new StockInsuficienteException("Saldo insuficiente en Caja para la compra."); // Validación Saldo
+        if (caja.getSaldo().compareTo(monto) < 0) throw new IngresoInvalidoException("Saldo insuficiente en Caja para la compra."); // Validación Saldo
 
         caja.setSaldo(caja.getSaldo().subtract(monto)); // Restar monto
         tiendaRepositorio.save(tienda);

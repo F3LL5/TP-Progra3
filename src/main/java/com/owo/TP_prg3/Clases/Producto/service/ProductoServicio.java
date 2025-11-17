@@ -7,6 +7,11 @@ import com.owo.TP_prg3.Clases.Producto.dto.FormProductoDTO;
 import com.owo.TP_prg3.Clases.Producto.dto.ProductoDTO;
 import com.owo.TP_prg3.Clases.Producto.modelo.Producto;
 import com.owo.TP_prg3.Clases.Producto.modelo.ProductoRepositorio;
+import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
+import com.owo.TP_prg3.Excepciones.EntidadDuplicadaException;
+import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
+import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -22,6 +27,8 @@ import java.util.stream.Stream;
 public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProductoDTO> {
     
     // ATRIBUTOS ------------------------------------------------------------------------------------------------------------------------------------------------
+    private static final String ENTIDAD = "Producto";
+    
     @Autowired
     private ProductoRepositorio productoRepositorio;
     @Autowired
@@ -31,6 +38,7 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
     // CONVERSION ------------------------------------------------------------------------------------------------------------------------------------------------
     @Override
     public Producto convertir_a_Obj(FormProductoDTO fDTO){
+        validarDatosProducto(fDTO);
         return new Producto(
             null,
             fDTO.getNombre(),
@@ -51,6 +59,7 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
     
     @Transactional
     public Producto obtenerOCrearProducto(FormProductoDTO dto) {
+        validarDatosProducto(dto);
         Optional<Producto> existente = productoRepositorio.findByNombreAndCategoria(dto.getNombre(), dto.getCategoria());
         
         if (existente.isPresent()) {
@@ -75,11 +84,14 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
 
     @Override
     public Optional<ProductoDTO> buscarPorID(Long id) {
+        validarIdValido(id);
         return productoRepositorio.findById(id).map(this::convertir_a_DTO);
     }
 
     @Override
     public Set<ProductoDTO> filtrar(String campo, Object valor) {
+        if (campo == null || campo.trim().isEmpty()) throw new CampoRequeridoException("campo");
+        if (valor == null) throw new CampoRequeridoException("valor");
 
         // 1. Obtenemos todos los productos
         Stream<Producto> stream = productoRepositorio.findAll().stream();
@@ -89,7 +101,10 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
         switch (campo.toLowerCase()) {
             case "nombre"-> filtro = p -> p.getNombre().equals(valor);
             case "categoria" -> filtro = p -> p.getCategoria().equals(valor);
-            default -> filtro = p -> false;
+            default -> throw new IngresoInvalidoException(
+                "campo", 
+                "debe ser 'nombre' o 'categoria'"
+            );
         }
 
         // 3. Aplicamos el filtro al Stream, mapeamos a DTO
@@ -99,6 +114,8 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
     }
 
     public Set<ProductoDTO> ordenar(String campo, boolean ascendente) {
+        if (campo == null || campo.trim().isEmpty()) throw new CampoRequeridoException("campo");
+        
         // 1. Obtenemos todos los productos
         Stream<Producto> stream = productoRepositorio.findAll().stream();
 
@@ -122,32 +139,74 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
     @Override
     @Transactional
     public boolean cargar(FormProductoDTO createDTO) {
-        Producto p = productoRepositorio.save(convertir_a_Obj(createDTO));
+        validarDatosProducto(createDTO);
+        validarProductoNoExiste(createDTO.getNombre().trim(), createDTO.getCategoria().trim());
 
-        //Crea un inventario defualt a ese Producto
+        Producto p = productoRepositorio.save(convertir_a_Obj(createDTO));
+        //Crea un inventario default a ese Producto
         return inventarioService.cargar(new FormInventarioDTO(p.getProductoId()));
     }
 
     // PUT
     @Override
+    @Transactional
     public boolean actualizar(Long id, FormProductoDTO updateDTO) {
-        Optional<Producto> optional = productoRepositorio.findById(id);
-        if (optional.isEmpty()) return false;
+        validarDatosProducto(updateDTO);
+        Producto producto = obtenerProductoPorId(id);
         
-        Producto producto = optional.get();
-        producto.setNombre(updateDTO.getNombre());
-        producto.setCategoria(updateDTO.getCategoria());
-
+        // Validar que el nuevo nombre/categoría no exista en OTRO producto
+        String nuevoNombre = updateDTO.getNombre().trim();
+        String nuevaCategoria = updateDTO.getCategoria().trim();
+        
+        Optional<Producto> duplicado = productoRepositorio.findByNombreAndCategoria(nuevoNombre, nuevaCategoria);
+        
+        if (duplicado.isPresent() && !duplicado.get().getProductoId().equals(id)) {
+            throw new EntidadDuplicadaException(
+                ENTIDAD,
+                String.format("nombre '%s' y categoría '%s'", nuevoNombre, nuevaCategoria)
+            );
+        }
+        
+        producto.setNombre(nuevoNombre);
+        producto.setCategoria(nuevaCategoria);
         productoRepositorio.save(producto);
         return true;
     }
 
     // DELETE
     @Override
+    @Transactional
     public boolean eliminar(Long id) {
-        Optional<Producto> optional = productoRepositorio.findById(id);
-        if(optional.isEmpty()) return false;
-        else productoRepositorio.delete(optional.get());
+        Producto producto = obtenerProductoPorId(id);
+        productoRepositorio.delete(producto);
         return true;
+    }
+
+    // VALIDACIONES PRIVADAS ===================================================================
+    
+    private void validarDatosProducto(FormProductoDTO dto) {
+        if (dto == null) throw new IngresoInvalidoException("Los datos del producto no pueden ser nulos");
+        if (dto.getNombre() == null || dto.getNombre().trim().isEmpty()) throw new CampoRequeridoException("nombre");
+        if (dto.getCategoria() == null || dto.getCategoria().trim().isEmpty()) throw new CampoRequeridoException("categoria");    
+    }
+    
+    private void validarProductoNoExiste(String nombre, String categoria) {
+        Optional<Producto> existente = productoRepositorio.findByNombreAndCategoria(nombre, categoria);
+        if (existente.isPresent()) {
+            throw new EntidadDuplicadaException(
+                ENTIDAD, 
+                String.format("nombre '%s' y categoría '%s'", nombre, categoria)
+            );
+        }
+    }
+    
+    private void validarIdValido(Long id) {
+        if (id == null || id <= 0) throw new IngresoInvalidoException("ID", "debe ser un número positivo");
+    }
+    
+    private Producto obtenerProductoPorId(Long id) {
+        validarIdValido(id);
+        return productoRepositorio.findById(id)
+                .orElseThrow(() -> new EntidadNoEncontradaException(ENTIDAD, id));
     }
 }
