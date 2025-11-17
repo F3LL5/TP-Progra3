@@ -1,10 +1,9 @@
 package com.owo.TP_prg3.Clases.Pedido.controlador;
 
-import com.owo.TP_prg3.Clases.Interfaces.I_Controlador;
+
 import com.owo.TP_prg3.Clases.Pedido.dto.FormPedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.service.PedidoServicio;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,19 +11,17 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/api/pedidos")
-public class PedidoControlador implements I_Controlador<PedidoDTO, FormPedidoDTO> {
+public class PedidoControlador  {
 
-    @Autowired
+    
     private PedidoServicio pedidoServicio;
 
     // --- Métodos GET (Lectura) ---
-    @Override
     @GetMapping
     public ResponseEntity<Set<PedidoDTO>> obtenerTodos() {
         return ResponseEntity.ok(pedidoServicio.obtenerTodos());
     }
 
-    @Override
     @GetMapping("/{id}")
     public ResponseEntity<PedidoDTO> buscarPorID(@PathVariable Long id) {
         PedidoDTO dto = pedidoServicio.buscarPorID(id).orElse(null);
@@ -32,29 +29,25 @@ public class PedidoControlador implements I_Controlador<PedidoDTO, FormPedidoDTO
         return ResponseEntity.notFound().build();
     }
 
-    @Override
     @GetMapping("/filtrar")
     public ResponseEntity<Set<PedidoDTO>> filtrar(@RequestParam String campo, @RequestParam Object valor) {
         return ResponseEntity.ok(pedidoServicio.filtrar(campo, valor));
     }
 
-    @Override
     @GetMapping("/ordenar")
     public ResponseEntity<Set<PedidoDTO>> ordenar(@RequestParam String campo, @RequestParam(defaultValue = "true") boolean ascendente) {
         return ResponseEntity.ok(pedidoServicio.ordenar(campo, ascendente));
     }
 
     // --- Métodos POST (Creación) ---
-    @Override
     @PostMapping
-    public ResponseEntity<Boolean> cargar(@RequestBody FormPedidoDTO dto) {
-        boolean exito = pedidoServicio.cargar(dto);
-        if (exito) return ResponseEntity.status(HttpStatus.CREATED).body(true);
-        else return ResponseEntity.badRequest().body(false);
+    public ResponseEntity<Long> cargar(@RequestBody FormPedidoDTO dto) {
+        Long pedidoId = pedidoServicio.cargar(dto); 
+        if (pedidoId != null) return ResponseEntity.status(HttpStatus.CREATED).body(pedidoId);
+        else return ResponseEntity.badRequest().body(null); 
     }
 
     // --- Métodos PUT (Actualización) ---
-    @Override
     @PutMapping("/{id}")
     public ResponseEntity<Boolean> actualizar(@PathVariable Long id, @RequestBody FormPedidoDTO dto) {
         boolean exito = pedidoServicio.actualizar(id, dto);
@@ -63,7 +56,6 @@ public class PedidoControlador implements I_Controlador<PedidoDTO, FormPedidoDTO
     }
 
     // --- Métodos DELETE (Eliminación) ---
-    @Override
     @DeleteMapping("/{id}")
     public ResponseEntity<Boolean> eliminar(@PathVariable Long id) {
         boolean exito = pedidoServicio.eliminar(id);

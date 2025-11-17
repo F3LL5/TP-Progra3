@@ -5,7 +5,6 @@ import com.owo.TP_prg3.Clases.DetallePedido.dto.FormDetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedido;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedidoRepositorio;
 import com.owo.TP_prg3.Clases.DetallePedido.service.DetallePedidoServicio;
-import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 import com.owo.TP_prg3.Clases.Inventario.service.InventarioServicio;
 import com.owo.TP_prg3.Clases.Pedido.dto.*;
 import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
@@ -30,7 +29,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
-public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> {
+public class PedidoServicio {
     //ATRIBUTOS
 
     @Autowired
@@ -78,7 +77,6 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
         );
     }
 
-    @Override
     @Transactional
     public Pedido convertir_a_Obj(FormPedidoDTO fDTO) {
         
@@ -96,7 +94,7 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
         return p;
     }
 
-    @Override
+
     public PedidoDTO convertir_a_DTO(Pedido pedido) {
         Set<FormDetallePedidoDTO> detallesDTO = pedido.getDetalles().stream()
                 .map(this::convertirDetalleA_DTO)
@@ -112,14 +110,12 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
     
     // --- LECTURA (GET) ---
     
-    @Override
     public Set<PedidoDTO> obtenerTodos() {
         return pedidoRepositorio.findAll().stream()
             .map(this::convertir_a_DTO)
             .collect(Collectors.toSet());
     }
 
-    @Override
     public Optional<PedidoDTO> buscarPorID(Long id) {
         return pedidoRepositorio.findById(id).map(this::convertir_a_DTO);
     }
@@ -128,7 +124,7 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
         return pedidoRepositorio.findById(id);
     }
 
-    @Override
+
     public Set<PedidoDTO> filtrar(String campo, Object valor) {
         Stream<Pedido> stream = pedidoRepositorio.findAll().stream();
 
@@ -142,7 +138,6 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
                     .collect(Collectors.toSet());
     }
 
-    @Override
     public Set<PedidoDTO> ordenar(String campo, boolean ascendente) {
         Stream<Pedido> stream = pedidoRepositorio.findAll().stream();
         Comparator<Pedido> comparador;
@@ -160,21 +155,18 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
 
     // --- ESCRITURA (POST) ---
     
-    @Override
     @Transactional
-    public boolean cargar(FormPedidoDTO cDTO) {
-        // 1. Validar
+    public Long cargar(FormPedidoDTO cDTO) {
+        // Validar
         if (cDTO.getTipo() == null || cDTO.getTransaccion() == null) throw new IngresoInvalidoException("El Tipo de Pedido y la información base de la Transacción son obligatorios para iniciar un Pedido.");
         
         Pedido pedido = convertir_a_Obj(cDTO);
-
         recalcularTotal(pedido.getPedidoId());
-        return true;
+        return pedido.getPedidoId();
     }
 
     // --- ACTUALIZACION (PUT) ---
     
-    @Override
     @Transactional
     public boolean actualizar(Long id, FormPedidoDTO updateDTO) {
         Optional<Pedido> optional = pedidoRepositorio.findById(id);
@@ -196,7 +188,6 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
 
     // --- ELIMINACION (DELETE) ---
     
-    @Override
     public boolean eliminar(Long id) {
         Optional<Pedido> optional = pedidoRepositorio.findById(id);
         if(optional.isEmpty()) return false;
