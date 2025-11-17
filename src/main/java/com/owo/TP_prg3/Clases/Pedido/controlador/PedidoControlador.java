@@ -3,7 +3,10 @@ package com.owo.TP_prg3.Clases.Pedido.controlador;
 
 import com.owo.TP_prg3.Clases.Pedido.dto.FormPedidoDTO;
 import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
+import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
 import com.owo.TP_prg3.Clases.Pedido.service.PedidoServicio;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +16,7 @@ import java.util.Set;
 @RequestMapping("/api/pedidos")
 public class PedidoControlador  {
 
-    
+    @Autowired
     private PedidoServicio pedidoServicio;
 
     // --- Métodos GET (Lectura) ---
@@ -41,9 +44,9 @@ public class PedidoControlador  {
 
     // --- Métodos POST (Creación) ---
     @PostMapping
-    public ResponseEntity<Long> cargar(@RequestBody FormPedidoDTO dto) {
-        Long pedidoId = pedidoServicio.cargar(dto); 
-        if (pedidoId != null) return ResponseEntity.status(HttpStatus.CREATED).body(pedidoId);
+    public ResponseEntity<Pedido> cargar(@RequestBody FormPedidoDTO dto) {
+        Pedido pedido = pedidoServicio.cargar(dto); 
+        if (pedido != null) return ResponseEntity.status(HttpStatus.CREATED).body(pedido);
         else return ResponseEntity.badRequest().body(null); 
     }
 

@@ -156,13 +156,13 @@ public class PedidoServicio {
     // --- ESCRITURA (POST) ---
     
     @Transactional
-    public Long cargar(FormPedidoDTO cDTO) {
+    public Pedido cargar(FormPedidoDTO cDTO) {
         // Validar
         if (cDTO.getTipo() == null || cDTO.getTransaccion() == null) throw new IngresoInvalidoException("El Tipo de Pedido y la información base de la Transacción son obligatorios para iniciar un Pedido.");
         
         Pedido pedido = convertir_a_Obj(cDTO);
         recalcularTotal(pedido.getPedidoId());
-        return pedido.getPedidoId();
+        return pedido;
     }
 
     // --- ACTUALIZACION (PUT) ---
