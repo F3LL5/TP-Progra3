@@ -12,10 +12,16 @@ import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
 import com.owo.TP_prg3.Clases.Proveedor.dto.ProveedorDTO;
 import com.owo.TP_prg3.Clases.Proveedor.modelo.Proveedor;
 import com.owo.TP_prg3.Clases.Proveedor.modelo.ProveedorRepositorio;
+import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
+import com.owo.TP_prg3.Excepciones.EntidadDuplicadaException;
+import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
+import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 
 @Service
 public class ProveedorServicio implements I_CRUD<Proveedor, ProveedorDTO, FormPersonaDTO>{
+
+    private static final String ENTIDAD = "Proveedor";
 
     @Autowired
     private ProveedorRepositorio proveedorRepositorio;
@@ -23,6 +29,7 @@ public class ProveedorServicio implements I_CRUD<Proveedor, ProveedorDTO, FormPe
     // Conversión
     @Override
     public Proveedor convertir_a_Obj(FormPersonaDTO fDTO) {
+        validarDatosProveedor(fDTO);
         Proveedor proveedor = new Proveedor();
         proveedor.setNombre(fDTO.getNombre());
         proveedor.setEdad(fDTO.getEdad());
@@ -53,6 +60,7 @@ public class ProveedorServicio implements I_CRUD<Proveedor, ProveedorDTO, FormPe
 
     @Override
     public Optional<ProveedorDTO> buscarPorID(Long id) {
+        validarIdValido(id);
         return proveedorRepositorio.findById(id).map(this::convertir_a_DTO);
     }
 
@@ -62,14 +70,38 @@ public class ProveedorServicio implements I_CRUD<Proveedor, ProveedorDTO, FormPe
 
     @Override
     public Set<ProveedorDTO> filtrar(String campo, Object valor) {
+        if (campo == null || campo.trim().isEmpty()) {
+            throw new CampoRequeridoException("campo de filtrado");
+        }
+        if (valor == null) {
+            throw new CampoRequeridoException("valor de filtrado");
+        }
 
         Stream<Proveedor> stream = proveedorRepositorio.findAll().stream();
 
         Predicate<Proveedor> filtro;
         switch (campo.toLowerCase()) {
             case "nombre"-> filtro = p -> p.getNombre().equals(valor);
-            case "edad" -> filtro = p -> p.getEdad().equals(valor);
-            default -> filtro = p -> false;
+            case "edad" -> {
+                 try {
+                     int edad = Integer.parseInt(valor.toString());
+                     filtro = p -> p.getEdad().equals(edad);
+                 } catch (NumberFormatException e) {
+                     throw new IngresoInvalidoException("valor", "debe ser un número entero para el campo 'edad'");
+                 }
+            }
+            case "dni" -> {
+                try {
+                    int dni = Integer.parseInt(valor.toString());
+                    filtro = p -> p.getDni() == dni;
+                } catch (NumberFormatException e) {
+                    throw new IngresoInvalidoException("valor", "debe ser un número entero para el campo 'dni'");
+                }
+            }
+            default -> throw new IngresoInvalidoException(
+                "campo de filtrado",
+                "debe ser 'nombre', 'edad' o 'dni'"
+            );
         }
 
         return stream.filter(filtro)
@@ -78,6 +110,9 @@ public class ProveedorServicio implements I_CRUD<Proveedor, ProveedorDTO, FormPe
     }
 
     public Set<ProveedorDTO> ordenar(String campo, boolean ascendente) {
+        if (campo == null || campo.trim().isEmpty()) {
+            throw new CampoRequeridoException("campo de ordenamiento");
+        }
         Stream<Proveedor> stream = proveedorRepositorio.findAll().stream();
 
         Comparator<Proveedor> comparador;
@@ -97,7 +132,8 @@ public class ProveedorServicio implements I_CRUD<Proveedor, ProveedorDTO, FormPe
     // POST
     @Override
     public boolean cargar(FormPersonaDTO createDTO) {
-        if (this.buscarPorDNI(createDTO.getDni()).isPresent()) return false;
+        validarDatosProveedor(createDTO);
+        validarProveedorNoExiste(createDTO.getDni());
         // JPA automáticamente realiza el INSERT en la tabla 'personas' y luego en 'proveedors'
         proveedorRepositorio.save(convertir_a_Obj(createDTO));
         return true;
@@ -106,11 +142,13 @@ public class ProveedorServicio implements I_CRUD<Proveedor, ProveedorDTO, FormPe
     // PUT
    @Override
     public boolean actualizar(Long id, FormPersonaDTO updateDTO) {
-        Optional<Proveedor> optional = proveedorRepositorio.findById(id);
-        if (optional.isEmpty()) return false;
+        validarDatosProveedor(updateDTO);
+
+        Proveedor proveedor = obtenerProveedorPorId(id);
         
-        Proveedor proveedor = optional.get();
-        proveedor.setNombre(updateDTO.getNombre());
+        validarProveedorNoExisteOtro(updateDTO.getDni(), proveedor.getPersonaId()); 
+        
+        proveedor.setNombre(updateDTO.getNombre().trim()); 
         proveedor.setEdad(updateDTO.getEdad());
         proveedor.setDni(updateDTO.getDni());
 
@@ -121,9 +159,70 @@ public class ProveedorServicio implements I_CRUD<Proveedor, ProveedorDTO, FormPe
     // DELETE 
     @Override
     public boolean eliminar(Long id) {
-        Optional<Proveedor> optional = proveedorRepositorio.findById(id);
-        if(optional.isEmpty()) return false;
-        else proveedorRepositorio.delete(optional.get());
+        Proveedor proveedor = obtenerProveedorPorId(id);
+        proveedorRepositorio.delete(proveedor);
         return true;
+    }
+
+    // VALIDACIONES PRIVADAS ================================================================================================================================== [cite: 44]
+
+    /**
+     * @param id El ID a validar.
+     * @throws IngresoInvalidoException si el ID es nulo o no positivo.
+     */
+    private void validarIdValido(Long id) { 
+        if (id == null || id <= 0) { 
+            throw new IngresoInvalidoException("ID", "debe ser un número positivo para la entidad " + ENTIDAD);
+        }
+    }
+
+    /** @param dto El DTO a validar. @throws IngresoInvalidoException si el DTO es nulo.
+        @throws CampoRequeridoException si algún campo obligatorio es nulo o vacío. */
+    private void validarDatosProveedor(FormPersonaDTO dto) { 
+        if (dto == null) { 
+            throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");
+        }
+        
+        // Validación de campos obligatorios
+        if (dto.getDni() <= 0) { 
+             // Usamos IngresoInvalidoException para el formato o rango del DNI
+             throw new IngresoInvalidoException("DNI", "debe ser un número positivo.");
+        }
+        if (dto.getNombre() == null || dto.getNombre().trim().isEmpty()) {
+            throw new CampoRequeridoException("nombre");
+        }
+        if (dto.getEdad() == null || dto.getEdad() <= 0) { 
+            throw new CampoRequeridoException("edad"); 
+        }
+    }
+
+    /** @param dni El DNI a verificar.
+        @throws EntidadDuplicadaException si ya existe un Proveedor con ese DNI. 
+     */
+    private void validarProveedorNoExiste(int dni) { 
+        // Usamos el método existente 'buscarPorDNI' para chequear
+        Optional<ProveedorDTO> existente = this.buscarPorDNI(dni); 
+        if (existente.isPresent()) {
+            throw new EntidadDuplicadaException(ENTIDAD, "dni", dni);
+        }
+    }
+
+    /** @param dni El DNI a verificar. @param id El ID de la persona (PersonaId) del proveedor que se está actualizando.
+        @throws EntidadDuplicadaException si ya existe otro Proveedor con ese DNI. */
+    private void validarProveedorNoExisteOtro(int dni, Long id) {
+        Optional<Proveedor> existente = proveedorRepositorio.findByPersona_Dni(dni);
+        // Si existe y su ID de persona es diferente al que estamos actualizando, es duplicado. 
+        if (existente.isPresent() && !existente.get().getPersonaId().equals(id)) {
+            throw new EntidadDuplicadaException(ENTIDAD, "dni", dni); 
+        }
+    }
+
+    /** @param id El ID de la entidad a buscar.
+        @return La entidad Proveedor encontrada.
+        @throws EntidadNoEncontradaException si no se encuentra la entidad. */
+    private Proveedor obtenerProveedorPorId(Long id) {
+        validarIdValido(id); 
+        return proveedorRepositorio.findById(id)
+                .orElseThrow(() -> new EntidadNoEncontradaException(ENTIDAD, id));
     }
 }
