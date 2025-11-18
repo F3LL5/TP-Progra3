@@ -9,6 +9,13 @@ public class EntidadNoEncontradaException extends SistemaException {
             HttpStatus.NOT_FOUND
         );
     }
+
+    public EntidadNoEncontradaException(String msg) {
+        super(
+            msg,
+            HttpStatus.NOT_FOUND
+        );
+    }
     
     public EntidadNoEncontradaException(String entidad, String campo, Object valor) {
         super(
