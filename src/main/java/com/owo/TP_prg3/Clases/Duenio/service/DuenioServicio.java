@@ -17,9 +17,15 @@ import com.owo.TP_prg3.Clases.Duenio.modelo.DuenioRepositorio;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 import com.owo.TP_prg3.Clases.Usuario.modelo.RolUsuario;
 import com.owo.TP_prg3.Clases.Usuario.modelo.Usuario;
+import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
+import com.owo.TP_prg3.Excepciones.EntidadDuplicadaException;
+import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
+import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 
 @Service
 public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> {
+
+    private static final String ENTIDAD = "Dueño";
 
     @Autowired
     private DuenioRepositorio duenioRepositorio;
@@ -30,6 +36,7 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
     // Conversion
     @Override
     public Duenio convertir_a_Obj(FormDuenioDTO fDTO) {
+        validarDatosDuenio(fDTO);
         Duenio duenio = new Duenio();
         duenio.setNombre(fDTO.getNombre());
         duenio.setEdad(fDTO.getEdad());
@@ -60,22 +67,53 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
 
     @Override
     public Optional<DuenioDTO> buscarPorID(Long id) {
+        validarIdValido(id);
         return duenioRepositorio.findById(id).map(this::convertir_a_DTO);
     }
 
     public Optional<DuenioDTO> buscarPorDNI(int dni) {
+        if (dni <= 0) {
+             throw new IngresoInvalidoException("DNI", "debe ser un número positivo.");
+        }
         return duenioRepositorio.findByPersona_Dni(dni).map(this::convertir_a_DTO);
     }
 
     @Override
     public Set<DuenioDTO> filtrar(String campo, Object valor) {
-        Stream<Duenio> stream = duenioRepositorio.findAll().stream();
+        if (campo == null || campo.trim().isEmpty()) {
+            throw new CampoRequeridoException("campo de filtrado");
+        }
+        if (valor == null) {
+            throw new CampoRequeridoException("valor de filtrado");
+        }
 
+        Stream<Duenio> stream = duenioRepositorio.findAll().stream();
         Predicate<Duenio> filtro;
-        switch (campo.toLowerCase()) {
-            case "nombre"-> filtro = p -> p.getNombre().equals(valor);
-            case "edad" -> filtro = p -> p.getEdad().equals(valor);
-            default -> filtro = p -> false;
+        String campoTrim = campo.toLowerCase().trim();
+
+        switch (campoTrim) {
+            case "nombre" -> filtro = p -> p.getNombre().equalsIgnoreCase(valor.toString().trim()); 
+            case "edad" -> {
+                 try {
+                     int edad = Integer.parseInt(valor.toString());
+                     filtro = p -> p.getEdad().equals(edad);
+                 } catch (NumberFormatException e) {
+                     throw new IngresoInvalidoException("valor", "debe ser un número entero para el campo 'edad'");
+                 }
+            }
+            case "dni" -> { 
+                try {
+                    int dni = Integer.parseInt(valor.toString());
+                    filtro = p -> p.getDni() == dni;
+                } catch (NumberFormatException e) {
+                    throw new IngresoInvalidoException("valor", "debe ser un número entero para el campo 'dni'");
+                }
+            }
+            case "email" -> filtro = p -> p.getUsuario().getEmail().equalsIgnoreCase(valor.toString().trim()); 
+            default -> throw new IngresoInvalidoException( 
+                "campo de filtrado",
+                "debe ser 'nombre', 'edad', 'dni' o 'email'"
+            );
         }
 
         return stream.filter(filtro)
@@ -84,6 +122,9 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
     }
 
     public Set<DuenioDTO> ordenar(String campo, boolean ascendente) {
+        if (campo == null || campo.trim().isEmpty()) {
+            throw new CampoRequeridoException("campo de ordenamiento");
+        }
         Stream<Duenio> stream = duenioRepositorio.findAll().stream();
 
         Comparator<Duenio> comparador;
@@ -103,7 +144,8 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
     // POST
     @Override
     public boolean cargar(FormDuenioDTO createDTO) {
-        if (this.buscarPorDNI(createDTO.getDni()).isPresent()) return false;
+        validarDatosDuenio(createDTO);
+        validarDuenioNoExiste(createDTO.getDni(), createDTO.getEmail());
         duenioRepositorio.save(convertir_a_Obj(createDTO));
         return true;
     }
@@ -111,25 +153,99 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
     // PUT
    @Override
     public boolean actualizar(Long id, FormDuenioDTO updateDTO) {
-        Optional<Duenio> optional = duenioRepositorio.findById(id);
-        if (optional.isEmpty()) return false;
-        
-        Duenio Duenio = optional.get();
-        Duenio.setNombre(updateDTO.getNombre());
-        Duenio.setEdad(updateDTO.getEdad());
-        Duenio.setDni(updateDTO.getDni());
+        validarDatosDuenio(updateDTO); 
 
-        duenioRepositorio.save(Duenio);
+        Duenio duenio = obtenerDuenioPorId(id);
+        
+        validarDuenioNoExisteOtro(updateDTO.getDni(), updateDTO.getEmail(), id);
+
+        // Actualizar campos
+        duenio.setNombre(updateDTO.getNombre().trim()); 
+        duenio.setEdad(updateDTO.getEdad());
+        duenio.setDni(updateDTO.getDni());
+        duenio.getUsuario().setEmail(updateDTO.getEmail().trim()); 
+        duenio.getUsuario().setContraseña(passwordEncoder.encode(updateDTO.getContraseña().trim())); 
+
+        duenioRepositorio.save(duenio);
         return true;
     }
 
     // DELETE 
     @Override
     public boolean eliminar(Long id) {
-        Optional<Duenio> optional = duenioRepositorio.findById(id);
-        if(optional.isEmpty()) return false;
-        else duenioRepositorio.delete(optional.get());
+        Duenio duenio = obtenerDuenioPorId(id);
+        duenioRepositorio.delete(duenio);
         return true;
     }
 
+    // VALIDACIONES PRIVADAS ===========================================================================================
+
+    private void validarIdValido(Long id) {
+        if (id == null || id <= 0) {
+            throw new IngresoInvalidoException("ID", "debe ser un número positivo para la entidad " + ENTIDAD);
+        }
+    }
+
+    private void validarDatosDuenio(FormDuenioDTO dto) {
+        if (dto == null) {
+            throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");
+        }
+        
+        // 1. Validar Nombre (String)
+        if (dto.getNombre() == null || dto.getNombre().trim().isEmpty()) { 
+            throw new CampoRequeridoException("nombre");
+        }
+        // 2. Validar Edad (Integer > 0)
+        if (dto.getEdad() == null || dto.getEdad() <= 0) { 
+            throw new CampoRequeridoException("edad"); 
+        }
+        // 3. Validar DNI (int > 0)
+        if (dto.getDni() <= 0) { 
+             throw new IngresoInvalidoException("DNI", "debe ser un número positivo.");
+        }
+        // 4. Validar Email (String, requerido y formato)
+        if (dto.getEmail() == null || dto.getEmail().trim().isEmpty()) {
+            throw new CampoRequeridoException("email");
+        }
+        String emailTrimmed = dto.getEmail().trim();
+        if (!emailTrimmed.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")) { 
+             throw new IngresoInvalidoException("email", "formato inválido: " + emailTrimmed);
+        }
+        // 5. Validar Contraseña (String)
+        if (dto.getContraseña() == null || dto.getContraseña().trim().isEmpty()) {
+            throw new CampoRequeridoException("contraseña");
+        }
+    }
+
+    private void validarDuenioNoExiste(int dni, String email) { 
+        Optional<DuenioDTO> existenteDni = this.buscarPorDNI(dni); 
+        if (existenteDni.isPresent()) {
+            throw new EntidadDuplicadaException(ENTIDAD, "DNI", dni);
+        }
+        
+        Optional<Duenio> existenteEmail = duenioRepositorio.findByUsuario_Email(email.trim());
+        if (existenteEmail.isPresent()) {
+            throw new EntidadDuplicadaException(ENTIDAD, "email", email.trim());
+        }
+    }
+    
+    private void validarDuenioNoExisteOtro(int dni, String email, Long id) { 
+        Optional<Duenio> existenteDni = duenioRepositorio.findByPersona_Dni(dni);
+        // Si existe y su DuenioId es diferente, es duplicado.
+        if (existenteDni.isPresent() && !existenteDni.get().getDuenioId().equals(id)) {
+            throw new EntidadDuplicadaException(ENTIDAD, "DNI", dni);
+        }
+        
+        // 2. Check Email
+        Optional<Duenio> existenteEmail = duenioRepositorio.findByUsuario_Email(email.trim());
+        if (existenteEmail.isPresent() && !existenteEmail.get().getDuenioId().equals(id)) {
+             throw new EntidadDuplicadaException(ENTIDAD, "email", email.trim());
+        }
+    }
+
+    private Duenio obtenerDuenioPorId(Long id) { 
+        validarIdValido(id);
+        return duenioRepositorio.findById(id)
+                .orElseThrow(() -> new EntidadNoEncontradaException(ENTIDAD, id));
+    }
 }
