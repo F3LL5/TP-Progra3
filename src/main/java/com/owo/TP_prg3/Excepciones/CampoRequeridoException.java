@@ -9,4 +9,5 @@ public class CampoRequeridoException extends SistemaException {
             HttpStatus.BAD_REQUEST
         );
     }
+    
 }
