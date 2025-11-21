@@ -1,8 +1,6 @@
-package com.owo.TP_prg3.Clases.Lote.service;
+package com.owo.TP_prg3.Excepciones;
 
 import org.springframework.http.HttpStatus;
-
-import com.owo.TP_prg3.Excepciones.SistemaException;
 
 public class StockInsuficienteException extends SistemaException {
 

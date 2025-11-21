@@ -9,10 +9,13 @@ import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
+import com.owo.TP_prg3.Clases.Persona.service.PersonaServicio;
 import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
 import com.owo.TP_prg3.Excepciones.EntidadDuplicadaException;
 import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
+import jakarta.transaction.Transactional;
 import com.owo.TP_prg3.Clases.Cliente.dto.ClienteDTO;
 import com.owo.TP_prg3.Clases.Cliente.modelo.Cliente;
 import com.owo.TP_prg3.Clases.Cliente.modelo.ClienteRepositorio;
@@ -22,6 +25,9 @@ import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaDTO>{
 
     private static final String ENTIDAD = "Cliente";
+
+    @Autowired
+    private PersonaServicio personaServicio;
 
     @Autowired
     private ClienteRepositorio clienteRepositorio;
@@ -61,7 +67,7 @@ public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaD
 
     @Override
     public Optional<ClienteDTO> buscarPorID( Long id) {
-        validarIdValido(id);
+        ValidacionGeneral.validarIdValido(id);
         return clienteRepositorio.findById(id).map(this::convertir_a_DTO);
     }
 
@@ -128,6 +134,7 @@ public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaD
 
     // POST
     @Override
+    @Transactional
     public boolean cargar(FormPersonaDTO createDTO) {
         validarDatosCliente(createDTO);
         validarClienteNoExiste(createDTO.getDni());
@@ -138,6 +145,7 @@ public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaD
 
     // PUT
    @Override
+   @Transactional
     public boolean actualizar(Long id, FormPersonaDTO updateDTO) {
         validarDatosCliente(updateDTO);
         Cliente cliente = obtenerClientePorId(id);
@@ -153,6 +161,7 @@ public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaD
 
     // DELETE 
     @Override
+    @Transactional
     public boolean eliminar(Long id) {
         Cliente cliente = obtenerClientePorId(id);
         clienteRepositorio.delete(cliente);
@@ -160,30 +169,11 @@ public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaD
     }
 
     // VALIDACIONES PRIVADAS ==================================================================================================================================
-    /** @param id El ID a validar. 
-        @throws IngresoInvalidoException si el ID es nulo o no positivo. */
-    private void validarIdValido(Long id) {
-        if (id == null || id <= 0) {
-            throw new IngresoInvalidoException("ID", "debe ser un número positivo para la entidad " + ENTIDAD);
-        }
-    }
 
     /** @param dto El DTO a validar. @throws IngresoInvalidoException si el DTO es nulo. 
         @throws CampoRequeridoException si algún campo obligatorio es nulo o vacío. */
     private void validarDatosCliente(FormPersonaDTO dto) {
-        if (dto == null) {
-            throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");
-        }
-        
-        if (dto.getDni() <= 0) { // Asumimos DNI > 0, sino, es IngresoInvalido
-             throw new IngresoInvalidoException("DNI", "debe ser un número positivo.");
-        }
-        if (dto.getNombre() == null || dto.getNombre().trim().isEmpty()) {
-            throw new CampoRequeridoException("nombre");
-        }
-        if (dto.getEdad() == null || dto.getEdad() <= 0) { // Asumimos Edad > 0, sino, es IngresoInvalido
-            throw new CampoRequeridoException("edad");
-        }
+        personaServicio.validarDatosPersona(dto);
     }
 
     /** @param dni El DNI a verificar.
@@ -206,11 +196,10 @@ public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaD
         }
     }
 
-    /** @param id El ID de la entidad a buscar. @return La entidad Cliente encontrada.
-        @throws EntidadNoEncontradaException si no se encuentra la entidad. */
     private Cliente obtenerClientePorId(Long id) {
-        validarIdValido(id);
+        ValidacionGeneral.validarIdValido(id);
         return clienteRepositorio.findById(id)
                 .orElseThrow(() -> new EntidadNoEncontradaException(ENTIDAD, id));
     }
+
 }

@@ -24,6 +24,7 @@ import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
 import com.owo.TP_prg3.Excepciones.EntidadDuplicadaException;
 import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 
 @Service
 public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> {
@@ -73,7 +74,7 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
 
     @Override
     public Optional<TiendaDTO> buscarPorID(Long id) {
-        validarIdValido(id);
+        ValidacionGeneral.validarIdValido(id);
         return tiendaRepositorio.findById(id).map(this::convertir_a_DTO);
     }
 
@@ -90,21 +91,15 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
     // PUT
     @Override
     public boolean actualizar(Long id, FormTiendaDTO updateDTO) {
-        Optional<Tienda> optional = tiendaRepositorio.findById(id);
-        if (optional.isEmpty()) return false;
+        validarDatosTienda(updateDTO);
+        Tienda tienda = obtenerTiendaPorId(id);
+             
+        tienda.setNombre(updateDTO.getNombre().trim());
+        tienda.setDireccion(updateDTO.getDireccion().trim());
         
-        Tienda tienda = optional.get();
-        tienda.setNombre(updateDTO.getNombre());
-        tienda.setDireccion(updateDTO.getDireccion());
-        tienda.setCaja(new Caja(updateDTO.getCaja()));
-
-        //Atributos que pueden ser modificados pero entran null desde el dto porque no es viable mostrarlos
+        Duenio nuevoDuenio = validarDuenioExiste(updateDTO.getDuenioDni());
+        tienda.setDuenio(nuevoDuenio);
         
-        if(updateDTO.getDuenioDni()!=null){
-            Integer duenioDni = updateDTO.getDuenioDni();
-            tienda.setDuenio(duenioRepositorio.findByPersona_Dni(duenioDni).orElse(new Duenio(null, new Persona(), new Usuario())));
-        }
-
         tiendaRepositorio.save(tienda);
         return true;
     }
@@ -218,30 +213,21 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
 
     // VALIDACIONES PRIVADAS ===========================================================================================
 
-    private void validarIdValido(Long id) {
-        if (id == null || id <= 0) {
-            throw new IngresoInvalidoException("ID", "debe ser un número positivo para la entidad " + ENTIDAD);
-        }
-    }
-
     private void validarDatosTienda(FormTiendaDTO dto) {
         if (dto == null) {
             throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");
         }
         
-        if (dto.getNombre() == null || dto.getNombre().trim().isEmpty()) {
-            throw new CampoRequeridoException("nombre");
-        }
+        ValidacionGeneral.validarStringNoVacio(dto.getNombre(), "nombre");
+        ValidacionGeneral.validarStringNoVacio(dto.getDireccion(), "dirección");
         
-        if (dto.getDireccion() == null || dto.getDireccion().trim().isEmpty()) {
-            throw new CampoRequeridoException("dirección");
-        }
+        if (dto.getDuenioDni() == null) throw new CampoRequeridoException("dniDuenio");
+        ValidacionGeneral.validarDni(dto.getDuenioDni());
     }
 
-    private void validarDuenioExiste(int dni) {
-        if (duenioRepositorio.findByPersona_Dni(dni).isEmpty()) {
-            throw new EntidadNoEncontradaException("Dueño no encontrado con el dni: " + dni);
-        }
+    private Duenio validarDuenioExiste(int dni) {
+        return duenioRepositorio.findByPersona_Dni(dni)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Duenio", "DNI", dni));
     }
 
     private void validarTiendaNoExiste(String nombre) {
@@ -252,7 +238,7 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
     }
 
     private Tienda obtenerTiendaPorId(Long id) {
-        validarIdValido(id);
+        ValidacionGeneral.validarIdValido(id);
         return tiendaRepositorio.findById(id)
                 .orElseThrow(() -> new EntidadNoEncontradaException(ENTIDAD, id));
     }

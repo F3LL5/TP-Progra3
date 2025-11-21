@@ -19,7 +19,12 @@ import com.owo.TP_prg3.Clases.Lote.modelo.Lote;
 import com.owo.TP_prg3.Clases.Lote.modelo.LoteRepositorio;
 import com.owo.TP_prg3.Clases.Producto.modelo.Producto;
 import com.owo.TP_prg3.Clases.Producto.service.ProductoServicio;
+import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
+import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.OperacionNoPermitidaException;
+import com.owo.TP_prg3.Excepciones.StockInsuficienteException;
+import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 
 import jakarta.transaction.Transactional;
 
@@ -28,6 +33,8 @@ public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
 
     // ATRIBUTOS
     // ------------------------------------------------------------------------------------------------------------------------------------------------
+    private static final String ENTIDAD = "Lote";
+
     @Autowired
     private LoteRepositorio loteRepositorio;
     @Autowired
@@ -39,10 +46,7 @@ public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
     // ------------------------------------------------------------------------------------------------------------------------------------------------
     @Override
     public Lote convertir_a_Obj(FormLoteDTO fDTO) {
-        System.out.println(fDTO);
-        if (fDTO.getProducto() == null) {
-            throw new IllegalArgumentException("La información del producto es obligatoria para crear un lote.");
-        }
+        validarDatosLote(fDTO);
         Producto producto = productoServicio.obtenerOCrearProducto(fDTO.getProducto());
 
         Lote lote = new Lote();
@@ -79,6 +83,7 @@ public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
 
     @Override
     public Optional<LoteDTO> buscarPorID(Long id) {
+        ValidacionGeneral.validarIdValido(id);
         return loteRepositorio.findById(id).map(this::convertir_a_DTO);
     }
 
@@ -125,6 +130,7 @@ public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
     @Override
     @Transactional 
     public boolean cargar(FormLoteDTO cDTO) {
+        validarDatosLote(cDTO);
         Lote loteACrear = convertir_a_Obj(cDTO);
         registrarEntradaStock(loteACrear.getProducto(),loteACrear.getCantidadDisponible(),loteACrear.getCostoUnitario());
         return true;
@@ -132,12 +138,15 @@ public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
 
     // PUT
     @Override
+    @Transactional
     public boolean actualizar(Long id, FormLoteDTO updateDTO) {
-        Optional<Lote> optional = loteRepositorio.findById(id);
-        if (optional.isEmpty())
-            return false;
+        validarDatosLote(updateDTO);
+        Lote lote = obtenerLotePorId(id);
 
-        Lote lote = optional.get();
+        if (updateDTO.getCantidadDisponible() < lote.getCantidadDisponible()) {
+            throw new OperacionNoPermitidaException("No se permite reducir la cantidad disponible de un " + ENTIDAD + " directamente por actualización. Use el método de consumo de stock.");
+        }
+
         lote.setCantidadDisponible(updateDTO.getCantidadDisponible());
         lote.setCostoUnitario(updateDTO.getCostoUnitario());
         lote.setFechaIngreso(updateDTO.getFechaIngreso());
@@ -148,12 +157,12 @@ public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
 
     // DELETE
     @Override
+    @Transactional
     public boolean eliminar(Long id) {
-        Optional<Lote> optional = loteRepositorio.findById(id);
-        if (optional.isEmpty())
-            return false;
-        else
-            loteRepositorio.delete(optional.get());
+        Lote lote = obtenerLotePorId(id);
+        validarLotePuedeEliminarse(id);
+
+        loteRepositorio.delete(lote);
         return true;
     }
 
@@ -170,11 +179,9 @@ public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
 
     // Método que calcula y devuelve el stock para un Producto específico.
     public Integer obtenerStockPorProducto(Long productoId) {
-        // Obtenemos todos los lotes del producto que tienen stock > 0
-        List<Lote> lotesActivos = loteRepositorio.findByProducto_ProductoIdAndCantidadDisponibleGreaterThan(productoId,
-                0);
+        ValidacionGeneral.validarIdValido(productoId);
+        List<Lote> lotesActivos = loteRepositorio.findByProducto_ProductoIdAndCantidadDisponibleGreaterThan(productoId,0);
 
-        // Sumamos la cantidad de cada lote
         return lotesActivos.stream()
                 .mapToInt(Lote::getCantidadDisponible)
                 .sum();
@@ -186,7 +193,7 @@ public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
 
     @Transactional
     public Lote registrarEntradaStock(Producto producto, int cantidad, BigDecimal costoUnitario) {
-        if (cantidad <= 0) throw new IngresoInvalidoException("La cantidad a ingresar debe ser positiva.");
+        ValidacionGeneral.mayorACero(cantidad, "cantidad");
 
         // 1. Crear el nuevo Lote
         Lote nuevoLote = new Lote();
@@ -208,6 +215,7 @@ public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
 
     @Transactional
     public void registrarSalidaStockFIFO(Long productoId, int cantidadARetirar) {
+        ValidacionGeneral.validarIdValido(productoId);
         if (cantidadARetirar <= 0) return;
 
         // 1. Verificar si hay suficiente stock consolidado
@@ -235,5 +243,31 @@ public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
 
         // Ajustar stock
         inventarioServicio.ajustarStock(productoId, -cantidadARetirar);
+    }
+
+    // VALIDACIONES PRIVADAS
+    private void validarDatosLote(FormLoteDTO dto) {
+        if (dto == null) throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");
+
+        if (dto.getProducto() == null) throw new CampoRequeridoException("producto");
+        if (dto.getCantidadDisponible() == null) throw new CampoRequeridoException("cantidadDisponible");
+        if (dto.getCostoUnitario() == null) throw new CampoRequeridoException("costoUnitario");
+
+        ValidacionGeneral.noNegativo(dto.getCantidadDisponible(), "cantidadDisponible");
+        ValidacionGeneral.noNegativo(dto.getCostoUnitario(), "costoUnitario");
+        if (dto.getFechaIngreso() != null && dto.getFechaIngreso().isAfter(LocalDate.now())) {
+            throw new IngresoInvalidoException("fechaIngreso", "no puede ser una fecha futura");
+        }
+    }
+
+    private Lote obtenerLotePorId(Long id) {
+        ValidacionGeneral.validarIdValido(id);
+        return loteRepositorio.findById(id)
+                .orElseThrow(() -> new EntidadNoEncontradaException(ENTIDAD, id));
+    }
+
+    private void validarLotePuedeEliminarse(Long loteId) {
+        Optional<Lote> optional = loteRepositorio.findById(loteId);
+        if (optional.isEmpty()) throw new EntidadNoEncontradaException(ENTIDAD, loteId);
     }
 }

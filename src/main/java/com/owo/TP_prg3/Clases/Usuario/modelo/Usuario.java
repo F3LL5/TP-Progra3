@@ -1,5 +1,7 @@
 package com.owo.TP_prg3.Clases.Usuario.modelo;
 
+import com.owo.TP_prg3.Clases.Enum.RolUsuario;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

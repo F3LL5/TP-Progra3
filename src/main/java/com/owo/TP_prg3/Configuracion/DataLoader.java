@@ -4,7 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import com.owo.TP_prg3.Clases.Usuario.modelo.RolUsuario;
+
+import com.owo.TP_prg3.Clases.Enum.RolUsuario;
 import com.owo.TP_prg3.Clases.Usuario.modelo.Usuario;
 import com.owo.TP_prg3.Clases.Usuario.modelo.UsuarioRepositorio;
 

@@ -7,4 +7,6 @@ import java.util.Set;
 @Repository
 public interface DetallePedidoRepositorio extends JpaRepository<DetallePedido, Long> {
     Set<DetallePedido> findByPedido_PedidoId(Long pedidoId);
+
+    boolean existsByProducto_ProductoId(Long id);
 }

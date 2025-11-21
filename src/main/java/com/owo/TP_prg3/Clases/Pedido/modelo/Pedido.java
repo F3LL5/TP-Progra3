@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedido;
+import com.owo.TP_prg3.Clases.Enum.TipoPedido;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.Transaccion;
 
 @Entity

@@ -1,5 +1,6 @@
 package com.owo.TP_prg3.Clases.Producto.service;
 
+import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedidoRepositorio;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 import com.owo.TP_prg3.Clases.Inventario.dto.FormInventarioDTO;
 import com.owo.TP_prg3.Clases.Inventario.service.InventarioServicio;
@@ -11,7 +12,8 @@ import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
 import com.owo.TP_prg3.Excepciones.EntidadDuplicadaException;
 import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
-
+import com.owo.TP_prg3.Excepciones.ReglaNegocioException;
+import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -34,6 +36,8 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
     @Autowired
     @Lazy
     private InventarioServicio inventarioService;
+    @Autowired
+    private DetallePedidoRepositorio detallePedidoRepositorio;
 
     // CONVERSION ------------------------------------------------------------------------------------------------------------------------------------------------
     @Override
@@ -84,7 +88,7 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
 
     @Override
     public Optional<ProductoDTO> buscarPorID(Long id) {
-        validarIdValido(id);
+        ValidacionGeneral.validarIdValido(id);
         return productoRepositorio.findById(id).map(this::convertir_a_DTO);
     }
 
@@ -177,6 +181,7 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
     @Override
     @Transactional
     public boolean eliminar(Long id) {
+        validarProductoPuedeEliminarse(id);
         Producto producto = obtenerProductoPorId(id);
         productoRepositorio.delete(producto);
         return true;
@@ -185,9 +190,16 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
     // VALIDACIONES PRIVADAS ===================================================================
     
     private void validarDatosProducto(FormProductoDTO dto) {
-        if (dto == null) throw new IngresoInvalidoException("Los datos del producto no pueden ser nulos");
-        if (dto.getNombre() == null || dto.getNombre().trim().isEmpty()) throw new CampoRequeridoException("nombre");
-        if (dto.getCategoria() == null || dto.getCategoria().trim().isEmpty()) throw new CampoRequeridoException("categoria");    
+        if (dto == null) throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");
+        
+        String nombre = dto.getNombre();
+        String categoria = dto.getCategoria();
+
+        if (nombre == null || nombre.trim().isEmpty()) throw new CampoRequeridoException("nombre");
+        if (categoria == null || categoria.trim().isEmpty()) throw new CampoRequeridoException("categoria");
+        
+        ValidacionGeneral.sinNumeros(nombre, "nombre");
+        ValidacionGeneral.sinNumeros(categoria, "categoria");
     }
     
     private void validarProductoNoExiste(String nombre, String categoria) {
@@ -200,13 +212,17 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
         }
     }
     
-    private void validarIdValido(Long id) {
-        if (id == null || id <= 0) throw new IngresoInvalidoException("ID", "debe ser un número positivo");
-    }
-    
-    private Producto obtenerProductoPorId(Long id) {
-        validarIdValido(id);
+    public Producto obtenerProductoPorId(Long id) {
+        ValidacionGeneral.validarIdValido(id);
         return productoRepositorio.findById(id)
                 .orElseThrow(() -> new EntidadNoEncontradaException(ENTIDAD, id));
+    }
+
+    private void validarProductoPuedeEliminarse(Long productoId) {
+        if (detallePedidoRepositorio.existsByProducto_ProductoId(productoId)) {
+            throw new ReglaNegocioException(
+                "No se puede eliminar " + ENTIDAD + " porque tiene DetallePedido asociados"
+            );
+        }
     }
 }

@@ -1,5 +1,7 @@
 package com.owo.TP_prg3.Clases.Usuario.service;
 
+import com.owo.TP_prg3.Clases.Duenio.modelo.DuenioRepositorio;
+import com.owo.TP_prg3.Clases.Empleado.modelo.EmpleadoRepositorio;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 import com.owo.TP_prg3.Clases.Usuario.dto.FormUsuarioDTO;
 import com.owo.TP_prg3.Clases.Usuario.dto.UsuarioDTO;
@@ -9,6 +11,10 @@ import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
 import com.owo.TP_prg3.Excepciones.EntidadDuplicadaException;
 import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.ReglaNegocioException;
+import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
+
+import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,6 +37,12 @@ public class UsuarioServicio implements I_CRUD<Usuario, UsuarioDTO, FormUsuarioD
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private EmpleadoRepositorio empleadoRepositorio;
+    @Autowired
+    private DuenioRepositorio duenioRepositorio;
+
 
     //Conversion
     @Override
@@ -55,6 +67,7 @@ public class UsuarioServicio implements I_CRUD<Usuario, UsuarioDTO, FormUsuarioD
 
     //Metodos'
     @Override
+    @Transactional
     public boolean cargar(FormUsuarioDTO dto) {
         validarDatosUsuario(dto);
         validarUsuarioNoExiste(dto.getEmail());
@@ -74,7 +87,7 @@ public class UsuarioServicio implements I_CRUD<Usuario, UsuarioDTO, FormUsuarioD
 
     @Override
     public Optional<UsuarioDTO> buscarPorID(Long id) {
-        validarIdValido(id);
+        ValidacionGeneral.validarIdValido(id);
         return usuarioRepositorio.findById(id).map(this::convertir_a_DTO);
     }
 
@@ -124,6 +137,7 @@ public class UsuarioServicio implements I_CRUD<Usuario, UsuarioDTO, FormUsuarioD
 
     // PUT
    @Override
+   @Transactional
     public boolean actualizar(Long id, FormUsuarioDTO updateDTO) {
         // 1. Validar el DTO
         validarDatosUsuario(updateDTO); 
@@ -145,8 +159,11 @@ public class UsuarioServicio implements I_CRUD<Usuario, UsuarioDTO, FormUsuarioD
 
     // DELETE 
     @Override
+    @Transactional
     public boolean eliminar(Long id) {
-        Usuario usuario = obtenerUsuarioPorId(id); 
+        Usuario usuario = obtenerUsuarioPorId(id);
+        validarUsuarioPuedeEliminarse(id);
+
         usuarioRepositorio.delete(usuario);
         return true;
     }
@@ -154,44 +171,19 @@ public class UsuarioServicio implements I_CRUD<Usuario, UsuarioDTO, FormUsuarioD
     // VALIDACIONES PRIVADAS ===========================================================================================
 
     /**
-     * @param id El ID a validar.
-     * @throws IngresoInvalidoException si el ID es nulo o no positivo.
-     */
-    private void validarIdValido(Long id) { 
-        if (id == null || id <= 0) {
-            throw new IngresoInvalidoException("ID", "debe ser un número positivo para la entidad " + ENTIDAD);
-        }
-    }
-
-    /**
      * @param dto El DTO a validar.
      * @throws IngresoInvalidoException si el DTO es nulo o si el email tiene formato inválido.
      * @throws CampoRequeridoException si algún campo obligatorio es nulo o vacío.
      */
-    private void validarDatosUsuario(FormUsuarioDTO dto) { 
-        if (dto == null) {
-            throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");
-        }
-        
-        // 1. Validar Email
-        if (dto.getEmail() == null || dto.getEmail().trim().isEmpty()) { 
-            throw new CampoRequeridoException("email");
-        }
-        // Validación de formato de Email
-        String emailTrimmed = dto.getEmail().trim();
-        if (!emailTrimmed.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")) {
-             throw new IngresoInvalidoException("email", "formato inválido: " + emailTrimmed); 
-        }
+    private void validarDatosUsuario(FormUsuarioDTO dto) {
+        if (dto == null) throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");
 
-        // 2. Validar Contraseña
-        if (dto.getContraseña() == null || dto.getContraseña().trim().isEmpty()) { 
-            throw new CampoRequeridoException("contraseña");
-        }
+        if (dto.getEmail() == null) throw new CampoRequeridoException("email");
+        if (dto.getContraseña() == null) throw new CampoRequeridoException("contrasenia");
+        if (dto.getRol() == null) throw new CampoRequeridoException("rol");
 
-        // 3. Validar Rol
-        if (dto.getRol() == null) { 
-            throw new CampoRequeridoException("rol");
-        }
+        ValidacionGeneral.validarEmailFormat(dto.getEmail(), "email");
+        ValidacionGeneral.validarContrasenia(dto.getContraseña(), "contrasenia");
     }
 
     /**
@@ -223,8 +215,17 @@ public class UsuarioServicio implements I_CRUD<Usuario, UsuarioDTO, FormUsuarioD
      * @throws EntidadNoEncontradaException si no se encuentra la entidad.
      */
     private Usuario obtenerUsuarioPorId(Long id) { 
-        validarIdValido(id); 
+        ValidacionGeneral.validarIdValido(id); 
         return usuarioRepositorio.findById(id)
                 .orElseThrow(() -> new EntidadNoEncontradaException(ENTIDAD, id)); 
+    }
+
+    private void validarUsuarioPuedeEliminarse(Long usuarioId) {
+        if (duenioRepositorio.existsByUsuarioUsuarioId(usuarioId)) {
+             throw new ReglaNegocioException("No se puede eliminar el " + ENTIDAD + " porque tiene un Duenio asociado.");
+        }
+        if (empleadoRepositorio.existsByUsuarioUsuarioId(usuarioId)) {
+             throw new ReglaNegocioException("No se puede eliminar el " + ENTIDAD + " porque tiene un Empleado asociado.");
+        }
     }
 }

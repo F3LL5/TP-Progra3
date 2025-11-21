@@ -13,13 +13,18 @@ import com.owo.TP_prg3.Clases.Empleado.dto.EmpleadoDTO;
 import com.owo.TP_prg3.Clases.Empleado.dto.FormEmpleadoDTO;
 import com.owo.TP_prg3.Clases.Empleado.modelo.Empleado;
 import com.owo.TP_prg3.Clases.Empleado.modelo.EmpleadoRepositorio;
+import com.owo.TP_prg3.Clases.Enum.RolUsuario;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
-import com.owo.TP_prg3.Clases.Usuario.modelo.RolUsuario;
+import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
+import com.owo.TP_prg3.Clases.Persona.service.PersonaServicio;
 import com.owo.TP_prg3.Clases.Usuario.modelo.Usuario;
 import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
 import com.owo.TP_prg3.Excepciones.EntidadDuplicadaException;
 import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmpleadoDTO> {
@@ -28,6 +33,9 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
 
     @Autowired
     private EmpleadoRepositorio empleadoRepositorio;
+
+    @Autowired
+    private PersonaServicio personaServicio;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -66,7 +74,7 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
 
     @Override
     public Optional<EmpleadoDTO> buscarPorID(Long id) {
-        validarIdValido(id);
+        ValidacionGeneral.validarIdValido(id);
         return empleadoRepositorio.findById(id).map(this::convertir_a_DTO);
     }
 
@@ -141,6 +149,7 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
 
     // POST
     @Override
+    @Transactional
     public boolean cargar(FormEmpleadoDTO createDTO) {
         validarDatosEmpleado(createDTO);
         validarEmpleadoNoExiste(createDTO.getDni(), createDTO.getEmail());
@@ -149,19 +158,22 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
     }
 
     // PUT
-   @Override
+    @Override
+    @Transactional
     public boolean actualizar(Long id, FormEmpleadoDTO updateDTO) {
-        validarDatosEmpleado(updateDTO); 
-        Empleado empleado = obtenerEmpleadoPorId(id); 
+        validarDatosEmpleado(updateDTO);
+        Empleado empleado = obtenerEmpleadoPorId(id);
+        
         validarEmpleadoNoExisteOtro(updateDTO.getDni(), updateDTO.getEmail(), id);
-
-        // Actualizar campos
-        empleado.setNombre(updateDTO.getNombre().trim()); 
-        empleado.setEdad(updateDTO.getEdad());
-        empleado.setDni(updateDTO.getDni());
-        // Actualizar datos del Usuario asociado
-        empleado.getUsuario().setEmail(updateDTO.getEmail().trim()); 
-        empleado.getUsuario().setContraseña(passwordEncoder.encode(updateDTO.getContraseña().trim())); 
+        
+        empleado.getPersona().setNombre(updateDTO.getNombre().trim());
+        empleado.getPersona().setEdad(updateDTO.getEdad());
+        empleado.getPersona().setDni(updateDTO.getDni());
+        
+        empleado.getUsuario().setEmail(updateDTO.getEmail().trim());
+        if (updateDTO.getContraseña() != null && !updateDTO.getContraseña().trim().isEmpty()) {
+            empleado.getUsuario().setContraseña(passwordEncoder.encode(updateDTO.getContraseña()));
+        }
         
         empleadoRepositorio.save(empleado);
         return true;
@@ -169,50 +181,28 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
 
     // DELETE 
     @Override
+    @Transactional
     public boolean eliminar(Long id) {
-        Optional<Empleado> optional = empleadoRepositorio.findById(id);
-        if(optional.isEmpty()) return false;
-        else empleadoRepositorio.delete(optional.get());
+        Empleado empleado = obtenerEmpleadoPorId(id);
+        empleadoRepositorio.delete(empleado);
         return true;
     }
 
     // VALIDACIONES PRIVADAS ===========================================================================================
 
-    private void validarIdValido(Long id) { 
-        if (id == null || id <= 0) {
-            throw new IngresoInvalidoException("ID", "debe ser un número positivo para la entidad " + ENTIDAD);
-        }
-    }
 
-    private void validarDatosEmpleado(FormEmpleadoDTO dto) { 
-        if (dto == null) {
-            throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");
-        }
+    private void validarDatosEmpleado(FormEmpleadoDTO dto) {
+        if (dto == null) throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");
+
+        // Validaciones de Persona
+        personaServicio.validarDatosPersona(new FormPersonaDTO(dto.getNombre(), dto.getEdad(), dto.getDni()));
         
-        // 1. Validar Nombre (String)
-        if (dto.getNombre() == null || dto.getNombre().trim().isEmpty()) { // Usar .trim()
-            throw new CampoRequeridoException("nombre");
-        }
-        // 2. Validar Edad (Integer > 0)
-        if (dto.getEdad() == null || dto.getEdad() <= 0) { 
-            throw new CampoRequeridoException("edad"); 
-        }
-        // 3. Validar DNI (int > 0)
-        if (dto.getDni() <= 0) { 
-             throw new IngresoInvalidoException("DNI", "debe ser un número positivo.");
-        }
-        // 4. Validar Email (String, requerido y formato)
-        if (dto.getEmail() == null || dto.getEmail().trim().isEmpty()) {
-            throw new CampoRequeridoException("email");
-        }
-        String emailTrimmed = dto.getEmail().trim();
-        if (!emailTrimmed.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")) { 
-             throw new IngresoInvalidoException("email", "formato inválido: " + emailTrimmed);
-        }
-        // 5. Validar Contraseña (String)
-        if (dto.getContraseña() == null || dto.getContraseña().trim().isEmpty()) {
-            throw new CampoRequeridoException("contraseña");
-        }
+        // Validaciones de Usuario
+        if (dto.getEmail() == null) throw new CampoRequeridoException("email");
+        if (dto.getContraseña() == null) throw new CampoRequeridoException("contrasenia");
+        
+        ValidacionGeneral.validarEmailFormat(dto.getEmail(), "email");
+        ValidacionGeneral.validarContrasenia(dto.getContraseña(), "contrasenia");
     }
 
     private void validarEmpleadoNoExiste(int dni, String email) { 
@@ -243,7 +233,7 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
     }
 
     private Empleado obtenerEmpleadoPorId(Long id) { 
-        validarIdValido(id);
+        ValidacionGeneral.validarIdValido(id);
         return empleadoRepositorio.findById(id)
                 .orElseThrow(() -> new EntidadNoEncontradaException(ENTIDAD, id));
     }

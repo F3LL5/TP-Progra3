@@ -14,13 +14,18 @@ import com.owo.TP_prg3.Clases.Duenio.dto.DuenioDTO;
 import com.owo.TP_prg3.Clases.Duenio.dto.FormDuenioDTO;
 import com.owo.TP_prg3.Clases.Duenio.modelo.Duenio;
 import com.owo.TP_prg3.Clases.Duenio.modelo.DuenioRepositorio;
+import com.owo.TP_prg3.Clases.Enum.RolUsuario;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
-import com.owo.TP_prg3.Clases.Usuario.modelo.RolUsuario;
+import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
+import com.owo.TP_prg3.Clases.Persona.service.PersonaServicio;
 import com.owo.TP_prg3.Clases.Usuario.modelo.Usuario;
 import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
 import com.owo.TP_prg3.Excepciones.EntidadDuplicadaException;
 import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> {
@@ -29,6 +34,10 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
 
     @Autowired
     private DuenioRepositorio duenioRepositorio;
+
+    @Autowired
+    private PersonaServicio personaServicio;
+
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -67,7 +76,7 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
 
     @Override
     public Optional<DuenioDTO> buscarPorID(Long id) {
-        validarIdValido(id);
+        ValidacionGeneral.validarIdValido(id);
         return duenioRepositorio.findById(id).map(this::convertir_a_DTO);
     }
 
@@ -143,6 +152,7 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
 
     // POST
     @Override
+    @Transactional
     public boolean cargar(FormDuenioDTO createDTO) {
         validarDatosDuenio(createDTO);
         validarDuenioNoExiste(createDTO.getDni(), createDTO.getEmail());
@@ -152,26 +162,29 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
 
     // PUT
    @Override
+   @Transactional
     public boolean actualizar(Long id, FormDuenioDTO updateDTO) {
-        validarDatosDuenio(updateDTO); 
-
+        validarDatosDuenio(updateDTO);
         Duenio duenio = obtenerDuenioPorId(id);
         
         validarDuenioNoExisteOtro(updateDTO.getDni(), updateDTO.getEmail(), id);
-
-        // Actualizar campos
-        duenio.setNombre(updateDTO.getNombre().trim()); 
-        duenio.setEdad(updateDTO.getEdad());
-        duenio.setDni(updateDTO.getDni());
-        duenio.getUsuario().setEmail(updateDTO.getEmail().trim()); 
-        duenio.getUsuario().setContraseña(passwordEncoder.encode(updateDTO.getContraseña().trim())); 
-
+        
+        duenio.getPersona().setNombre(updateDTO.getNombre().trim());
+        duenio.getPersona().setEdad(updateDTO.getEdad());
+        duenio.getPersona().setDni(updateDTO.getDni());
+        
+        duenio.getUsuario().setEmail(updateDTO.getEmail().trim());
+        if (updateDTO.getContraseña() != null && !updateDTO.getContraseña().trim().isEmpty()) {
+            duenio.getUsuario().setContraseña(passwordEncoder.encode(updateDTO.getContraseña()));
+        }
+        
         duenioRepositorio.save(duenio);
         return true;
     }
 
     // DELETE 
     @Override
+    @Transactional
     public boolean eliminar(Long id) {
         Duenio duenio = obtenerDuenioPorId(id);
         duenioRepositorio.delete(duenio);
@@ -180,41 +193,18 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
 
     // VALIDACIONES PRIVADAS ===========================================================================================
 
-    private void validarIdValido(Long id) {
-        if (id == null || id <= 0) {
-            throw new IngresoInvalidoException("ID", "debe ser un número positivo para la entidad " + ENTIDAD);
-        }
-    }
-
     private void validarDatosDuenio(FormDuenioDTO dto) {
-        if (dto == null) {
-            throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");
-        }
+        if (dto == null) throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");
+
+        // Validaciones de Persona
+        personaServicio.validarDatosPersona(new FormPersonaDTO(dto.getNombre(), dto.getEdad(), dto.getDni()));
         
-        // 1. Validar Nombre (String)
-        if (dto.getNombre() == null || dto.getNombre().trim().isEmpty()) { 
-            throw new CampoRequeridoException("nombre");
-        }
-        // 2. Validar Edad (Integer > 0)
-        if (dto.getEdad() == null || dto.getEdad() <= 0) { 
-            throw new CampoRequeridoException("edad"); 
-        }
-        // 3. Validar DNI (int > 0)
-        if (dto.getDni() <= 0) { 
-             throw new IngresoInvalidoException("DNI", "debe ser un número positivo.");
-        }
-        // 4. Validar Email (String, requerido y formato)
-        if (dto.getEmail() == null || dto.getEmail().trim().isEmpty()) {
-            throw new CampoRequeridoException("email");
-        }
-        String emailTrimmed = dto.getEmail().trim();
-        if (!emailTrimmed.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")) { 
-             throw new IngresoInvalidoException("email", "formato inválido: " + emailTrimmed);
-        }
-        // 5. Validar Contraseña (String)
-        if (dto.getContraseña() == null || dto.getContraseña().trim().isEmpty()) {
-            throw new CampoRequeridoException("contraseña");
-        }
+        // Validaciones de Usuario
+        if (dto.getEmail() == null) throw new CampoRequeridoException("email");
+        if (dto.getContraseña() == null) throw new CampoRequeridoException("contrasenia");
+        
+        ValidacionGeneral.validarEmailFormat(dto.getEmail(), "email");
+        ValidacionGeneral.validarContrasenia(dto.getContraseña(), "contrasenia");
     }
 
     private void validarDuenioNoExiste(int dni, String email) { 
@@ -244,7 +234,7 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
     }
 
     private Duenio obtenerDuenioPorId(Long id) { 
-        validarIdValido(id);
+        ValidacionGeneral.validarIdValido(id);
         return duenioRepositorio.findById(id)
                 .orElseThrow(() -> new EntidadNoEncontradaException(ENTIDAD, id));
     }

@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
+import com.owo.TP_prg3.Clases.Persona.service.PersonaServicio;
 import com.owo.TP_prg3.Clases.Proveedor.dto.ProveedorDTO;
 import com.owo.TP_prg3.Clases.Proveedor.modelo.Proveedor;
 import com.owo.TP_prg3.Clases.Proveedor.modelo.ProveedorRepositorio;
@@ -16,6 +17,7 @@ import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
 import com.owo.TP_prg3.Excepciones.EntidadDuplicadaException;
 import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 
 @Service
@@ -25,6 +27,9 @@ public class ProveedorServicio implements I_CRUD<Proveedor, ProveedorDTO, FormPe
 
     @Autowired
     private ProveedorRepositorio proveedorRepositorio;
+
+    @Autowired
+    private PersonaServicio personaServicio;
 
     // Conversión
     @Override
@@ -60,7 +65,7 @@ public class ProveedorServicio implements I_CRUD<Proveedor, ProveedorDTO, FormPe
 
     @Override
     public Optional<ProveedorDTO> buscarPorID(Long id) {
-        validarIdValido(id);
+        ValidacionGeneral.validarIdValido(id);
         return proveedorRepositorio.findById(id).map(this::convertir_a_DTO);
     }
 
@@ -166,49 +171,17 @@ public class ProveedorServicio implements I_CRUD<Proveedor, ProveedorDTO, FormPe
 
     // VALIDACIONES PRIVADAS ================================================================================================================================== [cite: 44]
 
-    /**
-     * @param id El ID a validar.
-     * @throws IngresoInvalidoException si el ID es nulo o no positivo.
-     */
-    private void validarIdValido(Long id) { 
-        if (id == null || id <= 0) { 
-            throw new IngresoInvalidoException("ID", "debe ser un número positivo para la entidad " + ENTIDAD);
-        }
+    private void validarDatosProveedor(FormPersonaDTO dto) {
+        personaServicio.validarDatosPersona(dto);
     }
 
-    /** @param dto El DTO a validar. @throws IngresoInvalidoException si el DTO es nulo.
-        @throws CampoRequeridoException si algún campo obligatorio es nulo o vacío. */
-    private void validarDatosProveedor(FormPersonaDTO dto) { 
-        if (dto == null) { 
-            throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");
-        }
-        
-        // Validación de campos obligatorios
-        if (dto.getDni() <= 0) { 
-             // Usamos IngresoInvalidoException para el formato o rango del DNI
-             throw new IngresoInvalidoException("DNI", "debe ser un número positivo.");
-        }
-        if (dto.getNombre() == null || dto.getNombre().trim().isEmpty()) {
-            throw new CampoRequeridoException("nombre");
-        }
-        if (dto.getEdad() == null || dto.getEdad() <= 0) { 
-            throw new CampoRequeridoException("edad"); 
-        }
-    }
-
-    /** @param dni El DNI a verificar.
-        @throws EntidadDuplicadaException si ya existe un Proveedor con ese DNI. 
-     */
     private void validarProveedorNoExiste(int dni) { 
-        // Usamos el método existente 'buscarPorDNI' para chequear
-        Optional<ProveedorDTO> existente = this.buscarPorDNI(dni); 
+        Optional<Proveedor> existente = proveedorRepositorio.findByPersona_Dni(dni); 
         if (existente.isPresent()) {
             throw new EntidadDuplicadaException(ENTIDAD, "dni", dni);
         }
     }
 
-    /** @param dni El DNI a verificar. @param id El ID de la persona (PersonaId) del proveedor que se está actualizando.
-        @throws EntidadDuplicadaException si ya existe otro Proveedor con ese DNI. */
     private void validarProveedorNoExisteOtro(int dni, Long id) {
         Optional<Proveedor> existente = proveedorRepositorio.findByPersona_Dni(dni);
         // Si existe y su ID de persona es diferente al que estamos actualizando, es duplicado. 
@@ -217,12 +190,10 @@ public class ProveedorServicio implements I_CRUD<Proveedor, ProveedorDTO, FormPe
         }
     }
 
-    /** @param id El ID de la entidad a buscar.
-        @return La entidad Proveedor encontrada.
-        @throws EntidadNoEncontradaException si no se encuentra la entidad. */
     private Proveedor obtenerProveedorPorId(Long id) {
-        validarIdValido(id); 
+        ValidacionGeneral.validarIdValido(id); 
         return proveedorRepositorio.findById(id)
                 .orElseThrow(() -> new EntidadNoEncontradaException(ENTIDAD, id));
     }
+
 }

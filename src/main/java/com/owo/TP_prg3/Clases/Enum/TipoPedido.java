@@ -1,4 +1,4 @@
-package com.owo.TP_prg3.Clases.Pedido.modelo;
+package com.owo.TP_prg3.Clases.Enum;
 
 public enum TipoPedido {
     COMPRA,
