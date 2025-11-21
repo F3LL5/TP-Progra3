@@ -105,7 +105,7 @@ create table if not exists lotes (
     foreign key(producto_id) references productos(producto_id)
     on delete cascade
     on update cascade
-)
+);
 
 -- ---------------------------------------------------------------------------------------
 -- Tablas para pedidos y transacciones
@@ -126,12 +126,8 @@ create table if not exists transacciones(
 	tipo varchar(100) not null,
 	fecha datetime default current_timestamp,
 	monto decimal(38,2) not null,
-	origen_id bigint
-	ON DELETE SET NULL
-    ON UPDATE CASCADE,
+	origen_id bigint,
 	destino_id bigint not null
-	ON DELETE SET NULL
-    ON UPDATE CASCADE
 );
 
 create table if not exists pedidos (
