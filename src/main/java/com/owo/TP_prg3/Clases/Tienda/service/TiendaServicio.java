@@ -20,10 +20,16 @@ import com.owo.TP_prg3.Clases.Tienda.dto.TiendaDTO;
 import com.owo.TP_prg3.Clases.Tienda.modelo.Tienda;
 import com.owo.TP_prg3.Clases.Tienda.modelo.TiendaRepositorio;
 import com.owo.TP_prg3.Clases.Usuario.modelo.Usuario;
-import com.owo.TP_prg3.Excepciones.StockInsuficienteException;
+import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
+import com.owo.TP_prg3.Excepciones.EntidadDuplicadaException;
+import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
+import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 
 @Service
 public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> {
+
+    private static final String ENTIDAD = "Tienda";
 
     @Autowired
     private TiendaRepositorio tiendaRepositorio;
@@ -32,6 +38,9 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
 
     @Override
     public Tienda convertir_a_Obj(FormTiendaDTO tiendaDTO) {
+        validarDatosTienda(tiendaDTO);
+        validarDuenioExiste(tiendaDTO.getDuenioDni());
+
         Tienda tienda = new Tienda();
         tienda.setNombre(tiendaDTO.getNombre());
         tienda.setDireccion(tiendaDTO.getDireccion());
@@ -65,6 +74,7 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
 
     @Override
     public Optional<TiendaDTO> buscarPorID(Long id) {
+        ValidacionGeneral.validarIdValido(id);
         return tiendaRepositorio.findById(id).map(this::convertir_a_DTO);
     }
 
@@ -72,6 +82,8 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
     @Override
     @Transactional
     public boolean cargar(FormTiendaDTO createDTO) {
+        validarDatosTienda(createDTO);
+        validarTiendaNoExiste(createDTO.getNombre());
         tiendaRepositorio.save(convertir_a_Obj(createDTO));
         return true;
     }
@@ -79,21 +91,15 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
     // PUT
     @Override
     public boolean actualizar(Long id, FormTiendaDTO updateDTO) {
-        Optional<Tienda> optional = tiendaRepositorio.findById(id);
-        if (optional.isEmpty()) return false;
+        validarDatosTienda(updateDTO);
+        Tienda tienda = obtenerTiendaPorId(id);
+             
+        tienda.setNombre(updateDTO.getNombre().trim());
+        tienda.setDireccion(updateDTO.getDireccion().trim());
         
-        Tienda tienda = optional.get();
-        tienda.setNombre(updateDTO.getNombre());
-        tienda.setDireccion(updateDTO.getDireccion());
-        tienda.setCaja(new Caja(updateDTO.getCaja()));
-
-        //Atributos que pueden ser modificados pero entran null desde el dto porque no es viable mostrarlos
+        Duenio nuevoDuenio = validarDuenioExiste(updateDTO.getDuenioDni());
+        tienda.setDuenio(nuevoDuenio);
         
-        if(updateDTO.getDuenioDni()!=null){
-            Integer duenioDni = updateDTO.getDuenioDni();
-            tienda.setDuenio(duenioRepositorio.findByPersona_Dni(duenioDni).orElse(new Duenio(null, new Persona(), new Usuario())));
-        }
-
         tiendaRepositorio.save(tienda);
         return true;
     }
@@ -102,19 +108,39 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
     // DELETE
     @Override
     public boolean eliminar(Long id) {
-        Optional<Tienda> optional = tiendaRepositorio.findById(id);
-        if(optional.isEmpty()) return false;
-        else tiendaRepositorio.delete(optional.get());
+        Tienda tienda = obtenerTiendaPorId(id);
+        tiendaRepositorio.delete(tienda);
         return true;
     }
 
     @Override
     public Set<TiendaDTO> filtrar(String campo, Object valor) {
-        Stream<Tienda> stream = tiendaRepositorio.findAll().stream();
+        if (campo == null || campo.trim().isEmpty()) {
+            throw new CampoRequeridoException("campo de filtrado");
+        }
+        if (valor == null) {
+            throw new CampoRequeridoException("valor de filtrado");
+        }
 
+        Stream<Tienda> stream = tiendaRepositorio.findAll().stream();
         Predicate<Tienda> filtro;
-        switch (campo.toLowerCase()) {
-            default -> filtro = p -> false;
+        String campoTrim = campo.toLowerCase().trim();
+
+        switch (campoTrim) {
+            case "nombre" -> filtro = t -> t.getNombre().equalsIgnoreCase(valor.toString().trim());
+            case "direccion" -> filtro = t -> t.getDireccion().equalsIgnoreCase(valor.toString().trim());
+            case "duenioid" -> {
+                 try {
+                     Long duenioId = Long.parseLong(valor.toString());
+                     filtro = t -> t.getDuenio() != null && t.getDuenio().getDuenioId().equals(duenioId);
+                 } catch (NumberFormatException e) {
+                     throw new IngresoInvalidoException("valor", "debe ser un número entero para el campo 'duenioId'");
+                 }
+            }
+            default -> throw new IngresoInvalidoException(
+                "campo de filtrado",
+                "debe ser 'nombre', 'direccion' o 'duenioId'"
+            );
         }
 
         return stream.filter(filtro)
@@ -123,10 +149,17 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
     }
 
     public Set<TiendaDTO> ordenar(String campo, boolean ascendente) {
-        Stream<Tienda> stream = tiendaRepositorio.findAll().stream();
+        if (campo == null || campo.trim().isEmpty()) {
+            throw new CampoRequeridoException("campo de ordenamiento");
+        }
 
+        Stream<Tienda> stream = tiendaRepositorio.findAll().stream();
         Comparator<Tienda> comparador;
-        switch (campo.toLowerCase()) {
+        String campoTrim = campo.toLowerCase().trim();
+
+        switch (campoTrim) {
+            case "nombre" -> comparador = Comparator.comparing(Tienda::getNombre);
+            case "duenioid" -> comparador = Comparator.comparing(t -> t.getDuenio() != null ? t.getDuenio().getDuenioId() : Long.MIN_VALUE);
             default -> comparador = Comparator.comparing(Tienda::getTiendaId);
         }
         if (!ascendente) comparador = comparador.reversed();
@@ -138,9 +171,11 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
 
     @Transactional
     public void acreditarMontoCaja(Long tiendaId, BigDecimal monto) {
-        if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) return;
+        if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IngresoInvalidoException("monto", "debe ser un valor positivo.");
+        }
 
-        Tienda tienda = tiendaRepositorio.findById(tiendaId).orElseThrow(() -> new RuntimeException("Tienda no encontrada con ID: " + tiendaId));
+        Tienda tienda = obtenerTiendaPorId(tiendaId);
 
         Caja caja = tienda.getCaja();
         
@@ -157,14 +192,54 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
 
     @Transactional
     public void debitarMontoCaja(Long tiendaId, BigDecimal monto) {
-        if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) return; // Validación
-        Tienda tienda = tiendaRepositorio.findById(tiendaId).orElseThrow(() -> new RuntimeException("Tienda no encontrada con ID: " + tiendaId));
+        if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IngresoInvalidoException("monto", "debe ser un valor positivo.");
+        }
+
+        Tienda tienda = obtenerTiendaPorId(tiendaId);
         Caja caja = tienda.getCaja();
         
-        if (caja == null) throw new RuntimeException("La Caja de la Tienda no existe para debitar."); // Validación Caja
-        if (caja.getSaldo().compareTo(monto) < 0) throw new StockInsuficienteException("Saldo insuficiente en Caja para la compra."); // Validación Saldo
+        if (caja == null) {
+            throw new EntidadNoEncontradaException("La caja de la Tienda no existe para debitar.");
+        }
+        
+        if (caja.getSaldo().compareTo(monto) < 0) {
+            throw new IngresoInvalidoException("saldo", "insuficiente para debitar el monto solicitado.");
+        }
 
         caja.setSaldo(caja.getSaldo().subtract(monto)); // Restar monto
         tiendaRepositorio.save(tienda);
+    }
+
+    // VALIDACIONES PRIVADAS ===========================================================================================
+
+    private void validarDatosTienda(FormTiendaDTO dto) {
+        if (dto == null) {
+            throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");
+        }
+        
+        ValidacionGeneral.validarStringNoVacio(dto.getNombre(), "nombre");
+        ValidacionGeneral.validarStringNoVacio(dto.getDireccion(), "dirección");
+        
+        if (dto.getDuenioDni() == null) throw new CampoRequeridoException("dniDuenio");
+        ValidacionGeneral.validarDni(dto.getDuenioDni());
+    }
+
+    private Duenio validarDuenioExiste(int dni) {
+        return duenioRepositorio.findByPersona_Dni(dni)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Duenio", "DNI", dni));
+    }
+
+    private void validarTiendaNoExiste(String nombre) {
+        Optional<Tienda> existente = tiendaRepositorio.findByNombre(nombre.trim());
+        if (existente.isPresent()) {
+            throw new EntidadDuplicadaException(ENTIDAD, "nombre", nombre.trim());
+        }
+    }
+
+    private Tienda obtenerTiendaPorId(Long id) {
+        ValidacionGeneral.validarIdValido(id);
+        return tiendaRepositorio.findById(id)
+                .orElseThrow(() -> new EntidadNoEncontradaException(ENTIDAD, id));
     }
 }

@@ -1,4 +1,4 @@
-package com.owo.TP_prg3.Clases.Usuario.modelo;
+package com.owo.TP_prg3.Clases.Enum;
 
 public enum RolUsuario {
     ROLE_ADMIN, // Spring Security usa el prefijo ROLE_ por convención

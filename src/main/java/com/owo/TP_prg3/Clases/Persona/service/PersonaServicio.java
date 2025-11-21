@@ -5,6 +5,14 @@ import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
 import com.owo.TP_prg3.Clases.Persona.dto.PersonaDTO;
 import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
 import com.owo.TP_prg3.Clases.Persona.modelo.PersonaRepositorio;
+import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
+import com.owo.TP_prg3.Excepciones.EntidadDuplicadaException;
+import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
+import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.Comparator;
@@ -23,6 +31,7 @@ public class PersonaServicio implements I_CRUD<Persona, PersonaDTO, FormPersonaD
     // Conversión
     @Override
     public Persona convertir_a_Obj(FormPersonaDTO fDTO) {
+        validarDatosPersona(fDTO);
         return new Persona(
             null,
             fDTO.getNombre(),
@@ -54,6 +63,7 @@ public class PersonaServicio implements I_CRUD<Persona, PersonaDTO, FormPersonaD
 
     @Override
     public Optional<PersonaDTO> buscarPorID(Long id) {
+        ValidacionGeneral.validarIdValido(id);
         return personaRepositorio.findById(id).map(this::convertir_a_DTO);
     }
 
@@ -95,47 +105,25 @@ public class PersonaServicio implements I_CRUD<Persona, PersonaDTO, FormPersonaD
                     .collect(Collectors.toSet());
     }
 
-    // POST
-
-    // Metodo para crear cuenta y persona aleatoria
-
-    // @Transactional
-    // public PersonaDTO createEntidadYCuentaBancariaPuesto(Long puestoId,FormPersonaDTO createEntidadDTO) {
-    //     if (createEntidadDTO.getRolEntidad() != RolEntidad.CLIENTE && createEntidadDTO.getRolEntidad() != RolEntidad.PROVEEDOR) {
-    //         throw new IngresoInvalidoException("Solo se pueden crear entidades con rol CLIENTE o PROVEEDOR para un puesto.");
-    //     }
-
-    //     Persona entidad = convertirA_Entidad(createEntidadDTO);
-    //     Persona entidadRegistrada = entidadRepositorio.save(entidad);
-
-    //     //Creamos una cuenta bancaria automaticamente con un saldo random para agilizar el sistema
-    //     if (entidadRegistrada.getEdad() >= 18) { // Solo si la entidad es mayor de edad
-    //         CuentaBancaria cuentaBancaria = new CuentaBancaria();
-    //         cuentaBancaria.setEntidad(entidadRegistrada);
-    //         // Saldo random: 10,000 * (número aleatorio entre 1 y 10)
-    //         double num = (int)(Math.random() * 10) + 1; // Número aleatorio entre 1 y 10
-    //         cuentaBancaria.setSaldo(BigDecimal.valueOf(num * 10000.0));
-    //         cuentaBancariaRepositorio.save(cuentaBancaria);
-    //     }
-
-    //     return convertirA_DTO(entidadRegistrada);
-    // }
-
     @Override
+    @Transactional
     public boolean cargar(FormPersonaDTO cDTO) {
-        if (this.buscarPorDNI(cDTO.getDni()).isPresent()) return false;
+        validarDatosPersona(cDTO);
+        validarPersonaNoExiste(cDTO.getDni());
         personaRepositorio.save(convertir_a_Obj(cDTO));
         return true;
     }
 
     // PUT
-   @Override
+    @Override
+    @Transactional
     public boolean actualizar(Long id, FormPersonaDTO updateDTO) {
-        Optional<Persona> optional = personaRepositorio.findById(id);
-        if (optional.isEmpty()) return false;
+        validarDatosPersona(updateDTO);
+        Persona persona = obtenerPersonaPorId(id);
         
-        Persona persona = optional.get();
-        persona.setNombre(updateDTO.getNombre());
+        validarPersonaNoExisteOtro(updateDTO.getDni(), id);
+
+        persona.setNombre(updateDTO.getNombre().trim());
         persona.setEdad(updateDTO.getEdad());
         persona.setDni(updateDTO.getDni());
 
@@ -145,10 +133,42 @@ public class PersonaServicio implements I_CRUD<Persona, PersonaDTO, FormPersonaD
 
     // DELETE 
     @Override
+    @Transactional
     public boolean eliminar(Long id) {
-        Optional<Persona> optional = personaRepositorio.findById(id);
-        if(optional.isEmpty()) return false;
-        else personaRepositorio.delete(optional.get());
+        Persona persona = obtenerPersonaPorId(id);
+        personaRepositorio.delete(persona);
         return true;
+    }
+
+    // VALIDACIONES
+    public void validarDatosPersona(FormPersonaDTO dto) {
+        if (dto == null) throw new IngresoInvalidoException("Los datos de Persona no pueden ser nulos");
+        
+        ValidacionGeneral.validarStringNoVacio(dto.getNombre(), "nombre");
+        ValidacionGeneral.sinNumeros(dto.getNombre(), "nombre");
+        ValidacionGeneral.validarDni(dto.getDni());
+        
+        if (dto.getEdad() == null) throw new CampoRequeridoException("edad");
+        ValidacionGeneral.enRango(dto.getEdad(), 18, 120, "edad");
+    }
+
+    public void validarPersonaNoExiste(int dni) {
+        Optional<PersonaDTO> existente = this.buscarPorDNI(dni);
+        if (existente.isPresent()) {
+            throw new EntidadDuplicadaException("Persona", "DNI", dni);
+        }
+    }
+    
+    public void validarPersonaNoExisteOtro(int dni, Long id) {
+        Optional<Persona> existente = personaRepositorio.findByDni(dni);
+        if (existente.isPresent() && !existente.get().getPersonaId().equals(id)) {
+            throw new EntidadDuplicadaException("Persona", "DNI", dni);
+        }
+    }
+    
+    public Persona obtenerPersonaPorId(Long id) {
+        ValidacionGeneral.validarIdValido(id);
+        return personaRepositorio.findById(id)
+                .orElseThrow(() -> new EntidadNoEncontradaException("Persona", id));
     }
 }

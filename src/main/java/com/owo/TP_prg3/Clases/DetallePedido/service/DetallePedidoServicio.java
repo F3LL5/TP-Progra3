@@ -4,18 +4,22 @@ import com.owo.TP_prg3.Clases.DetallePedido.dto.DetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.FormDetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedido;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedidoRepositorio;
+import com.owo.TP_prg3.Clases.Enum.TipoPedido;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 import com.owo.TP_prg3.Clases.Inventario.service.InventarioServicio;
 import com.owo.TP_prg3.Clases.Lote.service.LoteServicio;
 import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
 import com.owo.TP_prg3.Clases.Pedido.modelo.PedidoRepositorio;
-import com.owo.TP_prg3.Clases.Pedido.modelo.TipoPedido;
 import com.owo.TP_prg3.Clases.Pedido.service.PedidoServicio;
 import com.owo.TP_prg3.Clases.Producto.modelo.Producto;
 import com.owo.TP_prg3.Clases.Producto.modelo.ProductoRepositorio;
+import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
+import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -30,6 +34,8 @@ import java.util.stream.Stream;
 public class DetallePedidoServicio implements I_CRUD<DetallePedido, DetallePedidoDTO, FormDetallePedidoDTO> {
 
     // ATRIBUTOS ------------------------------------------------------------------------------------------------------
+    private static final String ENTIDAD = "DetallePedido";
+    
     @Autowired
     private DetallePedidoRepositorio detallePedidoRepositorio;
     
@@ -45,17 +51,13 @@ public class DetallePedidoServicio implements I_CRUD<DetallePedido, DetallePedid
     private InventarioServicio inventarioServicio;
 
     @Autowired
+    @Lazy
     private LoteServicio loteServicio;
 
     // CONVERSION -----------------------------------------------------------------------------------------------------
     @Override
     public DetallePedido convertir_a_Obj(FormDetallePedidoDTO fDTO) {
-        Producto producto = productoRepositorio.findById(fDTO.getProductoId()).orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + fDTO.getProductoId()));
-        return new DetallePedido(
-            producto,
-            fDTO.getCantidad(),
-            BigDecimal.ZERO
-        );
+        throw new UnsupportedOperationException("El DetallePedido debe crearse con un Pedido asociado. Use crearDetalleYAsociar().");
     }
 
     @Override
@@ -79,6 +81,7 @@ public class DetallePedidoServicio implements I_CRUD<DetallePedido, DetallePedid
 
     @Override
     public Optional<DetallePedidoDTO> buscarPorID(Long id) {
+        ValidacionGeneral.validarIdValido(id);
         return detallePedidoRepositorio.findById(id)
                 .map(this::convertir_a_DTO);
     }
@@ -128,8 +131,9 @@ public class DetallePedidoServicio implements I_CRUD<DetallePedido, DetallePedid
     // ESCRITURA -----------------------------------------------------------------------------
     
     @Override
-    public boolean cargar(FormDetallePedidoDTO createItemDTO) {
-        throw new IngresoInvalidoException("No se puede utilizar este método en este tipo de crud. Probar con agregarDetalleAPedido()");
+    @Transactional
+    public boolean cargar(FormDetallePedidoDTO cDTO) {
+        throw new UnsupportedOperationException("El DetallePedido debe crearse con un Pedido asociado. Use el servicio de Pedido.");
     }
     
     @Transactional
@@ -208,10 +212,8 @@ public class DetallePedidoServicio implements I_CRUD<DetallePedido, DetallePedid
     @Override
     @Transactional
     public boolean eliminar(Long id) {
-        Optional<DetallePedido> optional = detallePedidoRepositorio.findById(id);
-        if(optional.isEmpty()) return false;
+        DetallePedido detalle = obtenerDetallePedidoPorId(id);
         
-        DetallePedido detalle = optional.get();
         Pedido pedido = detalle.getPedido(); 
         
         detallePedidoRepositorio.delete(detalle);
@@ -226,22 +228,23 @@ public class DetallePedidoServicio implements I_CRUD<DetallePedido, DetallePedid
     }
 
     private BigDecimal calcularSubtotal(Long productoId, Integer cantidad) {
-    if (cantidad == null || cantidad <= 0) return BigDecimal.ZERO;
-    
-    BigDecimal precioUnitario = inventarioServicio.obtenerPrecioVentaPorProductoId(productoId);
-    
-    // Calcular subtotal (Precio * Cantidad)
-    return precioUnitario
-        .multiply(new BigDecimal(cantidad))
-        .setScale(2, RoundingMode.HALF_UP); // Asegura precisión
+        ValidacionGeneral.validarIdValido(productoId);
+        ValidacionGeneral.mayorACero(cantidad, "cantidad");
+        
+        BigDecimal precioUnitario = inventarioServicio.obtenerPrecioVentaPorProductoId(productoId);
+        
+        return precioUnitario
+            .multiply(new BigDecimal(cantidad))
+            .setScale(2, RoundingMode.HALF_UP);
     }
 
 
     @Transactional
     public DetallePedido crearDetalleYAsociar(Pedido pedido, FormDetallePedidoDTO fDTO) {
+        validarDatosDetalle(fDTO);
         // 1. Obtener Producto por ID
         Producto producto = productoRepositorio.findById(fDTO.getProductoId())
-            .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + fDTO.getProductoId()));
+            .orElseThrow(() -> new EntidadNoEncontradaException("Producto", fDTO.getProductoId()));
         
         // 2. Calcular Subtotal
         BigDecimal subtotal = calcularSubtotal(fDTO.getProductoId(), fDTO.getCantidad());
@@ -253,10 +256,30 @@ public class DetallePedidoServicio implements I_CRUD<DetallePedido, DetallePedid
         detalle.setCantidad(fDTO.getCantidad());
         detalle.setSubtotal(subtotal);
         
-        // 4. Guardar Detalle y asociar al set del Pedido (si usas Set en la entidad)
-        DetallePedido detalleGuardado = detallePedidoRepositorio.save(detalle);
+        // 4. Guardar Detalle y asociar al set del Pedido
+        detalle = detallePedidoRepositorio.save(detalle);
 
-        return detalleGuardado;
+        if (pedido.getTipo() == TipoPedido.VENTA) {
+            loteServicio.registrarSalidaStockFIFO(fDTO.getProductoId(), fDTO.getCantidad());
+        }
+
+        return detalle;
     }
     
+    // VALIDACIONES PRIVADAS
+    private void validarDatosDetalle(FormDetallePedidoDTO dto) {
+        if (dto == null) throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");
+
+        if (dto.getProductoId() == null) throw new CampoRequeridoException("productoId");
+        if (dto.getCantidad() == null) throw new CampoRequeridoException("cantidad");
+        
+        ValidacionGeneral.validarIdValido(dto.getProductoId());
+        ValidacionGeneral.mayorACero(dto.getCantidad(), "cantidad");
+    }
+
+    private DetallePedido obtenerDetallePedidoPorId(Long id) {
+        ValidacionGeneral.validarIdValido(id);
+        return detallePedidoRepositorio.findById(id)
+                .orElseThrow(() -> new EntidadNoEncontradaException(ENTIDAD, id));
+    }
 }

@@ -5,17 +5,20 @@ import com.owo.TP_prg3.Clases.DetallePedido.dto.FormDetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedido;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedidoRepositorio;
 import com.owo.TP_prg3.Clases.DetallePedido.service.DetallePedidoServicio;
-import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
+import com.owo.TP_prg3.Clases.Enum.TipoPedido;
 import com.owo.TP_prg3.Clases.Inventario.service.InventarioServicio;
 import com.owo.TP_prg3.Clases.Pedido.dto.*;
 import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
 import com.owo.TP_prg3.Clases.Pedido.modelo.PedidoRepositorio;
-import com.owo.TP_prg3.Clases.Pedido.modelo.TipoPedido;
 import com.owo.TP_prg3.Clases.Producto.modelo.ProductoRepositorio;
 import com.owo.TP_prg3.Clases.Tienda.service.TiendaServicio;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.Transaccion;
 import com.owo.TP_prg3.Clases.Transaccion.service.TransaccionServicio;
+import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
+import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.ReglaNegocioException;
+import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -30,8 +33,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
-public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> {
+public class PedidoServicio {
     //ATRIBUTOS
+
+    private static final String ENTIDAD = "Pedido";
 
     @Autowired
     PedidoRepositorio pedidoRepositorio;
@@ -78,9 +83,9 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
         );
     }
 
-    @Override
     @Transactional
     public Pedido convertir_a_Obj(FormPedidoDTO fDTO) {
+        validarDatosPedido(fDTO);
         
         // 1. Inicializar el Pedido (con total en 0.00)
         Pedido p = new Pedido();
@@ -96,7 +101,7 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
         return p;
     }
 
-    @Override
+
     public PedidoDTO convertir_a_DTO(Pedido pedido) {
         Set<FormDetallePedidoDTO> detallesDTO = pedido.getDetalles().stream()
                 .map(this::convertirDetalleA_DTO)
@@ -112,15 +117,14 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
     
     // --- LECTURA (GET) ---
     
-    @Override
     public Set<PedidoDTO> obtenerTodos() {
         return pedidoRepositorio.findAll().stream()
             .map(this::convertir_a_DTO)
             .collect(Collectors.toSet());
     }
 
-    @Override
     public Optional<PedidoDTO> buscarPorID(Long id) {
+        ValidacionGeneral.validarIdValido(id);
         return pedidoRepositorio.findById(id).map(this::convertir_a_DTO);
     }
 
@@ -128,7 +132,7 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
         return pedidoRepositorio.findById(id);
     }
 
-    @Override
+
     public Set<PedidoDTO> filtrar(String campo, Object valor) {
         Stream<Pedido> stream = pedidoRepositorio.findAll().stream();
 
@@ -142,7 +146,6 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
                     .collect(Collectors.toSet());
     }
 
-    @Override
     public Set<PedidoDTO> ordenar(String campo, boolean ascendente) {
         Stream<Pedido> stream = pedidoRepositorio.findAll().stream();
         Comparator<Pedido> comparador;
@@ -160,21 +163,17 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
 
     // --- ESCRITURA (POST) ---
     
-    @Override
     @Transactional
-    public boolean cargar(FormPedidoDTO cDTO) {
-        // 1. Validar
-        if (cDTO.getTipo() == null || cDTO.getTransaccion() == null) throw new IngresoInvalidoException("El Tipo de Pedido y la información base de la Transacción son obligatorios para iniciar un Pedido.");
-        
-        Pedido pedido = convertir_a_Obj(cDTO);
+    public Pedido cargar(FormPedidoDTO cDTO) {
+        validarDatosPedido(cDTO);
 
+        Pedido pedido = convertir_a_Obj(cDTO);
         recalcularTotal(pedido.getPedidoId());
-        return true;
+        return pedido;
     }
 
     // --- ACTUALIZACION (PUT) ---
     
-    @Override
     @Transactional
     public boolean actualizar(Long id, FormPedidoDTO updateDTO) {
         Optional<Pedido> optional = pedidoRepositorio.findById(id);
@@ -195,21 +194,17 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
     }
 
     // --- ELIMINACION (DELETE) ---
-    
-    @Override
+    @Transactional
     public boolean eliminar(Long id) {
-        Optional<Pedido> optional = pedidoRepositorio.findById(id);
-        if(optional.isEmpty()) return false;
-        
-        // Debido a CascadeType.ALL, al eliminar el Pedido, se eliminará:
-        // 1. Todos los DetallePedido asociados.
-        // 2. La Transaccion asociada.
-        pedidoRepositorio.delete(optional.get());
+        Pedido pedido = obtenerPedidoPorId(id);
+        detallePedidoRepositorio.deleteAll(pedido.getDetalles());
+        pedidoRepositorio.delete(pedido);
         return true;
     }
 
+    @Transactional
     public void recalcularTotal(Long pedidoId) {
-        Pedido pedido = pedidoRepositorio.findById(pedidoId).orElseThrow(() -> new RuntimeException("Pedido no encontrado con ID: " + pedidoId));
+        Pedido pedido = obtenerPedidoPorId(pedidoId);
         
         // 1. Recalcular el total sumando TODOS los subtotales, comenzando desde CERO (BigDecimal.ZERO).
         BigDecimal nuevoTotal = BigDecimal.ZERO;
@@ -230,11 +225,16 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
     // FINAL BOSS. Si esto anda bien soy god, el pedido service tiene muchos repos y service que vincular
     @Transactional
     public boolean finalizarPedido(Long pedidoId) {
-        // Busca el pedido o lanza excepción
-        Pedido pedido = pedidoRepositorio.findById(pedidoId).orElseThrow(() -> new RuntimeException("Pedido no encontrado con ID: " + pedidoId));
+        Pedido pedido = obtenerPedidoPorId(pedidoId);
 
         Transaccion transaccion = pedido.getTransaccion();
+        if (transaccion == null) throw new ReglaNegocioException("El pedido no tiene una Transacción asociada.");
+        
         BigDecimal monto = transaccion.getMonto(); 
+        
+        if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new ReglaNegocioException("El monto de la Transacción debe ser positivo para finalizar el pedido.");
+        }
           
         // Determina si es VENTA (entra dinero) o COMPRA (sale dinero)
         boolean esVenta = pedido.getTipo() == TipoPedido.VENTA;
@@ -252,9 +252,24 @@ public class PedidoServicio implements I_CRUD<Pedido, PedidoDTO, FormPedidoDTO> 
                 if (esVenta) cuentaBancariaServicio.acreditarMonto(metodoPagoId, monto);
                 else cuentaBancariaServicio.debitarMonto(metodoPagoId, monto);
             }
-            default -> throw new UnsupportedOperationException("Tipo de Transacción no soportado: " + transaccion.getTipo());
+            default -> throw new IngresoInvalidoException("Tipo de Transacción no soportado para la finalización del pedido: " + transaccion.getTipo());
         }
 
         return true;
+    }
+
+    // VALIDACIONES PRIVADAS
+    private void validarDatosPedido(FormPedidoDTO dto) {
+        if (dto == null) throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");
+
+        if (dto.getTipo() == null) throw new CampoRequeridoException("tipo");
+        if (dto.getTransaccion() == null) throw new CampoRequeridoException("transaccion");
+
+    }
+
+    private Pedido obtenerPedidoPorId(Long id) {
+        ValidacionGeneral.validarIdValido(id);
+        return pedidoRepositorio.findById(id)
+                .orElseThrow(() -> new EntidadNoEncontradaException(ENTIDAD, id));
     }
 }

@@ -6,6 +6,15 @@ import com.owo.TP_prg3.Clases.Inventario.dto.InventarioDTO;
 import com.owo.TP_prg3.Clases.Inventario.modelo.Inventario;
 import com.owo.TP_prg3.Clases.Inventario.modelo.InventarioRepositorio;
 import com.owo.TP_prg3.Clases.Lote.service.LoteServicio;
+import com.owo.TP_prg3.Clases.Producto.service.ProductoServicio;
+import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
+import com.owo.TP_prg3.Excepciones.EntidadDuplicadaException;
+import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
+import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.OperacionNoPermitidaException;
+import com.owo.TP_prg3.Excepciones.ReglaNegocioException;
+import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
+
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -23,12 +32,18 @@ import java.util.stream.Stream;
 public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, FormInventarioDTO> {
 
     // ATRIBUTOS ------------------------------------------------------------------------------------------------------------------------------------------------
+    private static final String ENTIDAD = "Inventario";
+    
     @Autowired
     private InventarioRepositorio inventarioRepositorio;
 
     @Autowired
     @Lazy
     private LoteServicio loteServicio;
+
+    @Autowired
+    @Lazy
+    private ProductoServicio productoServicio;
 
     // CONVERSION -----------------------------------------------------------------------------------------------------------------------------------------------
     @Override
@@ -48,6 +63,7 @@ public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, For
 
     @Override
     public Inventario convertir_a_Obj(FormInventarioDTO formDTO) {
+        validarDatosInventario(formDTO);
         return new Inventario(
             null, //El id lo autogenera la base de datos
             formDTO.getCantidad(),
@@ -71,6 +87,7 @@ public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, For
 
     @Override
     public Optional<InventarioDTO> buscarPorID(Long id) {
+        ValidacionGeneral.validarIdValido(id);
         return inventarioRepositorio.findById(id).map(this::convertir_a_DTO);
     }
 
@@ -116,20 +133,25 @@ public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, For
 
     // POST
     @Override
+    @Transactional
     public boolean cargar(FormInventarioDTO createItemDTO) {
+        validarDatosInventario(createItemDTO);
+        validarInventarioNoExiste(createItemDTO.getProducto_id());
+        validarRelacionesExisten(createItemDTO);
+        
         Inventario inventario = convertir_a_Obj(createItemDTO);
-        inventario = inventarioRepositorio.save(inventario);
+        inventarioRepositorio.save(inventario);
         return true;
     }
 
     // DELETE
     @Override
+    @Transactional
     public boolean eliminar(Long id) {
-        Optional<Inventario> optional = inventarioRepositorio.findById(id);
-        if(optional.isEmpty()) return false;
-        if(loteServicio.existenLotesActivos(optional.get().getProductoId())) return false; // No se puede eliminar si hay stock para ese producto.
+        Inventario inventario = obtenerInventarioPorId(id);
+        validarInventarioPuedeEliminarse(inventario.getProductoId());
         
-        else inventarioRepositorio.delete(optional.get());
+        inventarioRepositorio.delete(inventario);
         return true;
     }
 
@@ -137,10 +159,14 @@ public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, For
     @Override
     @Transactional
     public boolean actualizar(Long id, FormInventarioDTO updateDTO) {
-        Optional<Inventario> optional = inventarioRepositorio.findById(id);
-        if (optional.isEmpty()) return false;
-        
-        Inventario inventario = optional.get();
+        validarDatosInventario(updateDTO);
+        Inventario inventario = obtenerInventarioPorId(id);
+        validarRelacionesExisten(updateDTO);
+
+        if (!inventario.getProductoId().equals(updateDTO.getProducto_id())) {
+             throw new OperacionNoPermitidaException("No se puede cambiar el Producto de un " + ENTIDAD + " existente. Producto ID actual: " + inventario.getProductoId());
+        }
+
         inventario.setPrecioVenta(updateDTO.getPrecioVenta());
         inventario.setStockMin(updateDTO.getStockMin());
         inventario.setCantidad(updateDTO.getCantidad());
@@ -153,7 +179,7 @@ public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, For
     //Metodos logica del negocio
     @Transactional
     public void ajustarStock(Long productoId, int delta) {
-        Inventario inventario = inventarioRepositorio.findByProductoId(productoId).orElseThrow(() -> new RuntimeException("Inventario no encontrado para Producto ID: " + productoId));
+        Inventario inventario = inventarioRepositorio.findByProductoId(productoId).orElseThrow(() -> new EntidadNoEncontradaException("Inventario no encontrado para Producto ID: " + productoId));
                 
         // Cantidad se actualiza internamente y refleja el stock total
         inventario.setCantidad(inventario.getCantidad() + delta);
@@ -163,10 +189,10 @@ public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, For
 
     public BigDecimal obtenerPrecioVentaPorProductoId(Long productoId) {
     Inventario inventario = inventarioRepositorio.findByProductoId(productoId)
-        .orElseThrow(() -> new RuntimeException("Precio de Venta no encontrado: Producto ID " + productoId + " no tiene registro de Inventario."));
+        .orElseThrow(() -> new EntidadNoEncontradaException("Precio de Venta no encontrado: Producto ID " + productoId + " no tiene registro de Inventario."));
     
     if (inventario.getPrecioVenta() == null) {
-        throw new RuntimeException("El Producto ID " + productoId + " no tiene un precio de venta configurado.");
+        throw new ReglaNegocioException("El Producto ID " + productoId + " no tiene un precio de venta configurado.");
     }
     
     return inventario.getPrecioVenta();
@@ -178,8 +204,11 @@ public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, For
     */
     @Transactional
     public void actualizarCostoPromedioPonderado(Long productoId, BigDecimal nuevoCostoUnitario, int cantidadComprada) {
-        Inventario inventario = inventarioRepositorio.findByProductoId(productoId).orElseThrow(() -> new RuntimeException("Inventario no encontrado para Producto ID: " + productoId));
+        Inventario inventario = inventarioRepositorio.findByProductoId(productoId).orElseThrow(() -> new EntidadNoEncontradaException("Inventario no encontrado para Producto ID: " + productoId));
         
+        if (nuevoCostoUnitario == null || nuevoCostoUnitario.compareTo(BigDecimal.ZERO) < 0) throw new IngresoInvalidoException("nuevoCostoUnitario", "debe ser positivo");
+        if (cantidadComprada <= 0) throw new IngresoInvalidoException("cantidadComprada", "debe ser positiva");
+
         BigDecimal stockAnterior = new BigDecimal(inventario.getCantidad() - cantidadComprada);
         BigDecimal costoAnterior = inventario.getCostoAdquisicion() != null ? inventario.getCostoAdquisicion() : BigDecimal.ZERO;
         
@@ -204,6 +233,48 @@ public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, For
             // Lo dejamos en el nuevo costo (aunque el stock sea 0, es el valor de la última compra).
             inventario.setCostoAdquisicion(nuevoCostoUnitario);
             inventarioRepositorio.save(inventario);
+        }
+    }
+
+    //Validaciones privadas
+    private void validarDatosInventario(FormInventarioDTO dto) {
+        if (dto == null) throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");
+
+        if (dto.getProducto_id() == null) throw new CampoRequeridoException("producto_id");
+        if (dto.getStockMin() == null) throw new CampoRequeridoException("stockMin");
+        if (dto.getPrecioVenta() == null) throw new CampoRequeridoException("precioVenta");
+        if (dto.getCostoAdquisicion() == null) throw new CampoRequeridoException("costoAdquisicion");
+        if (dto.getCantidad() == null) throw new CampoRequeridoException("cantidad");
+
+        ValidacionGeneral.mayorACero(dto.getProducto_id(), "producto_id");
+        ValidacionGeneral.noNegativo(dto.getStockMin(), "stockMin");
+        ValidacionGeneral.noNegativo(dto.getPrecioVenta(), "precioVenta");
+        ValidacionGeneral.noNegativo(dto.getCostoAdquisicion(), "costoAdquisicion");
+        ValidacionGeneral.noNegativo(dto.getCantidad(), "cantidad");
+    }
+
+    private void validarInventarioNoExiste(Long productoId) {
+        Optional<Inventario> existente = inventarioRepositorio.findByProductoId(productoId);
+        if (existente.isPresent()) {
+            throw new EntidadDuplicadaException(ENTIDAD, "Producto ID", productoId);
+        }
+    }
+
+    private Inventario obtenerInventarioPorId(Long id) {
+        ValidacionGeneral.validarIdValido(id);
+        return inventarioRepositorio.findById(id)
+                .orElseThrow(() -> new EntidadNoEncontradaException(ENTIDAD, id));
+    }
+    
+    private void validarRelacionesExisten(FormInventarioDTO dto) {
+        productoServicio.obtenerProductoPorId(dto.getProducto_id());
+    }
+
+    private void validarInventarioPuedeEliminarse(Long productoId) {
+        if (loteServicio.existenLotesActivos(productoId)) {
+            throw new ReglaNegocioException(
+                "No se puede eliminar el " + ENTIDAD + " porque el producto tiene stock activo (lotes asociados)."
+            );
         }
     }
 }

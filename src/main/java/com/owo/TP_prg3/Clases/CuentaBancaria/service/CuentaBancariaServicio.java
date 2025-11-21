@@ -7,13 +7,13 @@ import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancariaRepositorio;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 import com.owo.TP_prg3.Clases.Tienda.modelo.Tienda;
 import com.owo.TP_prg3.Clases.Tienda.modelo.TiendaRepositorio;
-import com.owo.TP_prg3.Excepciones.StockInsuficienteException;
-
+import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
+import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
+import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 import jakarta.transaction.Transactional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.Optional;
@@ -26,6 +26,8 @@ import java.util.stream.Stream;
 public class CuentaBancariaServicio implements I_CRUD<CuentaBancaria, CuentaBancariaDTO, FormCuentaBancariaDTO> {
 
     //Atributos
+    private static final String ENTIDAD = "CuentaBancaria";
+
     @Autowired
     private CuentaBancariaRepositorio cbRepositorio;
 
@@ -39,6 +41,7 @@ public class CuentaBancariaServicio implements I_CRUD<CuentaBancaria, CuentaBanc
     //Conversion
     @Override
     public CuentaBancaria convertir_a_Obj(FormCuentaBancariaDTO fDTO) {
+        validarDatosCuenta(fDTO);
         CuentaBancaria cuentaBancaria = new CuentaBancaria();
         cuentaBancaria.setSaldo(fDTO.getSaldo());
         cuentaBancaria.setTienda(getTiendaUnica());
@@ -67,37 +70,40 @@ public class CuentaBancariaServicio implements I_CRUD<CuentaBancaria, CuentaBanc
 
     @Override
     public Optional<CuentaBancariaDTO> buscarPorID(Long id) {
+        ValidacionGeneral.validarIdValido(id);
         return cbRepositorio.findById(id).map(this::convertir_a_DTO);
     }
 
     @Override
-    public boolean cargar(FormCuentaBancariaDTO createDTO) {
-        cbRepositorio.save(convertir_a_Obj(createDTO));
-        return true;
-    }
-
-    @Override
-    public boolean actualizar(Long id, FormCuentaBancariaDTO updateDTO) {
-        Optional<CuentaBancaria> optional = cbRepositorio.findById(id);
-        if (optional.isEmpty()) return false;
+    @Transactional
+    public boolean cargar(FormCuentaBancariaDTO cDTO) {
+        validarDatosCuenta(cDTO);
         
-        CuentaBancaria cb = optional.get();
-        cb.setCbu(updateDTO.getCbu());
-        cb.setSaldo(updateDTO.getSaldo());
-        if (cb.getTienda()==null) cb.setTienda(getTiendaUnica());
-
-        cbRepositorio.save(cb);
+        cbRepositorio.save(convertir_a_Obj(cDTO));
         return true;
     }
 
     @Override
-    public boolean eliminar(Long id) {
-        Optional<CuentaBancaria> optional = cbRepositorio.findById(id);
-        if(optional.isEmpty()) return false;
-        else cbRepositorio.delete(optional.get());
+    @Transactional
+    public boolean actualizar(Long id, FormCuentaBancariaDTO updateDTO) {
+        validarDatosCuenta(updateDTO);
+        CuentaBancaria cuenta = obtenerCuentaBancariaPorId(id);
+        
+        cuenta.setCbu(updateDTO.getCbu());
+        cuenta.setSaldo(updateDTO.getSaldo());
+
+        cbRepositorio.save(cuenta);
         return true;
     }
 
+    @Override
+    @Transactional
+    public boolean eliminar(Long id) {
+        CuentaBancaria cuenta = obtenerCuentaBancariaPorId(id);
+
+        cbRepositorio.delete(cuenta);
+        return true;
+    }
     @Override
     public Set<CuentaBancariaDTO> filtrar(String campo, Object valor) {
         Stream<CuentaBancaria> stream = cbRepositorio.findAll().stream();
@@ -130,9 +136,10 @@ public class CuentaBancariaServicio implements I_CRUD<CuentaBancaria, CuentaBanc
 
     @Transactional
     public void acreditarMonto(Long cuentaBancariaId, BigDecimal monto) {
-        if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) return;
+        ValidacionGeneral.validarIdValido(cuentaBancariaId);
+        ValidacionGeneral.mayorACero(monto, "monto a acreditar");
 
-        CuentaBancaria cuenta = cbRepositorio.findById(cuentaBancariaId).orElseThrow(() -> new RuntimeException("Cuenta Bancaria no encontrada con ID: " + cuentaBancariaId));
+        CuentaBancaria cuenta = obtenerCuentaBancariaPorId(cuentaBancariaId);
         
         // Sumar el monto al saldo actual
         cuenta.setSaldo(cuenta.getSaldo().add(monto));
@@ -141,12 +148,33 @@ public class CuentaBancariaServicio implements I_CRUD<CuentaBancaria, CuentaBanc
 
     @Transactional
     public void debitarMonto(Long cuentaBancariaId, BigDecimal monto) {
-        if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) return; // Validación
-        CuentaBancaria cuenta = cbRepositorio.findById(cuentaBancariaId).orElseThrow(() -> new RuntimeException("Cuenta Bancaria no encontrada con ID: " + cuentaBancariaId));
+        ValidacionGeneral.validarIdValido(cuentaBancariaId);
+        ValidacionGeneral.mayorACero(monto, "monto a debitar");
         
-        if (cuenta.getSaldo().compareTo(monto) < 0) throw new StockInsuficienteException("Saldo insuficiente en Cuenta Bancaria para la compra."); // Validación Saldo
+        CuentaBancaria cuenta = obtenerCuentaBancariaPorId(cuentaBancariaId);
+        
+        if (cuenta.getSaldo().compareTo(monto) < 0) {
+            throw new IngresoInvalidoException("Saldo insuficiente en Cuenta Bancaria para la operación.");
+        }
 
         cuenta.setSaldo(cuenta.getSaldo().subtract(monto)); // Restar monto
         cbRepositorio.save(cuenta);
+    }
+
+    // VALIDACIONES PRIVADAS
+    private void validarDatosCuenta(FormCuentaBancariaDTO dto) {
+        if (dto == null) throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");
+
+        if (dto.getCbu() == null) throw new CampoRequeridoException("CBU");
+        if (dto.getSaldo() == null) throw new CampoRequeridoException("saldo");
+
+        ValidacionGeneral.mayorACero(dto.getCbu(), "CBU");
+        ValidacionGeneral.noNegativo(dto.getSaldo(), "saldo");
+    }
+
+    private CuentaBancaria obtenerCuentaBancariaPorId(Long id) {
+        ValidacionGeneral.validarIdValido(id);
+        return cbRepositorio.findById(id)
+                .orElseThrow(() -> new EntidadNoEncontradaException(ENTIDAD, id));
     }
 }

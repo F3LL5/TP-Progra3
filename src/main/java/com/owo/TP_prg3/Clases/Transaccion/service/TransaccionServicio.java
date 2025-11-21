@@ -5,7 +5,10 @@ import com.owo.TP_prg3.Clases.Transaccion.dto.FormTransaccionDTO;
 import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.Transaccion;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.TransaccionRepositorio;
+import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
+import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,15 +27,15 @@ import java.util.stream.Stream;
 public class TransaccionServicio implements I_CRUD<Transaccion, TransaccionDTO, FormTransaccionDTO> {
 
     // ATRIBUTOS ------------------------------------------------------------------------------------------------------------------------------------------------
+    private static final String ENTIDAD = "Transaccion";
+    
     @Autowired
     private TransaccionRepositorio transaccionRepositorio;
 
     // CONVERSION ------------------------------------------------------------------------------------------------------------------------------------------------
     @Override
     public Transaccion convertir_a_Obj(FormTransaccionDTO fDTO) {
-        if (fDTO.getOrigen_id() == null && fDTO.getDestino_id() == null) {
-            throw new IngresoInvalidoException("Una Transacción debe especificar al menos un ID de Origen o un ID de Destino.");
-        }
+        validarDatosTransaccion(fDTO);
         Transaccion t = new Transaccion();
 
         t.setTipo(fDTO.getTipo());
@@ -69,6 +72,7 @@ public class TransaccionServicio implements I_CRUD<Transaccion, TransaccionDTO, 
 
     @Override
     public Optional<TransaccionDTO> buscarPorID(Long id) {
+        ValidacionGeneral.validarIdValido(id);
         return transaccionRepositorio.findById(id).map(this::convertir_a_DTO);
     }
 
@@ -110,6 +114,7 @@ public class TransaccionServicio implements I_CRUD<Transaccion, TransaccionDTO, 
     // ESCRITURA (POST) ------------------------------------------------------------------------------------------------------------------------------------------------
     @Override
     public boolean cargar(FormTransaccionDTO cDTO) {
+        validarDatosTransaccion(cDTO);
         transaccionRepositorio.save(convertir_a_Obj(cDTO));
         return true;
     }
@@ -118,29 +123,41 @@ public class TransaccionServicio implements I_CRUD<Transaccion, TransaccionDTO, 
     @Override
     @Transactional
     public boolean actualizar(Long id, FormTransaccionDTO updateDTO) {
-        Optional<Transaccion> optional = transaccionRepositorio.findById(id);
-        if (optional.isEmpty()) return false;
+        validarDatosTransaccion(updateDTO);
+        Transaccion transaccion = obtenerTransaccionPorId(id);
 
-        Transaccion transaccion = optional.get();
-        
         if (updateDTO.getTipo() != null) transaccion.setTipo(updateDTO.getTipo());
-        
         if (updateDTO.getFecha() != null) transaccion.setFecha(updateDTO.getFecha());
-        
         if (updateDTO.getOrigen_id() != null) transaccion.setOrigen_id(updateDTO.getOrigen_id());
-        
         if (updateDTO.getDestino_id() != null) transaccion.setDestino_id(updateDTO.getDestino_id());
 
         transaccionRepositorio.save(transaccion);
         return true;
-}
+    }
 
     // ELIMINACION (DELETE) ------------------------------------------------------------------------------------------------------------------------------------------------
     @Override
     public boolean eliminar(Long id) {
-        Optional<Transaccion> optional = transaccionRepositorio.findById(id);
-        if(optional.isEmpty()) return false;
-        transaccionRepositorio.delete(optional.get());
+        Transaccion transaccion = obtenerTransaccionPorId(id);
+        transaccionRepositorio.delete(transaccion);
         return true;
+    }
+
+    // VALIDACIONES PRIVADAS
+    private void validarDatosTransaccion(FormTransaccionDTO dto) {
+        if (dto == null) throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");
+
+        if (dto.getTipo() == null) throw new CampoRequeridoException("tipo");
+        
+        if (dto.getOrigen_id() != null) ValidacionGeneral.validarIdValido(dto.getOrigen_id());
+        if (dto.getDestino_id() != null) ValidacionGeneral.validarIdValido(dto.getDestino_id());
+
+        // La fecha no se valida aquí, ya que el sistema puede establecerla automáticamente.
+    }
+
+    private Transaccion obtenerTransaccionPorId(Long id) {
+        ValidacionGeneral.validarIdValido(id);
+        return transaccionRepositorio.findById(id)
+                .orElseThrow(() -> new EntidadNoEncontradaException(ENTIDAD, id));
     }
 }
