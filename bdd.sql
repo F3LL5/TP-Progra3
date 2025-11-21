@@ -1,6 +1,11 @@
 create database if not exists c5_proyecto_comercio;
 use c5_proyecto_comercio;
 
+
+-- ---------------------------------------------------------------------------------------
+-- Tablas para personas y usuarios
+-- ---------------------------------------------------------------------------------------
+
 create table if not exists usuarios(
 	usuario_id bigint auto_increment primary key,
 	email varchar(255) not null unique,
@@ -35,7 +40,9 @@ create table if not exists empleados(
 	empleado_id bigint auto_increment primary key,
     persona_id bigint not null,
 	usuario_id bigint not null,
-    foreign key(persona_id) references personas(persona_id),
+    foreign key(persona_id) references personas(persona_id)
+	on delete cascade
+    on update cascade,
     foreign key(usuario_id) references usuarios(usuario_id)
     on delete cascade
     on update cascade
@@ -45,7 +52,9 @@ create table if not exists duenios(
 	duenio_id bigint auto_increment primary key,
     persona_id bigint not null,
 	usuario_id bigint not null,
-    foreign key(persona_id) references personas(persona_id),
+    foreign key(persona_id) references personas(persona_id)
+	on delete cascade
+    on update cascade,
     foreign key(usuario_id) references usuarios(usuario_id)
     on delete cascade
     on update cascade
@@ -58,12 +67,20 @@ create table if not exists tiendas (
 	caja decimal(38,2) not null,
 	duenio_id bigint not null,
 	foreign key(duenio_id) references duenios(duenio_id)
+	ON DELETE RESTRICT
+    ON UPDATE CASCADE
 );
+
+
+-- ---------------------------------------------------------------------------------------
+-- Tablas para productos
+-- ---------------------------------------------------------------------------------------
 
 create table if not exists productos (
 	producto_id bigint auto_increment primary key,
     nombre varchar(255) not null,
-    categoria varchar(255) not null
+    categoria varchar(255) not null,
+	UNIQUE KEY unique_producto (nombre, categoria)
 );
 
 create table if not exists inventarios(
@@ -78,12 +95,30 @@ create table if not exists inventarios(
 	on update cascade
 );
 
+create table if not exists lotes (
+	lote_id bigint not null auto_increment,
+	producto_id bigint not null,
+    cantidad_disponible integer not null,
+    costo_unitario decimal(38,2) not null,
+    fecha_ingreso date,
+    primary key (lote_id),
+    foreign key(producto_id) references productos(producto_id)
+    on delete cascade
+    on update cascade
+)
+
+-- ---------------------------------------------------------------------------------------
+-- Tablas para pedidos y transacciones
+-- ---------------------------------------------------------------------------------------
+
 create table if not exists cuenta_bancarias(
 	cuenta_bancaria_id bigint auto_increment primary key,
 	tienda_id bigint not null,
 	cbu bigint not null,
 	saldo decimal(38,2) not null,
 	foreign key(tienda_id) references tiendas(tienda_id)
+	ON DELETE RESTRICT
+    ON UPDATE CASCADE
 );
 
 create table if not exists transacciones(
@@ -91,17 +126,22 @@ create table if not exists transacciones(
 	tipo varchar(100) not null,
 	fecha datetime default current_timestamp,
 	monto decimal(38,2) not null,
-	origen_id bigint,
+	origen_id bigint
+	ON DELETE SET NULL
+    ON UPDATE CASCADE,
 	destino_id bigint not null
+	ON DELETE SET NULL
+    ON UPDATE CASCADE
 );
 
 create table if not exists pedidos (
 	pedido_id bigint auto_increment primary key,
 	transaccion_id bigint,
 	tipo enum ('COMPRA','VENTA') not null,
-	fecha_creacion datetime not null,
 	total decimal(10,2) not null,
 	foreign key(transaccion_id) references transacciones(transaccion_id)
+	ON DELETE CASCADE
+    ON UPDATE CASCADE
 );
 
 -- Tabla para los detalles de cada pedido
@@ -118,15 +158,3 @@ create table if not exists detalles_pedido (
     on delete restrict
     on update cascade
 );
-
-create table if not exists lotes (
-	lote_id bigint not null auto_increment,
-	producto_id bigint not null,
-    cantidad_disponible integer not null,
-    costo_unitario decimal(38,2) not null,
-    fecha_ingreso date,
-    primary key (lote_id),
-    foreign key(producto_id) references productos(producto_id)
-    on delete restrict
-    on update cascade
-)
