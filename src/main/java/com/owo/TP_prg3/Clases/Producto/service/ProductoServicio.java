@@ -46,7 +46,8 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
         return new Producto(
             null,
             fDTO.getNombre(),
-            fDTO.getCategoria()
+            fDTO.getCategoria(),
+            fDTO.getUrl()==null? null : fDTO.getUrl()
         );
     }
     @Override
@@ -54,7 +55,8 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
         return new ProductoDTO(
                 producto.getProductoId(),
                 producto.getNombre(),
-                producto.getCategoria()
+                producto.getCategoria(),
+                producto.getUrl()==null? null : producto.getUrl()
         );
     }
     

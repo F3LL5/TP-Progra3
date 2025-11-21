@@ -80,6 +80,7 @@ create table if not exists productos (
 	producto_id bigint auto_increment primary key,
     nombre varchar(255) not null,
     categoria varchar(255) not null,
+	producto_imagen varchar(255),
 	UNIQUE KEY unique_producto (nombre, categoria)
 );
 
