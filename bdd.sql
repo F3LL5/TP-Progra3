@@ -134,7 +134,6 @@ create table if not exists pedidos (
 	pedido_id bigint auto_increment primary key,
 	transaccion_id bigint,
 	tipo enum ('COMPRA','VENTA') not null,
-	total decimal(10,2) not null,
 	foreign key(transaccion_id) references transacciones(transaccion_id)
 	ON DELETE CASCADE
     ON UPDATE CASCADE
