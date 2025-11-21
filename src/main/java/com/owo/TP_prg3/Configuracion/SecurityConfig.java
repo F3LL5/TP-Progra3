@@ -19,6 +19,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import com.owo.TP_prg3.Clases.Usuario.service.CustomUserDetailsService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 public class SecurityConfig {
@@ -32,16 +33,99 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(authorize -> authorize
                         
-                        .requestMatchers( // Acceso público
-                            "/api/auth/login",
-                            "/api/auth/register"
-                        ).permitAll()
+                                    // --- Endpoints públicos (si en algún momento agregás login/register REST) ---
+        .requestMatchers(
+                "/api/auth/login",
+                "/api/auth/register"
+        ).permitAll()
 
-                        .requestMatchers("/api/auth/profile").authenticated()
+        // Perfil del usuario logueado: cualquier rol autenticado
+        .requestMatchers("/api/auth/profile").authenticated()
 
-                        .requestMatchers("/api/**").hasAnyRole("ADMIN","DUENIO")
+        // =====================================================
+        //   USUARIOS / DUEÑOS / EMPLEADOS  (ABM de personas del sistema)
+        // =====================================================
 
-                        .anyRequest().denyAll()
+        // Lectura (GET) permitida a TODOS los roles
+        .requestMatchers(HttpMethod.GET,
+                "/api/usuarios/**",
+                "/api/duenios/**",
+                "/api/empleados/**"
+        ).hasAnyRole("ADMIN","DUENIO")
+
+        // Alta / modificación / baja SOLO ADMIN y DUEÑO
+        .requestMatchers(HttpMethod.POST,
+                "/api/usuarios/**",
+                "/api/duenios/**",
+                "/api/empleados/**"
+        ).hasAnyRole("ADMIN","DUENIO")
+        .requestMatchers(HttpMethod.PUT,
+                "/api/usuarios/**",
+                "/api/duenios/**",
+                "/api/empleados/**"
+        ).hasAnyRole("ADMIN","DUENIO")
+        .requestMatchers(HttpMethod.DELETE,
+                "/api/usuarios/**",
+                "/api/duenios/**",
+                "/api/empleados/**"
+        ).hasAnyRole("ADMIN","DUENIO")
+
+        // =====================================================
+        //   CUENTAS BANCARIAS
+        //   - EMPLEADO: solo puede listar / ver
+        //   - ADMIN / DUEÑO: pueden crear / modificar / eliminar
+        // =====================================================
+
+        // Lectura para todos los roles
+        .requestMatchers(HttpMethod.GET, "/api/cuenta_bancarias/**")
+            .hasAnyRole("ADMIN","DUENIO","EMPLEADO")
+
+        // Crear / modificar / eliminar SOLO ADMIN y DUEÑO
+        .requestMatchers(HttpMethod.POST, "/api/cuenta_bancarias/**")
+            .hasAnyRole("ADMIN","DUENIO")
+        .requestMatchers(HttpMethod.PUT, "/api/cuenta_bancarias/**")
+            .hasAnyRole("ADMIN","DUENIO")
+        .requestMatchers(HttpMethod.DELETE, "/api/cuenta_bancarias/**")
+            .hasAnyRole("ADMIN","DUENIO")
+
+        // =====================================================
+        //   TIENDAS
+        //   - EMPLEADO: sólo puede consultar (GET)
+        //   - ADMIN / DUEÑO: alta, modif, baja
+        // =====================================================
+
+        .requestMatchers(HttpMethod.GET, "/api/tiendas/**")
+            .hasAnyRole("ADMIN","DUENIO")
+
+        .requestMatchers(HttpMethod.POST, "/api/tiendas/**")
+            .hasAnyRole("ADMIN","DUENIO")
+        .requestMatchers(HttpMethod.PUT, "/api/tiendas/**")
+            .hasAnyRole("ADMIN","DUENIO")
+        .requestMatchers(HttpMethod.DELETE, "/api/tiendas/**")
+            .hasAnyRole("ADMIN","DUENIO")
+
+        // =====================================================
+        //   RESTO DE ENTIDADES DEL NEGOCIO
+        //   (empleado puede hacer todo: GET/POST/PUT/DELETE)
+        // =====================================================
+
+        .requestMatchers(
+                "/api/clientes/**",
+                "/api/personas/**",
+                "/api/productos/**",
+                "/api/inventarios/**",
+                "/api/pedidos/**",
+                "/api/detallespedido/**",
+                "/api/proveedores/**",
+                "/api/transacciones/**",
+                "/api/inventarios/**",
+                "/api/lotes/**",   // por si Spring lo normaliza
+                "api/lotes/**"     // por cómo está el @RequestMapping en tu LoteControlador
+        ).hasAnyRole("ADMIN","DUENIO","EMPLEADO")
+
+        // Cualquier otra cosa que no matchea lo de arriba → prohibido
+        .anyRequest().denyAll()
+       
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
