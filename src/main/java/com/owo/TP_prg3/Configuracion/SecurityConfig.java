@@ -49,9 +49,12 @@ public class SecurityConfig {
         // Lectura (GET) permitida a TODOS los roles
         .requestMatchers(HttpMethod.GET,
                 "/api/usuarios/**",
-                "/api/duenios/**",
                 "/api/empleados/**"
-        ).hasAnyRole("ADMIN","DUENIO")
+        ).hasAnyRole("ADMIN","DUENIO","EMPLEADO")
+
+        .requestMatchers(HttpMethod.GET,
+                    "/api/duenios/**"
+        ).hasAnyRole("ADMIN","DUENIO")   
 
         // Alta / modificación / baja SOLO ADMIN y DUEÑO
         .requestMatchers(HttpMethod.POST,
