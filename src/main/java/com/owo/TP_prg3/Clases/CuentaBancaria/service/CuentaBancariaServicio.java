@@ -35,7 +35,7 @@ public class CuentaBancariaServicio implements I_CRUD<CuentaBancaria, CuentaBanc
     private TiendaRepositorio tiendaRepositorio;
     private Tienda getTiendaUnica() {
         // Asumimos que la tienda siempre tiene ID 1.
-        return tiendaRepositorio.findById(1L).get();
+        return tiendaRepositorio.findById(1L).orElseThrow(()-> new EntidadNoEncontradaException("Por favor, primero realice el registro inicial de la Tienda.") );
     }
 
     //Conversion
