@@ -175,6 +175,7 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
         
         producto.setNombre(nuevoNombre);
         producto.setCategoria(nuevaCategoria);
+        producto.setUrl(updateDTO.getUrl());
         productoRepositorio.save(producto);
         return true;
     }
