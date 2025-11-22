@@ -73,8 +73,8 @@ public final class ValidacionGeneral {
         if (dni == null) throw new CampoRequeridoException("DNI");
         mayorACero(dni, "DNI");
         // Asumiendo un rango típico de DNI de 7 a 9 dígitos
-        if (dni < 1000000 || dni > 999999999) {
-            throw new IngresoInvalidoException("DNI", "debe ser un número válido (e.g., entre 7 y 9 dígitos)");
+        if (dni < 100000 || dni > 999999999) {
+            throw new IngresoInvalidoException("DNI", "debe ser un número válido (e.g., entre 6 y 9 dígitos)");
         }
     }
 
