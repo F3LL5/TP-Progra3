@@ -87,8 +87,8 @@ public final class ValidacionGeneral {
     
     public static void validarContrasenia(String contrasenia, String campo) {
         validarStringNoVacio(contrasenia, campo);
-        if (contrasenia.length() < 8) {
-            throw new IngresoInvalidoException(campo, "debe tener al menos 8 caracteres");
+        if (contrasenia.length() < 1) {
+            throw new IngresoInvalidoException(campo, "debe tener al menos 1 caracter");
         }
     }
 }
