@@ -5,6 +5,7 @@ import com.owo.TP_prg3.Clases.DetallePedido.dto.FormDetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedido;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedidoRepositorio;
 import com.owo.TP_prg3.Clases.DetallePedido.service.DetallePedidoServicio;
+import com.owo.TP_prg3.Clases.Enum.EstadoPedido;
 import com.owo.TP_prg3.Clases.Enum.TipoPedido;
 import com.owo.TP_prg3.Clases.Inventario.service.InventarioServicio;
 import com.owo.TP_prg3.Clases.Pedido.dto.*;
@@ -90,6 +91,7 @@ public class PedidoServicio {
         // 1. Inicializar el Pedido (con total en 0.00)
         Pedido p = new Pedido();
         p.setTipo(fDTO.getTipo());
+        p.setEstado(EstadoPedido.PENDIENTE);
         
         // 2. Crear la Transaccion base
         Transaccion t = transaccionServicio.convertir_a_Obj(fDTO.getTransaccion());
@@ -100,7 +102,7 @@ public class PedidoServicio {
         
         return p;
     }
-
+        
 
     public PedidoDTO convertir_a_DTO(Pedido pedido) {
         Set<FormDetallePedidoDTO> detallesDTO = pedido.getDetalles().stream()
@@ -111,7 +113,8 @@ public class PedidoServicio {
             pedido.getPedidoId(),
             transaccionServicio.convertir_a_DTO(pedido.getTransaccion()),
             pedido.getTipo(),
-            detallesDTO
+            detallesDTO,
+            pedido.getEstado()
         );
     }
     
@@ -178,9 +181,13 @@ public class PedidoServicio {
     public boolean actualizar(Long id, FormPedidoDTO updateDTO) {
         Optional<Pedido> optional = pedidoRepositorio.findById(id);
         if (optional.isEmpty()) return false;
-
-        Pedido pedido = optional.get();
         
+        Pedido pedido = optional.get();
+         
+        if (pedido.getEstado() == EstadoPedido.FINALIZADO) {
+        throw new ReglaNegocioException("No se puede modificar un pedido finalizado.");
+    }
+
         // 1. Actualizar campos del Pedido
         pedido.setTipo(updateDTO.getTipo());
 
@@ -197,6 +204,11 @@ public class PedidoServicio {
     @Transactional
     public boolean eliminar(Long id) {
         Pedido pedido = obtenerPedidoPorId(id);
+
+        if (pedido.getEstado() == EstadoPedido.FINALIZADO) {
+        throw new ReglaNegocioException("No se puede eliminar un pedido finalizado.");
+    }
+
         detallePedidoRepositorio.deleteAll(pedido.getDetalles());
         pedidoRepositorio.delete(pedido);
         return true;
@@ -227,6 +239,10 @@ public class PedidoServicio {
     public boolean finalizarPedido(Long pedidoId) {
         Pedido pedido = obtenerPedidoPorId(pedidoId);
 
+        if (pedido.getEstado() == EstadoPedido.FINALIZADO) {
+        throw new ReglaNegocioException("El pedido ya está finalizado.");
+    }
+
         Transaccion transaccion = pedido.getTransaccion();
         if (transaccion == null) throw new ReglaNegocioException("El pedido no tiene una Transacción asociada.");
         
@@ -254,6 +270,9 @@ public class PedidoServicio {
             }
             default -> throw new IngresoInvalidoException("Tipo de Transacción no soportado para la finalización del pedido: " + transaccion.getTipo());
         }
+
+        pedido.setEstado(EstadoPedido.FINALIZADO);
+        pedidoRepositorio.save(pedido);
 
         return true;
     }

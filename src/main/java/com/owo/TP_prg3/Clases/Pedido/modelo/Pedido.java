@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedido;
+import com.owo.TP_prg3.Clases.Enum.EstadoPedido;
 import com.owo.TP_prg3.Clases.Enum.TipoPedido;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.Transaccion;
 
@@ -29,6 +30,10 @@ public class Pedido {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TipoPedido tipo;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EstadoPedido estado = EstadoPedido.PENDIENTE;   // por defecto PENDIENTE
     
     // CascadeType.ALL asegura que los detalles se guarden/eliminen con el pedido.
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -2,6 +2,7 @@ package com.owo.TP_prg3.Clases.Pedido.dto;
 
 import java.util.Set;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.FormDetallePedidoDTO;
+import com.owo.TP_prg3.Clases.Enum.EstadoPedido;
 import com.owo.TP_prg3.Clases.Enum.TipoPedido;
 import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
 import lombok.AllArgsConstructor;
@@ -17,4 +18,5 @@ public class PedidoDTO {
     private TransaccionDTO transaccion;
     private TipoPedido tipo;
     private Set<FormDetallePedidoDTO> detalles;
+    private EstadoPedido estado; 
 }
