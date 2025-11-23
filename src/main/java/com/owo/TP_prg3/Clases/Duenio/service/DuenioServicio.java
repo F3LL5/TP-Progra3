@@ -181,8 +181,6 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
         validarDatosDuenio(updateDTO);
         Duenio duenio = obtenerDuenioPorId(id);
         
-        validarDuenioNoExisteOtro(updateDTO.getDni(), updateDTO.getEmail(), id);
-        
         duenio.getPersona().setNombre(updateDTO.getNombre().trim());
         duenio.getPersona().setEdad(updateDTO.getEdad());
         duenio.getPersona().setDni(updateDTO.getDni());
@@ -231,20 +229,6 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
         Optional<Duenio> existenteEmail = duenioRepositorio.findByUsuario_Email(email.trim());
         if (existenteEmail.isPresent()) {
             throw new EntidadDuplicadaException(ENTIDAD, "email", email.trim());
-        }
-    }
-    
-    private void validarDuenioNoExisteOtro(int dni, String email, Long id) { 
-        Optional<Duenio> existenteDni = duenioRepositorio.findByPersona_Dni(dni);
-        // Si existe y su DuenioId es diferente, es duplicado.
-        if (existenteDni.isPresent() && !existenteDni.get().getDuenioId().equals(id)) {
-            throw new EntidadDuplicadaException(ENTIDAD, "DNI", dni);
-        }
-        
-        // 2. Check Email
-        Optional<Duenio> existenteEmail = duenioRepositorio.findByUsuario_Email(email.trim());
-        if (existenteEmail.isPresent() && !existenteEmail.get().getDuenioId().equals(id)) {
-             throw new EntidadDuplicadaException(ENTIDAD, "email", email.trim());
         }
     }
 

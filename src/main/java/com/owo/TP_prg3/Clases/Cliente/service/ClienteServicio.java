@@ -153,7 +153,6 @@ public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaD
     public boolean actualizar(Long id, FormPersonaDTO updateDTO) {
         validarDatosCliente(updateDTO);
         Cliente cliente = obtenerClientePorId(id);
-        validarClienteNoExisteOtro(updateDTO.getDni(), cliente.getPersonaId());
         
         cliente.setNombre(updateDTO.getNombre());
         cliente.setEdad(updateDTO.getEdad());
@@ -188,16 +187,6 @@ public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaD
         Optional<Persona> existentePersona = personaRepositorio.findByDni(dni);
 
         if (existente.isPresent() || existentePersona.isPresent()) {
-            throw new EntidadDuplicadaException(ENTIDAD, "dni", dni);
-        }
-    }
-
-    /** @param dni El DNI a verificar. @param id El ID del cliente que se está actualizando.
-        @throws EntidadDuplicadaException si ya existe otro Cliente con ese DNI. */
-    private void validarClienteNoExisteOtro(int dni, Long id) {
-        Optional<Cliente> existente = clienteRepositorio.findByPersona_Dni(dni);
-        // Si existe y su ID de persona es diferente al que estamos actualizando (entidad.getPersonaId()), es duplicado.
-        if (existente.isPresent() && !existente.get().getPersonaId().equals(id)) {
             throw new EntidadDuplicadaException(ENTIDAD, "dni", dni);
         }
     }

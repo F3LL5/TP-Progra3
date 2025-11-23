@@ -155,8 +155,6 @@ public class ProveedorServicio implements I_CRUD<Proveedor, ProveedorDTO, FormPe
 
         Proveedor proveedor = obtenerProveedorPorId(id);
         
-        validarProveedorNoExisteOtro(updateDTO.getDni(), proveedor.getPersonaId()); 
-        
         proveedor.setNombre(updateDTO.getNombre().trim()); 
         proveedor.setEdad(updateDTO.getEdad());
         proveedor.setDni(updateDTO.getDni());
@@ -184,14 +182,6 @@ public class ProveedorServicio implements I_CRUD<Proveedor, ProveedorDTO, FormPe
         Optional<Persona> existentePersona = personaRepositorio.findByDni(dni);
         if (existente.isPresent() || existentePersona.isPresent()) {
             throw new EntidadDuplicadaException(ENTIDAD, "dni", dni);
-        }
-    }
-
-    private void validarProveedorNoExisteOtro(int dni, Long id) {
-        Optional<Proveedor> existente = proveedorRepositorio.findByPersona_Dni(dni);
-        // Si existe y su ID de persona es diferente al que estamos actualizando, es duplicado. 
-        if (existente.isPresent() && !existente.get().getPersonaId().equals(id)) {
-            throw new EntidadDuplicadaException(ENTIDAD, "dni", dni); 
         }
     }
 
