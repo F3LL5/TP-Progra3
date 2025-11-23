@@ -17,6 +17,8 @@ import com.owo.TP_prg3.Clases.Duenio.modelo.DuenioRepositorio;
 import com.owo.TP_prg3.Clases.Enum.RolUsuario;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
+import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
+import com.owo.TP_prg3.Clases.Persona.modelo.PersonaRepositorio;
 import com.owo.TP_prg3.Clases.Persona.service.PersonaServicio;
 import com.owo.TP_prg3.Clases.Usuario.modelo.Usuario;
 import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
@@ -37,6 +39,8 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
 
     @Autowired
     private PersonaServicio personaServicio;
+    @Autowired
+    private PersonaRepositorio personaRepositorio;
 
 
     @Autowired
@@ -218,8 +222,9 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
     }
 
     private void validarDuenioNoExiste(int dni, String email) { 
-        Optional<DuenioDTO> existenteDni = this.buscarPorDNI(dni); 
-        if (existenteDni.isPresent()) {
+        Optional<DuenioDTO> existenteDni = this.buscarPorDNI(dni);
+        Optional<Persona> existeDniPersona = personaRepositorio.findByDni(dni);
+        if (existenteDni.isPresent() || existeDniPersona.isPresent()) {
             throw new EntidadDuplicadaException(ENTIDAD, "DNI", dni);
         }
         

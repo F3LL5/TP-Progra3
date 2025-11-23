@@ -16,6 +16,8 @@ import com.owo.TP_prg3.Clases.Empleado.modelo.EmpleadoRepositorio;
 import com.owo.TP_prg3.Clases.Enum.RolUsuario;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
+import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
+import com.owo.TP_prg3.Clases.Persona.modelo.PersonaRepositorio;
 import com.owo.TP_prg3.Clases.Persona.service.PersonaServicio;
 import com.owo.TP_prg3.Clases.Usuario.modelo.Usuario;
 import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
@@ -36,6 +38,8 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
 
     @Autowired
     private PersonaServicio personaServicio;
+    @Autowired
+    private PersonaRepositorio personaRepositorio;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -230,8 +234,9 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
     private void validarEmpleadoNoExisteOtro(int dni, String email, Long id) {
         // 1. Check DNI
         Optional<Empleado> existenteDni = empleadoRepositorio.findByPersona_Dni(dni);
+        Optional<Persona> existeDniPersona = personaRepositorio.findByDni(dni);
         // Si existe y su EmpleadoId es diferente, es duplicado.
-        if (existenteDni.isPresent() && !existenteDni.get().getEmpleadoId().equals(id)) {
+        if ((existenteDni.isPresent() && !existenteDni.get().getEmpleadoId().equals(id)) || existeDniPersona.isPresent() ) {
             throw new EntidadDuplicadaException(ENTIDAD, "DNI", dni);
         }
         

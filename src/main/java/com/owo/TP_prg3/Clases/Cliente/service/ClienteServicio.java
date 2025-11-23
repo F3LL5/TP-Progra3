@@ -9,6 +9,8 @@ import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
+import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
+import com.owo.TP_prg3.Clases.Persona.modelo.PersonaRepositorio;
 import com.owo.TP_prg3.Clases.Persona.service.PersonaServicio;
 import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
 import com.owo.TP_prg3.Excepciones.EntidadDuplicadaException;
@@ -28,6 +30,8 @@ public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaD
 
     @Autowired
     private PersonaServicio personaServicio;
+    @Autowired
+    private PersonaRepositorio personaRepositorio;
 
     @Autowired
     private ClienteRepositorio clienteRepositorio;
@@ -181,7 +185,9 @@ public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaD
     private void validarClienteNoExiste(int dni) {
         // Usamos el método existente 'buscarPorDNI' para chequear
         Optional<ClienteDTO> existente = this.buscarPorDNI(dni);
-        if (existente.isPresent()) {
+        Optional<Persona> existentePersona = personaRepositorio.findByDni(dni);
+
+        if (existente.isPresent() || existentePersona.isPresent()) {
             throw new EntidadDuplicadaException(ENTIDAD, "dni", dni);
         }
     }

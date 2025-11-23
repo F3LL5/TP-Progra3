@@ -9,6 +9,8 @@ import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
+import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
+import com.owo.TP_prg3.Clases.Persona.modelo.PersonaRepositorio;
 import com.owo.TP_prg3.Clases.Persona.service.PersonaServicio;
 import com.owo.TP_prg3.Clases.Proveedor.dto.ProveedorDTO;
 import com.owo.TP_prg3.Clases.Proveedor.modelo.Proveedor;
@@ -30,6 +32,8 @@ public class ProveedorServicio implements I_CRUD<Proveedor, ProveedorDTO, FormPe
 
     @Autowired
     private PersonaServicio personaServicio;
+    @Autowired
+    private PersonaRepositorio personaRepositorio;
 
     // Conversión
     @Override
@@ -176,8 +180,9 @@ public class ProveedorServicio implements I_CRUD<Proveedor, ProveedorDTO, FormPe
     }
 
     private void validarProveedorNoExiste(int dni) { 
-        Optional<Proveedor> existente = proveedorRepositorio.findByPersona_Dni(dni); 
-        if (existente.isPresent()) {
+        Optional<Proveedor> existente = proveedorRepositorio.findByPersona_Dni(dni);
+        Optional<Persona> existentePersona = personaRepositorio.findByDni(dni);
+        if (existente.isPresent() || existentePersona.isPresent()) {
             throw new EntidadDuplicadaException(ENTIDAD, "dni", dni);
         }
     }
