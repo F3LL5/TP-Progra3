@@ -64,13 +64,13 @@ public class PedidoServicio {
     private FormDetallePedidoDTO convertirDetalleA_DTO(DetallePedido d) {
     
         // Por defecto, el costo de compra es null (VENTA).
-        BigDecimal costoUnitarioCompra = null; 
+        BigDecimal costoUnitario = null; 
 
         // Verificamos si el pedido asociado es de tipo COMPRA.
         if (d.getPedido() != null && d.getPedido().getTipo() == TipoPedido.COMPRA) {
             // Si es una COMPRA, el subtotal representa el costo de adquisición.
             // Lo calculamos (Subtotal / Cantidad).
-            costoUnitarioCompra = d.getSubtotal().divide(
+            costoUnitario = d.getSubtotal().divide(
                 new BigDecimal(d.getCantidad()), 
                 4,
                 RoundingMode.HALF_UP
@@ -80,7 +80,7 @@ public class PedidoServicio {
         return new FormDetallePedidoDTO(
             d.getProducto().getProductoId(),
             d.getCantidad(),
-            costoUnitarioCompra
+            costoUnitario
         );
     }
 
