@@ -73,8 +73,8 @@ public final class ValidacionGeneral {
         if (dni == null) throw new CampoRequeridoException("DNI");
         mayorACero(dni, "DNI");
         // Asumiendo un rango típico de DNI de 7 a 9 dígitos
-        if (dni < 1000000 || dni > 999999999) {
-            throw new IngresoInvalidoException("DNI", "debe ser un número válido (e.g., entre 7 y 9 dígitos)");
+        if (dni < 100000 || dni > 999999999) {
+            throw new IngresoInvalidoException("DNI", "debe ser un número válido (e.g., entre 6 y 9 dígitos)");
         }
     }
 
@@ -87,8 +87,8 @@ public final class ValidacionGeneral {
     
     public static void validarContrasenia(String contrasenia, String campo) {
         validarStringNoVacio(contrasenia, campo);
-        if (contrasenia.length() < 8) {
-            throw new IngresoInvalidoException(campo, "debe tener al menos 8 caracteres");
+        if (contrasenia.length() < 1) {
+            throw new IngresoInvalidoException(campo, "debe tener al menos 1 caracter");
         }
     }
 }

@@ -13,4 +13,6 @@ public class FormProductoDTO {
 
     private String categoria;
 
+    private String url;
+
 }

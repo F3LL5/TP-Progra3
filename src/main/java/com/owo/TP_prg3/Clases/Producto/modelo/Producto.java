@@ -19,4 +19,6 @@ public class Producto {
     @Column(name= "categoria", nullable = false)
     protected String categoria;
 
+    @Column(name= "producto_imagen", nullable = true)
+    protected String url;
 }

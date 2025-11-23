@@ -30,6 +30,13 @@ public class EmpleadoControlador implements I_Controlador<EmpleadoDTO, FormEmple
         return ResponseEntity.ok(empleadoServicio.buscarPorID(id).orElse(null));
     }
 
+    @GetMapping("/buscarXEmail/{email}")
+    public ResponseEntity<EmpleadoDTO> buscarPorEmail(@PathVariable String email) {
+        return empleadoServicio.buscarPorEmail(email)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @Override
     @GetMapping("/filtrar")
     public ResponseEntity<Set<EmpleadoDTO>> filtrar(@RequestParam String campo, @RequestParam Object valor) {

@@ -236,6 +236,17 @@ public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, For
         }
     }
 
+    public BigDecimal obtenerCostoPromedioPonderado(Long productoId) {
+        Inventario inventario = inventarioRepositorio.findByProductoId(productoId)
+            .orElseThrow(() -> new EntidadNoEncontradaException("Costo Promedio Ponderado no encontrado: Producto ID " + productoId + " no tiene registro de Inventario."));
+        
+        if (inventario.getCostoAdquisicion() == null) {
+            throw new ReglaNegocioException("El Producto ID " + productoId + " no tiene un costo de adquisición (CPP) configurado.");
+        }
+        
+        return inventario.getCostoAdquisicion();
+    }
+
     //Validaciones privadas
     private void validarDatosInventario(FormInventarioDTO dto) {
         if (dto == null) throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");

@@ -30,6 +30,13 @@ public class DuenioControlador implements I_Controlador<DuenioDTO, FormDuenioDTO
         return ResponseEntity.ok(duenioServicio.buscarPorID(id).orElse(null));
     }
 
+    @GetMapping("/buscarXEmail/{email}")
+    public ResponseEntity<DuenioDTO> buscarPorEmail(@PathVariable String email) {
+        return duenioServicio.buscarPorEmail(email)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @Override
     @GetMapping("/filtrar")
     public ResponseEntity<Set<DuenioDTO>> filtrar(@RequestParam String campo, @RequestParam Object valor) {

@@ -87,6 +87,16 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
         return duenioRepositorio.findByPersona_Dni(dni).map(this::convertir_a_DTO);
     }
 
+    public Optional<DuenioDTO> buscarPorEmail(String email) {
+    if (email == null || email.trim().isEmpty()) {
+        throw new CampoRequeridoException("email");
+    }
+    ValidacionGeneral.validarEmailFormat(email, "email");
+
+    return duenioRepositorio.findByUsuario_Email(email.trim())
+            .map(this::convertir_a_DTO);
+}
+
     @Override
     public Set<DuenioDTO> filtrar(String campo, Object valor) {
         if (campo == null || campo.trim().isEmpty()) {

@@ -11,4 +11,6 @@ public class ProductoDTO {
     protected String nombre;
 
     protected String categoria;
+    
+    protected String url;
 }

@@ -80,6 +80,7 @@ create table if not exists productos (
 	producto_id bigint auto_increment primary key,
     nombre varchar(255) not null,
     categoria varchar(255) not null,
+	producto_imagen varchar(255),
 	UNIQUE KEY unique_producto (nombre, categoria)
 );
 
@@ -114,7 +115,7 @@ create table if not exists lotes (
 create table if not exists cuenta_bancarias(
 	cuenta_bancaria_id bigint auto_increment primary key,
 	tienda_id bigint not null,
-	cbu bigint not null,
+	cbu bigint not null unique,
 	saldo decimal(38,2) not null,
 	foreign key(tienda_id) references tiendas(tienda_id)
 	ON DELETE RESTRICT

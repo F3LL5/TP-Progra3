@@ -8,6 +8,7 @@ import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 import com.owo.TP_prg3.Clases.Tienda.modelo.Tienda;
 import com.owo.TP_prg3.Clases.Tienda.modelo.TiendaRepositorio;
 import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
+import com.owo.TP_prg3.Excepciones.EntidadDuplicadaException;
 import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
@@ -35,7 +36,7 @@ public class CuentaBancariaServicio implements I_CRUD<CuentaBancaria, CuentaBanc
     private TiendaRepositorio tiendaRepositorio;
     private Tienda getTiendaUnica() {
         // Asumimos que la tienda siempre tiene ID 1.
-        return tiendaRepositorio.findById(1L).get();
+        return tiendaRepositorio.findById(1L).orElseThrow(()-> new EntidadNoEncontradaException("Por favor, primero realice el registro inicial de la Tienda.") );
     }
 
     //Conversion
@@ -78,6 +79,7 @@ public class CuentaBancariaServicio implements I_CRUD<CuentaBancaria, CuentaBanc
     @Transactional
     public boolean cargar(FormCuentaBancariaDTO cDTO) {
         validarDatosCuenta(cDTO);
+        validarUnicidadCbu(cDTO.getCbu(), null);
         
         cbRepositorio.save(convertir_a_Obj(cDTO));
         return true;
@@ -87,6 +89,7 @@ public class CuentaBancariaServicio implements I_CRUD<CuentaBancaria, CuentaBanc
     @Transactional
     public boolean actualizar(Long id, FormCuentaBancariaDTO updateDTO) {
         validarDatosCuenta(updateDTO);
+        validarUnicidadCbu(updateDTO.getCbu(), id);
         CuentaBancaria cuenta = obtenerCuentaBancariaPorId(id);
         
         cuenta.setCbu(updateDTO.getCbu());
@@ -176,5 +179,19 @@ public class CuentaBancariaServicio implements I_CRUD<CuentaBancaria, CuentaBanc
         ValidacionGeneral.validarIdValido(id);
         return cbRepositorio.findById(id)
                 .orElseThrow(() -> new EntidadNoEncontradaException(ENTIDAD, id));
+    }
+
+    private void validarUnicidadCbu(int cbu, Long idExcluido) {
+        Optional<CuentaBancaria> duplicado = cbRepositorio.findByCbu(cbu);
+
+        if (duplicado.isPresent()) {
+            // Si encontramos un CBU igual, verificamos si pertenece a OTRA cuenta
+            if (idExcluido == null || !duplicado.get().getCuentaBancariaId().equals(idExcluido)) {
+                throw new EntidadDuplicadaException(
+                    ENTIDAD, 
+                    "El CBU " + cbu + " ya se encuentra registrado en el sistema."
+                );
+            }
+        }
     }
 }
