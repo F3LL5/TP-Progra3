@@ -192,18 +192,39 @@ public class DetallePedidoServicio implements I_CRUD<DetallePedido, DetallePedid
         
         DetallePedido detalle = optional.get();
         Pedido pedido = detalle.getPedido();
+
+        Integer oldCantidad = detalle.getCantidad(); // 1. Guardar la cantidad antigua
+        Integer newCantidad = updateDTO.getCantidad();
+        if (newCantidad == null || newCantidad <= 0) throw new IngresoInvalidoException("La cantidad debe ser un valor positivo.");
         
+        if (pedido.getTipo() == TipoPedido.VENTA) {
+            int diferencia = newCantidad - oldCantidad;
+            if (diferencia != 0) {      
+                if (diferencia > 0) {
+                    loteServicio.registrarSalidaStockFIFO(detalle.getProducto().getProductoId(), diferencia);
+                } else {
+
+                    loteServicio.registrarEntradaStock(
+                        detalle.getProducto(), 
+                        Math.abs(diferencia), 
+                        inventarioServicio.obtenerCostoPromedioPonderado(detalle.getProducto().getProductoId())
+                    );
+                }
+            }
+        }
+
         Producto producto = productoRepositorio.findById(updateDTO.getProductoId())
             .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + updateDTO.getProductoId()));
+        
         detalle.setProducto(producto);
+        detalle.setCantidad(newCantidad); // Usar la nueva cantidad
 
-        detalle.setCantidad(updateDTO.getCantidad());
-
-        BigDecimal subtotalCalculado = calcularSubtotal( updateDTO.getProductoId(), updateDTO.getCantidad() );
-        detalle.setSubtotal(subtotalCalculado);
+        BigDecimal subtotalCalculado = calcularSubtotal( updateDTO.getProductoId(), newCantidad );
+        detalle.setSubtotal(subtotalCalculado.setScale(2, RoundingMode.HALF_UP));
 
         detallePedidoRepositorio.save(detalle);
 
+        // Recalcular el Total del Pedido
         pedidoServicio.recalcularTotal(pedido.getPedidoId());
         
         return true;
