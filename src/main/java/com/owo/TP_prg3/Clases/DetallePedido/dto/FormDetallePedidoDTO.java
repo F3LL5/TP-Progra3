@@ -14,6 +14,6 @@ public class FormDetallePedidoDTO {
     private Integer cantidad;
 
     //Para pedidos de tipo compra al proveedor. Null si es una venta
-    private BigDecimal costoUnitarioCompra;
+    private BigDecimal costoUnitario;
 
 }

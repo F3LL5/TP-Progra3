@@ -16,6 +16,8 @@ import com.owo.TP_prg3.Clases.Empleado.modelo.EmpleadoRepositorio;
 import com.owo.TP_prg3.Clases.Enum.RolUsuario;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
+import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
+import com.owo.TP_prg3.Clases.Persona.modelo.PersonaRepositorio;
 import com.owo.TP_prg3.Clases.Persona.service.PersonaServicio;
 import com.owo.TP_prg3.Clases.Usuario.modelo.Usuario;
 import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
@@ -36,6 +38,8 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
 
     @Autowired
     private PersonaServicio personaServicio;
+    @Autowired
+    private PersonaRepositorio personaRepositorio;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -174,8 +178,6 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
         validarDatosEmpleado(updateDTO);
         Empleado empleado = obtenerEmpleadoPorId(id);
         
-        validarEmpleadoNoExisteOtro(updateDTO.getDni(), updateDTO.getEmail(), id);
-        
         empleado.getPersona().setNombre(updateDTO.getNombre().trim());
         empleado.getPersona().setEdad(updateDTO.getEdad());
         empleado.getPersona().setDni(updateDTO.getDni());
@@ -217,28 +219,15 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
 
     private void validarEmpleadoNoExiste(int dni, String email) { 
         Optional<EmpleadoDTO> existenteDni = this.buscarPorDNI(dni); 
-        if (existenteDni.isPresent()) {
+        Optional<Persona> existeDniPersona = personaRepositorio.findByDni(dni);
+        // Si existe y su EmpleadoId es diferente, es duplicado.
+        if (existenteDni.isPresent() || existeDniPersona.isPresent() ) {
             throw new EntidadDuplicadaException(ENTIDAD, "DNI", dni);
         }
         
         Optional<Empleado> existenteEmail = empleadoRepositorio.findByUsuario_Email(email.trim());
         if (existenteEmail.isPresent()) {
             throw new EntidadDuplicadaException(ENTIDAD, "email", email.trim());
-        }
-    }
-    
-    private void validarEmpleadoNoExisteOtro(int dni, String email, Long id) {
-        // 1. Check DNI
-        Optional<Empleado> existenteDni = empleadoRepositorio.findByPersona_Dni(dni);
-        // Si existe y su EmpleadoId es diferente, es duplicado.
-        if (existenteDni.isPresent() && !existenteDni.get().getEmpleadoId().equals(id)) {
-            throw new EntidadDuplicadaException(ENTIDAD, "DNI", dni);
-        }
-        
-        // 2. Check Email
-        Optional<Empleado> existenteEmail = empleadoRepositorio.findByUsuario_Email(email.trim());
-        if (existenteEmail.isPresent() && !existenteEmail.get().getEmpleadoId().equals(id)) {
-             throw new EntidadDuplicadaException(ENTIDAD, "email", email.trim());
         }
     }
 

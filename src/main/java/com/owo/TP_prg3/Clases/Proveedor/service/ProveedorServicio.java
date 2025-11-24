@@ -9,6 +9,8 @@ import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
+import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
+import com.owo.TP_prg3.Clases.Persona.modelo.PersonaRepositorio;
 import com.owo.TP_prg3.Clases.Persona.service.PersonaServicio;
 import com.owo.TP_prg3.Clases.Proveedor.dto.ProveedorDTO;
 import com.owo.TP_prg3.Clases.Proveedor.modelo.Proveedor;
@@ -30,6 +32,8 @@ public class ProveedorServicio implements I_CRUD<Proveedor, ProveedorDTO, FormPe
 
     @Autowired
     private PersonaServicio personaServicio;
+    @Autowired
+    private PersonaRepositorio personaRepositorio;
 
     // Conversión
     @Override
@@ -151,8 +155,6 @@ public class ProveedorServicio implements I_CRUD<Proveedor, ProveedorDTO, FormPe
 
         Proveedor proveedor = obtenerProveedorPorId(id);
         
-        validarProveedorNoExisteOtro(updateDTO.getDni(), proveedor.getPersonaId()); 
-        
         proveedor.setNombre(updateDTO.getNombre().trim()); 
         proveedor.setEdad(updateDTO.getEdad());
         proveedor.setDni(updateDTO.getDni());
@@ -176,17 +178,10 @@ public class ProveedorServicio implements I_CRUD<Proveedor, ProveedorDTO, FormPe
     }
 
     private void validarProveedorNoExiste(int dni) { 
-        Optional<Proveedor> existente = proveedorRepositorio.findByPersona_Dni(dni); 
-        if (existente.isPresent()) {
-            throw new EntidadDuplicadaException(ENTIDAD, "dni", dni);
-        }
-    }
-
-    private void validarProveedorNoExisteOtro(int dni, Long id) {
         Optional<Proveedor> existente = proveedorRepositorio.findByPersona_Dni(dni);
-        // Si existe y su ID de persona es diferente al que estamos actualizando, es duplicado. 
-        if (existente.isPresent() && !existente.get().getPersonaId().equals(id)) {
-            throw new EntidadDuplicadaException(ENTIDAD, "dni", dni); 
+        Optional<Persona> existentePersona = personaRepositorio.findByDni(dni);
+        if (existente.isPresent() || existentePersona.isPresent()) {
+            throw new EntidadDuplicadaException(ENTIDAD, "dni", dni);
         }
     }
 

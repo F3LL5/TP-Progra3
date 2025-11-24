@@ -16,4 +16,6 @@ public class DetallePedidoDTO {
     protected Integer cantidad;
 
     protected BigDecimal subtotal;
+
+    private BigDecimal costoUnitario;
 }

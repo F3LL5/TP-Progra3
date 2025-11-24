@@ -62,12 +62,22 @@ public class DetallePedidoServicio implements I_CRUD<DetallePedido, DetallePedid
 
     @Override
     public DetallePedidoDTO convertir_a_DTO(DetallePedido detalle) {
+        BigDecimal costoUnitario = BigDecimal.ZERO;
+        
+        if (detalle.getCantidad() != null && detalle.getCantidad() > 0 && detalle.getSubtotal() != null) {
+            costoUnitario = detalle.getSubtotal().divide(
+                new BigDecimal(detalle.getCantidad()), 
+                2, 
+                RoundingMode.HALF_UP
+            );
+        }
         return new DetallePedidoDTO(
             detalle.getDetallePedidoId(),
             detalle.getProducto().getProductoId(), 
             detalle.getProducto().getNombre(), 
             detalle.getCantidad(),
-            detalle.getSubtotal()
+            detalle.getSubtotal(),
+            costoUnitario
         );
     }
     
@@ -152,18 +162,18 @@ public class DetallePedidoServicio implements I_CRUD<DetallePedido, DetallePedid
             subtotalCalculado = calcularSubtotal(detalleDTO.getProductoId(), detalleDTO.getCantidad()); 
             
         } else if (pedido.getTipo() == TipoPedido.COMPRA) {
-            if (detalleDTO.getCostoUnitarioCompra() == null) 
-                throw new IngresoInvalidoException("Se requiere 'costoUnitarioCompra' para pedidos de COMPRA.");
+            if (detalleDTO.getCostoUnitario() == null) 
+                throw new IngresoInvalidoException("Se requiere 'costoUnitario' para pedidos de COMPRA.");
 
             // Registra el lote, ajusta el stock consolidado y recalcula el CPP.
             loteServicio.registrarEntradaStock(
                 producto, 
                 detalleDTO.getCantidad(), 
-                detalleDTO.getCostoUnitarioCompra()
+                detalleDTO.getCostoUnitario()
             );
             
             // El subtotal de la compra se calcula usando el costo unitario de adquisición
-            subtotalCalculado = detalleDTO.getCostoUnitarioCompra().multiply(new BigDecimal(detalleDTO.getCantidad()));
+            subtotalCalculado = detalleDTO.getCostoUnitario().multiply(new BigDecimal(detalleDTO.getCantidad()));
             
         } else {
             throw new UnsupportedOperationException("Tipo de Pedido no soportado: " + pedido.getTipo());
@@ -219,7 +229,20 @@ public class DetallePedidoServicio implements I_CRUD<DetallePedido, DetallePedid
         detalle.setProducto(producto);
         detalle.setCantidad(newCantidad); // Usar la nueva cantidad
 
-        BigDecimal subtotalCalculado = calcularSubtotal( updateDTO.getProductoId(), newCantidad );
+        BigDecimal subtotalCalculado;
+
+        if (pedido.getTipo() == TipoPedido.COMPRA) {
+            // SI ES COMPRA
+            if (updateDTO.getCostoUnitario() == null) {
+                 throw new IngresoInvalidoException("Para actualizar una compra se requiere el costo unitario.");
+            }
+            // Subtotal = CostoUnitario (del DTO) * Cantidad
+            subtotalCalculado = updateDTO.getCostoUnitario().multiply(new BigDecimal(newCantidad));
+        } else {
+            // SI ES VENTA: Calculamos automático 
+            subtotalCalculado = calcularSubtotal(updateDTO.getProductoId(), newCantidad);
+        }
+
         detalle.setSubtotal(subtotalCalculado.setScale(2, RoundingMode.HALF_UP));
 
         detallePedidoRepositorio.save(detalle);
