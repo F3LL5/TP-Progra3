@@ -4,6 +4,7 @@ import com.owo.TP_prg3.Clases.DetallePedido.dto.DetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.dto.FormDetallePedidoDTO;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedido;
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedidoRepositorio;
+import com.owo.TP_prg3.Clases.Enum.EstadoPedido;
 import com.owo.TP_prg3.Clases.Enum.TipoPedido;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 import com.owo.TP_prg3.Clases.Inventario.service.InventarioServicio;
@@ -16,6 +17,7 @@ import com.owo.TP_prg3.Clases.Producto.modelo.ProductoRepositorio;
 import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
 import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.ReglaNegocioException;
 import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -151,26 +153,24 @@ public class DetallePedidoServicio implements I_CRUD<DetallePedido, DetallePedid
         if (detalleDTO.getCantidad() == null || detalleDTO.getCantidad() <= 0) throw new IngresoInvalidoException("La cantidad debe ser un valor positivo.");
         
         // 1. Obtener Pedido y Producto
-        Pedido pedido = pedidoRepositorio.findById(pedidoId).orElseThrow(() -> new RuntimeException("Pedido no encontrado con ID: " + pedidoId));
-        Producto producto = productoRepositorio.findById(detalleDTO.getProductoId()).orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + detalleDTO.getProductoId()));
+        Pedido pedido = pedidoRepositorio.findById(pedidoId).orElseThrow(() -> new EntidadNoEncontradaException("Pedido", pedidoId));
+        if (pedido.getEstado() == EstadoPedido.FINALIZADO) throw new ReglaNegocioException("No se pueden agregar detalles a un pedido FINALIZADO.");
+
+        Producto producto = productoRepositorio.findById(detalleDTO.getProductoId()).orElseThrow(() -> new EntidadNoEncontradaException("Producto", detalleDTO.getProductoId()));
+
+        if (pedido.getTipo() == TipoPedido.VENTA) {
+            inventarioServicio.validarStockSuficiente(producto.getProductoId(), detalleDTO.getCantidad());
+        }
 
         BigDecimal subtotalCalculado;
         
         // 2. STOCK Y PRECIO basada en TipoPedido
         if (pedido.getTipo() == TipoPedido.VENTA) {
-            loteServicio.registrarSalidaStockFIFO(detalleDTO.getProductoId(), detalleDTO.getCantidad());
             subtotalCalculado = calcularSubtotal(detalleDTO.getProductoId(), detalleDTO.getCantidad()); 
-            
+
         } else if (pedido.getTipo() == TipoPedido.COMPRA) {
             if (detalleDTO.getCostoUnitario() == null) 
                 throw new IngresoInvalidoException("Se requiere 'costoUnitario' para pedidos de COMPRA.");
-
-            // Registra el lote, ajusta el stock consolidado y recalcula el CPP.
-            loteServicio.registrarEntradaStock(
-                producto, 
-                detalleDTO.getCantidad(), 
-                detalleDTO.getCostoUnitario()
-            );
             
             // El subtotal de la compra se calcula usando el costo unitario de adquisición
             subtotalCalculado = detalleDTO.getCostoUnitario().multiply(new BigDecimal(detalleDTO.getCantidad()));
@@ -203,25 +203,12 @@ public class DetallePedidoServicio implements I_CRUD<DetallePedido, DetallePedid
         DetallePedido detalle = optional.get();
         Pedido pedido = detalle.getPedido();
 
-        Integer oldCantidad = detalle.getCantidad(); // 1. Guardar la cantidad antigua
+        if (pedido.getEstado() == EstadoPedido.FINALIZADO) {
+            throw new ReglaNegocioException("No se pueden modificar detalles de un pedido FINALIZADO.");
+        }
+
         Integer newCantidad = updateDTO.getCantidad();
         if (newCantidad == null || newCantidad <= 0) throw new IngresoInvalidoException("La cantidad debe ser un valor positivo.");
-        
-        if (pedido.getTipo() == TipoPedido.VENTA) {
-            int diferencia = newCantidad - oldCantidad;
-            if (diferencia != 0) {      
-                if (diferencia > 0) {
-                    loteServicio.registrarSalidaStockFIFO(detalle.getProducto().getProductoId(), diferencia);
-                } else {
-
-                    loteServicio.registrarEntradaStock(
-                        detalle.getProducto(), 
-                        Math.abs(diferencia), 
-                        inventarioServicio.obtenerCostoPromedioPonderado(detalle.getProducto().getProductoId())
-                    );
-                }
-            }
-        }
 
         Producto producto = productoRepositorio.findById(updateDTO.getProductoId())
             .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + updateDTO.getProductoId()));
@@ -259,6 +246,10 @@ public class DetallePedidoServicio implements I_CRUD<DetallePedido, DetallePedid
         DetallePedido detalle = obtenerDetallePedidoPorId(id);
         
         Pedido pedido = detalle.getPedido(); 
+
+        if (pedido.getEstado() == EstadoPedido.FINALIZADO) {
+            throw new ReglaNegocioException("No se pueden eliminar detalles de un pedido FINALIZADO.");
+        }
         
         detallePedidoRepositorio.delete(detalle);
         
@@ -302,10 +293,6 @@ public class DetallePedidoServicio implements I_CRUD<DetallePedido, DetallePedid
         
         // 4. Guardar Detalle y asociar al set del Pedido
         detalle = detallePedidoRepositorio.save(detalle);
-
-        if (pedido.getTipo() == TipoPedido.VENTA) {
-            loteServicio.registrarSalidaStockFIFO(fDTO.getProductoId(), fDTO.getCantidad());
-        }
 
         return detalle;
     }

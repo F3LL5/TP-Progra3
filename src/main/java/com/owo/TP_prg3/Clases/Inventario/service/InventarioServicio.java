@@ -13,6 +13,7 @@ import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 import com.owo.TP_prg3.Excepciones.OperacionNoPermitidaException;
 import com.owo.TP_prg3.Excepciones.ReglaNegocioException;
+import com.owo.TP_prg3.Excepciones.StockInsuficienteException;
 import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 
 import jakarta.transaction.Transactional;
@@ -285,6 +286,15 @@ public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, For
         if (loteServicio.existenLotesActivos(productoId)) {
             throw new ReglaNegocioException(
                 "No se puede eliminar el " + ENTIDAD + " porque el producto tiene stock activo (lotes asociados)."
+            );
+        }
+    }
+
+    public void validarStockSuficiente(Long productoId, Integer cantidadRequerida) {
+        Integer stockActual = loteServicio.obtenerStockPorProducto(productoId); 
+        if (stockActual < cantidadRequerida) {
+            throw new StockInsuficienteException(
+                "Stock insuficiente para el producto. Disponible: " + stockActual + ", Requerido: " + cantidadRequerida
             );
         }
     }

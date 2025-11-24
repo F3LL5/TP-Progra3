@@ -8,6 +8,7 @@ import com.owo.TP_prg3.Clases.DetallePedido.service.DetallePedidoServicio;
 import com.owo.TP_prg3.Clases.Enum.EstadoPedido;
 import com.owo.TP_prg3.Clases.Enum.TipoPedido;
 import com.owo.TP_prg3.Clases.Inventario.service.InventarioServicio;
+import com.owo.TP_prg3.Clases.Lote.service.LoteServicio;
 import com.owo.TP_prg3.Clases.Pedido.dto.*;
 import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
 import com.owo.TP_prg3.Clases.Pedido.modelo.PedidoRepositorio;
@@ -35,6 +36,7 @@ import java.util.stream.Stream;
 
 @Service
 public class PedidoServicio {
+
     //ATRIBUTOS
 
     private static final String ENTIDAD = "Pedido";
@@ -53,12 +55,20 @@ public class PedidoServicio {
 
     @Autowired
     TransaccionServicio transaccionServicio;
+
     @Autowired
     InventarioServicio inventarioServicio;
+
+    @Autowired
+    LoteServicio loteServicio;
+
     @Autowired
     TiendaServicio tiendaServicio;
+
     @Autowired
     CuentaBancariaServicio cuentaBancariaServicio;
+
+    
 
     //CONVERSION
     private FormDetallePedidoDTO convertirDetalleA_DTO(DetallePedido d) {
@@ -240,8 +250,26 @@ public class PedidoServicio {
         Pedido pedido = obtenerPedidoPorId(pedidoId);
 
         if (pedido.getEstado() == EstadoPedido.FINALIZADO) {
-        throw new ReglaNegocioException("El pedido ya está finalizado.");
-    }
+            throw new ReglaNegocioException("El pedido ya está finalizado.");
+        }
+
+        //Logica para actualizar el stock
+        for (DetallePedido detalle : pedido.getDetalles()) {
+            Long productoId = detalle.getProducto().getProductoId();
+            Integer cantidad = detalle.getCantidad();
+            
+            if (pedido.getTipo() == TipoPedido.VENTA) {
+                // Registrar SALIDA de stock (VENTA)
+                loteServicio.registrarSalidaStockFIFO(productoId, cantidad);
+            } else if (pedido.getTipo() == TipoPedido.COMPRA) {
+                // Registrar ENTRADA de stock (COMPRA)
+                loteServicio.registrarEntradaStock(
+                    detalle.getProducto(), 
+                    cantidad, 
+                    detalle.getSubtotal()
+                );
+            }
+        }
 
         Transaccion transaccion = pedido.getTransaccion();
         if (transaccion == null) throw new ReglaNegocioException("El pedido no tiene una Transacción asociada.");
