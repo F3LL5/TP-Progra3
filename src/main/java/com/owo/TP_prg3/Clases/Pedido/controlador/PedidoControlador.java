@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Set;
+import com.owo.TP_prg3.Excepciones.StockInsuficienteException;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/pedidos")
@@ -66,15 +68,30 @@ public class PedidoControlador  {
         else return ResponseEntity.notFound().build();
     }
 
-    @PutMapping("/{id}/finalizar")
-    public ResponseEntity<Boolean> finalizarPedido(@PathVariable Long id) {
-        try {
-            boolean exito = pedidoServicio.finalizarPedido(id);
-            if (exito) return ResponseEntity.ok(true);
-            else return ResponseEntity.badRequest().body(false);
-        } catch (Exception e) {
-            System.err.println("Error al finalizar pedido: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+  @PutMapping("/{id}/finalizar")
+    public ResponseEntity<?> finalizarPedido(@PathVariable Long id) {
+    try {
+        boolean exito = pedidoServicio.finalizarPedido(id);
+
+        if (exito) {
+            return ResponseEntity.ok(true);
+        } else {
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of("mensaje", "No se pudo finalizar el pedido."));
         }
+
+    } catch (Exception e) {
+        System.err.println("Error al finalizar pedido: " + e.getMessage());
+
+        String msg = (e.getMessage() != null && !e.getMessage().isBlank())
+                ? e.getMessage()
+                : "Error interno al finalizar el pedido.";
+
+        // mando SIEMPRE 400 con el mensaje real para que Angular lo muestre
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("mensaje", msg));
+    }
     }
 }
