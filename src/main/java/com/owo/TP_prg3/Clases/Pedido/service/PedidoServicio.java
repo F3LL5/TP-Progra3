@@ -263,10 +263,15 @@ public class PedidoServicio {
                 loteServicio.registrarSalidaStockFIFO(productoId, cantidad);
             } else if (pedido.getTipo() == TipoPedido.COMPRA) {
                 // Registrar ENTRADA de stock (COMPRA)
+                BigDecimal costoUnitario = detalle.getSubtotal().divide( 
+                    new BigDecimal(cantidad), 
+                    4,
+                    RoundingMode.HALF_UP
+                );
                 loteServicio.registrarEntradaStock(
                     detalle.getProducto(), 
                     cantidad, 
-                    detalle.getSubtotal()
+                    costoUnitario
                 );
             }
         }
