@@ -9,7 +9,6 @@ import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import com.owo.TP_prg3.Clases.Duenio.dto.DuenioDTO;
 import com.owo.TP_prg3.Clases.Duenio.dto.FormDuenioDTO;
 import com.owo.TP_prg3.Clases.Duenio.modelo.Duenio;
@@ -20,11 +19,13 @@ import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
 import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
 import com.owo.TP_prg3.Clases.Persona.modelo.PersonaRepositorio;
 import com.owo.TP_prg3.Clases.Persona.service.PersonaServicio;
+import com.owo.TP_prg3.Clases.Tienda.modelo.TiendaRepositorio;
 import com.owo.TP_prg3.Clases.Usuario.modelo.Usuario;
 import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
 import com.owo.TP_prg3.Excepciones.EntidadDuplicadaException;
 import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.ReglaNegocioException;
 import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 
 import jakarta.transaction.Transactional;
@@ -41,6 +42,9 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
     private PersonaServicio personaServicio;
     @Autowired
     private PersonaRepositorio personaRepositorio;
+
+    @Autowired
+    private TiendaRepositorio tiendaRepositorio;
 
 
     @Autowired
@@ -199,6 +203,10 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
     @Transactional
     public boolean eliminar(Long id) {
         Duenio duenio = obtenerDuenioPorId(id);
+        
+        boolean tieneTienda = tiendaRepositorio.existsByDuenio_DuenioId(duenio.getDuenioId());
+        if (tieneTienda) throw new ReglaNegocioException("No se puede ELIMINAR el dueño porque posee una tienda activa. Elimine la tienda primero.");
+
         duenioRepositorio.delete(duenio);
         return true;
     }

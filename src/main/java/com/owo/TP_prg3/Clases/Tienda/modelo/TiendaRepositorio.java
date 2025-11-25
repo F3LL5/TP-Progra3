@@ -10,4 +10,8 @@ public interface TiendaRepositorio extends JpaRepository<Tienda, Long> {
 
     Optional<Tienda> findByNombre(String trim);
 
+    Optional<Tienda> findByDuenio_DuenioId(Long duenioId);
+
+    boolean existsByDuenio_DuenioId(Long duenioId);
+    
 }
