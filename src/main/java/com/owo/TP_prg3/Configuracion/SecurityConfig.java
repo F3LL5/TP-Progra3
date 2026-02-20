@@ -126,6 +126,10 @@ public class SecurityConfig {
                 "api/lotes/**"     // por cómo está el @RequestMapping en tu LoteControlador
         ).hasAnyRole("ADMIN","DUENIO","EMPLEADO")
 
+        .requestMatchers(
+                "/api/historial/**"
+        ).hasAnyRole("ADMIN","DUENIO","EMPLEADO")
+
         // Cualquier otra cosa que no matchea lo de arriba → prohibido
         .anyRequest().denyAll()
        

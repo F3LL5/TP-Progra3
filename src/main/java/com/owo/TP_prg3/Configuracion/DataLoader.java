@@ -26,6 +26,9 @@ public class DataLoader implements CommandLineRunner {
     public void run(String... args) throws Exception {
         // Solo crea un usuario si no hay ninguno en la base de datos
         if (usuarioRepositorio.count() == 0) {
+            System.out.println("------------------------------------------------------------------------------------");
+            System.out.println("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ");
+            System.out.println();
             System.out.println("No se encontraron usuarios. Creando usuario administrador inicial...");
 
             String adminMail = "123";
@@ -42,7 +45,9 @@ public class DataLoader implements CommandLineRunner {
 
             System.out.println("Usuario ADMINISTRADOR '" + adminPassword + "' creado con email: " + adminMail);
             System.out.println("Recomendamos encarecidamente que cambie la contraseña una vez ingresado en el sistema.");
-
+            System.out.println();
+            System.out.println("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ");
+            System.out.println("------------------------------------------------------------------------------------");
         }
     }
 }
