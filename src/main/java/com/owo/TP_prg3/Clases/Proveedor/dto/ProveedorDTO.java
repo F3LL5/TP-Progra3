@@ -1,16 +1,22 @@
 package com.owo.TP_prg3.Clases.Proveedor.dto;
 
-import com.owo.TP_prg3.Clases.Persona.dto.PersonaDTO;
+import com.owo.TP_prg3.Clases.Domicilio.Domicilio;
+import com.owo.TP_prg3.Clases.Enum.CondicionIVA;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
-@Data @EqualsAndHashCode(callSuper = true)
-public class ProveedorDTO extends PersonaDTO {
-    
-    private Long proveedorId; 
-
-    public ProveedorDTO(Long persona_id, Integer dni, String nombre, Integer edad, Long clienteId) {
-        super(persona_id, dni, nombre, edad);
-        this.proveedorId = clienteId;
-    }
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class ProveedorDTO {
+    private Long proveedorId;
+    private Long cuit;
+    private String razonSocial;
+    private String nombreFantasia;
+    private CondicionIVA condicion;
+    private Domicilio direccion;
+    private Integer telefono;
+    private String email;
 }

@@ -5,14 +5,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.owo.TP_prg3.Clases.Interfaces.I_Controlador;
-import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
+import com.owo.TP_prg3.Clases.Proveedor.dto.FormProveedorDTO;
 import com.owo.TP_prg3.Clases.Proveedor.dto.ProveedorDTO;
 import com.owo.TP_prg3.Clases.Proveedor.service.ProveedorServicio;
 import java.util.Set;
 
 @RestController
 @RequestMapping("/api/proveedores")
-public class ProveedorControlador implements I_Controlador<ProveedorDTO, FormPersonaDTO> {
+public class ProveedorControlador implements I_Controlador<ProveedorDTO, FormProveedorDTO> {
 
     @Autowired
     private ProveedorServicio proveedorServicio;
@@ -45,7 +45,7 @@ public class ProveedorControlador implements I_Controlador<ProveedorDTO, FormPer
     // --- Métodos POST ---
     @Override
     @PostMapping
-    public ResponseEntity<Boolean> cargar(@RequestBody FormPersonaDTO dto) {
+    public ResponseEntity<Boolean> cargar(@RequestBody FormProveedorDTO dto) {
         boolean exito = proveedorServicio.cargar(dto);
         if (exito) return ResponseEntity.status(HttpStatus.CREATED).body(true); 
         else return ResponseEntity.badRequest().body(false);
@@ -54,7 +54,7 @@ public class ProveedorControlador implements I_Controlador<ProveedorDTO, FormPer
     // --- Métodos PUT ---
     @Override
     @PutMapping("/{id}")
-    public ResponseEntity<Boolean> actualizar(@PathVariable Long id, @RequestBody FormPersonaDTO dto) {
+    public ResponseEntity<Boolean> actualizar(@PathVariable Long id, @RequestBody FormProveedorDTO dto) {
         return ResponseEntity.ok(proveedorServicio.actualizar(id, dto)); 
     }
 
