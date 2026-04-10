@@ -17,7 +17,7 @@ public class FormTiendaDTO {
 
     protected BigDecimal caja;
 
-    protected Integer duenioDni;
+    protected Long duenioDni;
 
 
 }

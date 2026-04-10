@@ -1,11 +1,8 @@
 package com.owo.TP_prg3.Clases.Empleado.service;
 
-import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -50,7 +47,7 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
         validarDatosEmpleado(fDTO);
         Empleado empleado = new Empleado();
         empleado.setNombre(fDTO.getNombre());
-        empleado.setEdad(fDTO.getEdad());
+        empleado.setFechaNacimiento(fDTO.getFechaNacimiento());
         empleado.setDni(fDTO.getDni());
         Usuario usuario = new Usuario(null, fDTO.getEmail(), passwordEncoder.encode(fDTO.getContraseña()), RolUsuario.ROLE_EMPLEADO);
         empleado.setUsuario(usuario);
@@ -63,7 +60,8 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
             empleado.getPersonaId(), 
             empleado.getDni(),
             empleado.getNombre(),
-            empleado.getEdad(),
+            empleado.getApellido(),
+            empleado.getFechaNacimiento(),
             empleado.getEmpleadoId(),
             empleado.getUsuario().getEmail()
         );
@@ -82,7 +80,7 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
         return empleadoRepositorio.findById(id).map(this::convertir_a_DTO);
     }
 
-    public Optional<EmpleadoDTO> buscarPorDNI(int dni) {
+    public Optional<EmpleadoDTO> buscarPorDNI(Long dni) {
         if (dni <= 0) {
              throw new IngresoInvalidoException("DNI", "debe ser un número positivo.");
         }
@@ -97,68 +95,6 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
 
         return empleadoRepositorio.findByUsuario_Email(email.trim())
                 .map(this::convertir_a_DTO);
-    }
-
-    @Override
-    public Set<EmpleadoDTO> filtrar(String campo, Object valor) {
-        if (campo == null || campo.trim().isEmpty()) {
-            throw new CampoRequeridoException("campo de filtrado");
-        }
-        if (valor == null) {
-            throw new CampoRequeridoException("valor de filtrado");
-        }
-        Stream<Empleado> stream = empleadoRepositorio.findAll().stream();
-        Predicate<Empleado> filtro;
-        String campoTrim = campo.toLowerCase().trim();
-
-        switch (campoTrim) {
-            case "nombre" -> filtro = p -> p.getNombre().equalsIgnoreCase(valor.toString().trim()); 
-            case "edad" -> {
-                 try {
-                     int edad = Integer.parseInt(valor.toString());
-                     filtro = p -> p.getEdad().equals(edad);
-                 } catch (NumberFormatException e) {
-                     throw new IngresoInvalidoException("valor", "debe ser un número entero para el campo 'edad'");
-                 }
-            }
-            case "dni" -> {
-                try {
-                    int dni = Integer.parseInt(valor.toString());
-                    filtro = p -> p.getDni() == dni;
-                } catch (NumberFormatException e) {
-                    throw new IngresoInvalidoException("valor", "debe ser un número entero para el campo 'dni'");
-                }
-            }
-            case "email" -> filtro = p -> p.getUsuario().getEmail().equalsIgnoreCase(valor.toString().trim()); 
-            default -> throw new IngresoInvalidoException(
-                "campo de filtrado",
-                "debe ser 'nombre', 'edad', 'dni' o 'email'"
-            );
-        }
-
-        return stream.filter(filtro)
-                    .map(this::convertir_a_DTO)
-                    .collect(Collectors.toSet());
-    }
-
-    public Set<EmpleadoDTO> ordenar(String campo, boolean ascendente) {
-        if (campo == null || campo.trim().isEmpty()) {
-            throw new CampoRequeridoException("campo de ordenamiento");
-        }
-        Stream<Empleado> stream = empleadoRepositorio.findAll().stream();
-
-        Comparator<Empleado> comparador;
-        switch (campo.toLowerCase()) {
-            case "nombre"-> comparador = Comparator.comparing(Empleado::getNombre);
-            case "edad"-> comparador = Comparator.comparing(Empleado::getEdad);
-            case "dni"-> comparador = Comparator.comparing(Empleado::getDni);
-            default -> comparador = Comparator.comparing(Empleado::getEmpleadoId);
-        }
-        if (!ascendente) comparador = comparador.reversed();
-
-        return stream.sorted(comparador)
-                    .map(this::convertir_a_DTO)
-                    .collect(Collectors.toSet());
     }
 
     // POST
@@ -179,7 +115,8 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
         Empleado empleado = obtenerEmpleadoPorId(id);
         
         empleado.getPersona().setNombre(updateDTO.getNombre().trim());
-        empleado.getPersona().setEdad(updateDTO.getEdad());
+        empleado.getPersona().setApellido(updateDTO.getApellido().trim());
+        empleado.getPersona().setFechaNacimiento(updateDTO.getFechaNacimiento());
         empleado.getPersona().setDni(updateDTO.getDni());
         
         empleado.getUsuario().setEmail(updateDTO.getEmail().trim());
@@ -207,7 +144,7 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
         if (dto == null) throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");
 
         // Validaciones de Persona
-        personaServicio.validarDatosPersona(new FormPersonaDTO(dto.getNombre(), dto.getEdad(), dto.getDni()));
+        personaServicio.validarDatosPersona(new FormPersonaDTO(dto.getNombre(), dto.getApellido(), dto.getFechaNacimiento(), dto.getDni()));
         
         // Validaciones de Usuario
         if (dto.getEmail() == null) throw new CampoRequeridoException("email");
@@ -217,7 +154,7 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
         ValidacionGeneral.validarContrasenia(dto.getContraseña(), "contrasenia");
     }
 
-    private void validarEmpleadoNoExiste(int dni, String email) { 
+    private void validarEmpleadoNoExiste(Long dni, String email) { 
         Optional<EmpleadoDTO> existenteDni = this.buscarPorDNI(dni); 
         Optional<Persona> existeDniPersona = personaRepositorio.findByDni(dni);
         // Si existe y su EmpleadoId es diferente, es duplicado.
@@ -235,5 +172,15 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
         ValidacionGeneral.validarIdValido(id);
         return empleadoRepositorio.findById(id)
                 .orElseThrow(() -> new EntidadNoEncontradaException(ENTIDAD, id));
+    }
+
+    @Override
+    public Set<EmpleadoDTO> filtrar(String campo, Object valor) {
+        throw new UnsupportedOperationException("Unimplemented method 'filtrar'");
+    }
+
+    @Override
+    public Set<EmpleadoDTO> ordenar(String campo, boolean ascendente) {
+        throw new UnsupportedOperationException("Unimplemented method 'ordenar'");
     }
 }

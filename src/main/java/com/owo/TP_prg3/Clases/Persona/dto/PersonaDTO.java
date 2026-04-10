@@ -1,5 +1,7 @@
 package com.owo.TP_prg3.Clases.Persona.dto;
 
+import java.time.LocalDate;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -9,10 +11,12 @@ public class PersonaDTO {
 
     protected Long personaId;
 
-    protected Integer dni;
-
     protected String nombre;
 
-    protected Integer edad;
+    protected String apellido;
+
+    protected LocalDate fechaNacimiento;
+
+    protected Long dni;
 
 }

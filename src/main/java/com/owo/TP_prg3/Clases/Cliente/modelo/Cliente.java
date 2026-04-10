@@ -1,5 +1,7 @@
 package com.owo.TP_prg3.Clases.Cliente.modelo;
 
+import java.time.LocalDate;
+
 import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -32,27 +34,37 @@ public class Cliente {
     public String getNombre() {
         return this.persona.getNombre();
     }
-    public Integer getEdad() {
-        return this.persona.getEdad();
+
+    public String getApellido() {
+        return this.persona.getApellido();
     }
-    public Integer getDni() {
+
+    public Long getDni() {
         return this.persona.getDni();
     }
+
     public Long getPersonaId() {
         return this.persona.getPersonaId();
     }
+
+    public LocalDate getFechaNacimiento() {
+        return this.persona.getFechaNacimiento();
+    }
     
     public void setNombre(String nombre) {
-        if (this.persona == null) this.persona = new Persona(); // Inicializar si es null
         this.persona.setNombre(nombre);
     }
-    public void setEdad(int edad) {
-        if (this.persona == null) this.persona = new Persona();
-        this.persona.setEdad(edad);
+
+    public void setApellido(String apellido) {
+        this.persona.setNombre(apellido);
     }
-    public void setDni(int dni) {
-        if (this.persona == null) this.persona = new Persona();
+
+    public void setDni(Long dni) {
         this.persona.setDni(dni);
+    }
+
+    public void setFechaNacimiento(LocalDate fechaNacimiento) {
+        this.persona.setFechaNacimiento(fechaNacimiento);
     }
     
 }

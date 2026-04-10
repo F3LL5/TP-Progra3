@@ -5,22 +5,16 @@ import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
 import com.owo.TP_prg3.Clases.Persona.dto.PersonaDTO;
 import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
 import com.owo.TP_prg3.Clases.Persona.modelo.PersonaRepositorio;
-import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
 import com.owo.TP_prg3.Excepciones.EntidadDuplicadaException;
 import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
-
 import jakarta.transaction.Transactional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class PersonaServicio implements I_CRUD<Persona, PersonaDTO, FormPersonaDTO> {
@@ -35,7 +29,8 @@ public class PersonaServicio implements I_CRUD<Persona, PersonaDTO, FormPersonaD
         return new Persona(
             null,
             fDTO.getNombre(),
-            fDTO.getEdad(),
+            fDTO.getApellido(),
+            fDTO.getFechaNacimiento(),
             fDTO.getDni()
         );
     }
@@ -43,10 +38,11 @@ public class PersonaServicio implements I_CRUD<Persona, PersonaDTO, FormPersonaD
     @Override
     public PersonaDTO convertir_a_DTO(Persona persona) {
         return new PersonaDTO(
-                persona.getPersonaId(),
-                persona.getDni(),
-                persona.getNombre(),
-                persona.getEdad()
+            persona.getPersonaId(),
+            persona.getNombre(),
+            persona.getApellido(), 
+            persona.getFechaNacimiento(),
+            persona.getDni()
         );
     }
 
@@ -67,42 +63,8 @@ public class PersonaServicio implements I_CRUD<Persona, PersonaDTO, FormPersonaD
         return personaRepositorio.findById(id).map(this::convertir_a_DTO);
     }
 
-    public Optional<PersonaDTO> buscarPorDNI(int dni) {
+    public Optional<PersonaDTO> buscarPorDNI(Long dni) {
         return personaRepositorio.findByDni(dni).map(this::convertir_a_DTO);
-    }
-
-    @Override
-    public Set<PersonaDTO> filtrar(String campo, Object valor) {
-
-        Stream<Persona> stream = personaRepositorio.findAll().stream();
-
-        Predicate<Persona> filtro;
-        switch (campo.toLowerCase()) {
-            case "nombre"-> filtro = p -> p.getNombre().equals(valor);
-            case "edad" -> filtro = p -> p.getEdad().equals(valor);
-            default -> filtro = p -> false;
-        }
-
-        return stream.filter(filtro)
-                    .map(this::convertir_a_DTO)
-                    .collect(Collectors.toSet());
-    }
-
-    public Set<PersonaDTO> ordenar(String campo, boolean ascendente) {
-        Stream<Persona> stream = personaRepositorio.findAll().stream();
-
-        Comparator<Persona> comparador;
-        switch (campo.toLowerCase()) {
-            case "nombre"-> comparador = Comparator.comparing(Persona::getNombre);
-            case "edad"-> comparador = Comparator.comparing(Persona::getEdad);
-            case "dni"-> comparador = Comparator.comparing(Persona::getDni);
-            default -> comparador = Comparator.comparing(Persona::getPersonaId);
-        }
-        if (!ascendente) comparador = comparador.reversed();
-
-        return stream.sorted(comparador)
-                    .map(this::convertir_a_DTO)
-                    .collect(Collectors.toSet());
     }
 
     @Override
@@ -124,7 +86,8 @@ public class PersonaServicio implements I_CRUD<Persona, PersonaDTO, FormPersonaD
         validarPersonaNoExisteOtro(updateDTO.getDni(), id);
 
         persona.setNombre(updateDTO.getNombre().trim());
-        persona.setEdad(updateDTO.getEdad());
+        persona.setApellido(updateDTO.getApellido().trim()); 
+        persona.setFechaNacimiento(updateDTO.getFechaNacimiento()); 
         persona.setDni(updateDTO.getDni());
 
         personaRepositorio.save(persona);
@@ -148,18 +111,17 @@ public class PersonaServicio implements I_CRUD<Persona, PersonaDTO, FormPersonaD
         ValidacionGeneral.sinNumeros(dto.getNombre(), "nombre");
         ValidacionGeneral.validarDni(dto.getDni());
         
-        if (dto.getEdad() == null) throw new CampoRequeridoException("edad");
-        ValidacionGeneral.enRango(dto.getEdad(), 18, 120, "edad");
+
     }
 
-    public void validarPersonaNoExiste(int dni) {
+    public void validarPersonaNoExiste(Long dni) {
         Optional<PersonaDTO> existente = this.buscarPorDNI(dni);
         if (existente.isPresent()) {
             throw new EntidadDuplicadaException("Persona", "DNI", dni);
         }
     }
     
-    public void validarPersonaNoExisteOtro(int dni, Long id) {
+    public void validarPersonaNoExisteOtro(Long dni, Long id) {
         Optional<Persona> existente = personaRepositorio.findByDni(dni);
         if (existente.isPresent() && !existente.get().getPersonaId().equals(id)) {
             throw new EntidadDuplicadaException("Persona", "DNI", dni);
@@ -170,5 +132,15 @@ public class PersonaServicio implements I_CRUD<Persona, PersonaDTO, FormPersonaD
         ValidacionGeneral.validarIdValido(id);
         return personaRepositorio.findById(id)
                 .orElseThrow(() -> new EntidadNoEncontradaException("Persona", id));
+    }
+
+    @Override
+    public Set<PersonaDTO> filtrar(String campo, Object valor) {
+        throw new UnsupportedOperationException("Unimplemented method 'filtrar'");
+    }
+
+    @Override
+    public Set<PersonaDTO> ordenar(String campo, boolean ascendente) {
+        throw new UnsupportedOperationException("Unimplemented method 'ordenar'");
     }
 }

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DuenioRepositorio extends JpaRepository<Duenio, Long> {
-    Optional<Duenio> findByPersona_Dni(int dni);
+    Optional<Duenio> findByPersona_Dni(Long dni);
 
     Optional<Duenio> findByUsuario_Email(String trim);
 

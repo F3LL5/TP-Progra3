@@ -1,5 +1,7 @@
 package com.owo.TP_prg3.Clases.Duenio.dto;
 
+import java.time.LocalDate;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -8,9 +10,11 @@ public class FormDuenioDTO {
 
     protected String nombre;
 
-    protected Integer edad;
+    protected String apellido;
 
-    protected Integer dni;
+    protected Long dni;
+    
+    protected LocalDate fechaNacimiento;
 
     protected String email;
 

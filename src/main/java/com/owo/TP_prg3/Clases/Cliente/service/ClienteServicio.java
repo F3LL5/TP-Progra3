@@ -1,11 +1,8 @@
 package com.owo.TP_prg3.Clases.Cliente.service;
 
-import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
@@ -15,7 +12,6 @@ import com.owo.TP_prg3.Clases.Persona.service.PersonaServicio;
 import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
 import com.owo.TP_prg3.Excepciones.EntidadDuplicadaException;
 import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
-import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 import jakarta.transaction.Transactional;
 import com.owo.TP_prg3.Clases.Cliente.dto.ClienteDTO;
@@ -43,18 +39,21 @@ public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaD
 
         Cliente cliente = new Cliente();
         cliente.setNombre(fDTO.getNombre());
-        cliente.setEdad(fDTO.getEdad());
+        cliente.setApellido(fDTO.getApellido());
         cliente.setDni(fDTO.getDni());
+        cliente.setFechaNacimiento(fDTO.getFechaNacimiento());
+
         return cliente;
     }
     
     @Override
     public ClienteDTO convertir_a_DTO(Cliente cliente) {
         return new ClienteDTO(
-            cliente.getPersonaId(), 
+            cliente.getPersonaId(),
             cliente.getDni(),
             cliente.getNombre(),
-            cliente.getEdad(),
+            cliente.getApellido(),
+            cliente.getFechaNacimiento(),
             cliente.getClienteId()
         );
     }
@@ -75,65 +74,8 @@ public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaD
         return clienteRepositorio.findById(id).map(this::convertir_a_DTO);
     }
 
-    public Optional<ClienteDTO> buscarPorDNI(int dni) {
+    public Optional<ClienteDTO> buscarPorDNI(Long dni) {
         return clienteRepositorio.findByPersona_Dni(dni).map(this::convertir_a_DTO);
-    }
-
-    @Override
-    public Set<ClienteDTO> filtrar(String campo, Object valor) {
-        if (campo == null || campo.trim().isEmpty()) throw new CampoRequeridoException("campo de filtrado");
-        if (valor == null) throw new CampoRequeridoException("valor de filtrado");
-        
-        Stream<Cliente> stream = clienteRepositorio.findAll().stream();
-
-        Predicate<Cliente> filtro;
-        switch (campo.toLowerCase()) {
-            case "nombre"-> filtro = p -> p.getNombre().equalsIgnoreCase(valor.toString().trim());
-            case "edad" -> {
-                try {
-                     int edad = Integer.parseInt(valor.toString());
-                     filtro = p -> p.getEdad().equals(edad);
-                 } catch (NumberFormatException e) {
-                     throw new IngresoInvalidoException("valor", "debe ser un número entero para el campo 'edad'");
-                 }
-            }
-            case "dni" -> {
-                try {
-                    int dni = Integer.parseInt(valor.toString());
-                    filtro = p -> p.getDni() == dni;
-                } catch (NumberFormatException e) {
-                    throw new IngresoInvalidoException("valor", "debe ser un número entero para el campo 'dni'");
-                }
-            }
-            default -> throw new IngresoInvalidoException( 
-                "campo de filtrado",
-                "debe ser 'nombre', 'edad' o 'dni'"
-            ); 
-        }
-
-        return stream.filter(filtro)
-                    .map(this::convertir_a_DTO)
-                    .collect(Collectors.toSet());
-    }
-
-    public Set<ClienteDTO> ordenar(String campo, boolean ascendente) {
-        if (campo == null || campo.trim().isEmpty()) {
-            throw new CampoRequeridoException("campo de ordenamiento");
-        }
-        Stream<Cliente> stream = clienteRepositorio.findAll().stream();
-
-        Comparator<Cliente> comparador;
-        switch (campo.toLowerCase().trim()) {
-            case "nombre"-> comparador = Comparator.comparing(Cliente::getNombre);
-            case "edad"-> comparador = Comparator.comparing(Cliente::getEdad);
-            case "dni"-> comparador = Comparator.comparing(Cliente::getDni);
-            default -> comparador = Comparator.comparing(Cliente::getClienteId);
-        }
-        if (!ascendente) comparador = comparador.reversed();
-
-        return stream.sorted(comparador)
-                    .map(this::convertir_a_DTO)
-                    .collect(Collectors.toSet());
     }
 
     // POST
@@ -155,8 +97,9 @@ public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaD
         Cliente cliente = obtenerClientePorId(id);
         
         cliente.setNombre(updateDTO.getNombre());
-        cliente.setEdad(updateDTO.getEdad());
+        cliente.setApellido(updateDTO.getApellido());
         cliente.setDni(updateDTO.getDni());
+        cliente.setFechaNacimiento(updateDTO.getFechaNacimiento());
 
         clienteRepositorio.save(cliente);
         return true;
@@ -181,7 +124,7 @@ public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaD
 
     /** @param dni El DNI a verificar.
         @throws EntidadDuplicadaException si ya existe un Cliente con ese DNI. */
-    private void validarClienteNoExiste(int dni) {
+    private void validarClienteNoExiste(Long dni) {
         // Usamos el método existente 'buscarPorDNI' para chequear
         Optional<ClienteDTO> existente = this.buscarPorDNI(dni);
         Optional<Persona> existentePersona = personaRepositorio.findByDni(dni);
@@ -195,6 +138,16 @@ public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaD
         ValidacionGeneral.validarIdValido(id);
         return clienteRepositorio.findById(id)
                 .orElseThrow(() -> new EntidadNoEncontradaException(ENTIDAD, id));
+    }
+
+    @Override
+    public Set<ClienteDTO> filtrar(String campo, Object valor) {
+        throw new UnsupportedOperationException("Unimplemented method 'filtrar'");
+    }
+
+    @Override
+    public Set<ClienteDTO> ordenar(String campo, boolean ascendente) {
+        throw new UnsupportedOperationException("Unimplemented method 'ordenar'");
     }
 
 }

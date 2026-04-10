@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ClienteRepositorio extends JpaRepository<Cliente,Long> {
 
-    Optional<Cliente> findByPersona_Dni(int dni);
+    Optional<Cliente> findByPersona_Dni(Long dni);
 }

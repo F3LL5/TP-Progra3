@@ -1,6 +1,7 @@
 package com.owo.TP_prg3.Excepciones;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.regex.Pattern;
 
 public final class ValidacionGeneral {
@@ -69,7 +70,7 @@ public final class ValidacionGeneral {
         if (valor == null || valor.trim().isEmpty()) throw new CampoRequeridoException(campo);
     }
 
-    public static void validarDni(Integer dni) {
+    public static void validarDni(Long dni) {
         if (dni == null) throw new CampoRequeridoException("DNI");
         mayorACero(dni, "DNI");
         // Asumiendo un rango típico de DNI de 7 a 9 dígitos
@@ -89,6 +90,15 @@ public final class ValidacionGeneral {
         validarStringNoVacio(contrasenia, campo);
         if (contrasenia.length() < 1) {
             throw new IngresoInvalidoException(campo, "debe tener al menos 1 caracter");
+        }
+    }
+
+    public static void validarFechaNac(LocalDate fechaNac, String campo) {
+        if (fechaNac == null) throw new CampoRequeridoException(campo);
+        int edad = LocalDate.now().getYear() - fechaNac.getYear();
+
+        if (edad > 120 || edad < 18) {
+            throw new IngresoInvalidoException(campo, "la edad debe ser mayor a 18 o menos a 120 años");
         }
     }
 }

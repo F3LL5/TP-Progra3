@@ -1,18 +1,22 @@
 package com.owo.TP_prg3.Clases.Empleado.dto;
 
-import lombok.AllArgsConstructor;
+import java.time.LocalDate;
+import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-@Data @AllArgsConstructor
-public class FormEmpleadoDTO {
+@Data @EqualsAndHashCode(callSuper = true)
+public class FormEmpleadoDTO extends FormPersonaDTO {
 
-    protected String nombre;
+    private Long empleadoId;
 
-    protected Integer edad;
+    private String email;
 
-    protected Integer dni;
+    private String contraseña;
 
-    protected String email;
-
-    protected String contraseña;
+    public FormEmpleadoDTO(Long dni, String nombre, String apellido, LocalDate fechaNacimiento, Long empleadoId, String email) {
+        super(nombre, apellido,fechaNacimiento, dni);
+        this.empleadoId = empleadoId;
+        this.email = email;
+    }
 }

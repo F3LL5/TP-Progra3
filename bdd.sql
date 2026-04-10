@@ -16,7 +16,8 @@ create table if not exists usuarios(
 create table if not exists personas(
 	persona_id bigint auto_increment primary key,
 	nombre varchar(255) not null,
-    edad int not null,
+	apellido varchar(255) not null,
+  fechaNacimiento date not null,
 	dni int not null unique
 );
 
@@ -30,10 +31,20 @@ create table if not exists clientes(
 
 create table if not exists proveedores(
 	proveedor_id bigint auto_increment primary key,
-    persona_id bigint not null,
-    foreign key(persona_id) references personas(persona_id)
-    on delete cascade
-    on update cascade
+    cuit bigint(13) unique not null,
+    razon_social varchar(150) not null,
+    nombre_fantasia varchar(150),
+    condicion_iva enum ('ResponsableInscripto','Monotributo','Exento','ConsumidorFinal') not null,
+    telefono int,
+    email varchar(100),
+    -- Campos del Domicilio (@Embedded)
+    dir_calle VARCHAR(255),
+    dir_altura VARCHAR(255),
+    dir_piso VARCHAR(255),
+    dir_cp VARCHAR(255),
+    dir_localidad VARCHAR(255),
+    dir_provincia VARCHAR(255),
+    dir_pais VARCHAR(255) DEFAULT 'Argentina'
 );
 
 create table if not exists empleados(
@@ -178,7 +189,7 @@ CREATE TABLE IF NOT EXISTS historial_personas (
     edad INT,
     dni INT,
     -- Detalle del cambio
-    campo_modificado VARCHAR(50),
+    campo_modificado VARCHAR(255),
     valor_anterior VARCHAR(255),
     valor_nuevo VARCHAR(255)
 );
@@ -191,12 +202,12 @@ create table if not exists historial_clientes(
 	fecha_evento datetime default current_timestamp
 );
 
-create table if not exists historial_proveedores(
-	historial_proveedor_id bigint auto_increment primary key,
-	proveedor_id bigint,
-	persona_id bigint,
-	accion enum('INSERT','UPDATE','DELETE') not null,
-	fecha_evento datetime default current_timestamp
+CREATE TABLE IF NOT EXISTS historial_proveedores (
+    historial_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    proveedor_id BIGINT,
+    cuit_afectado BIGINT,
+    accion ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL,
+    fecha_evento DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 create table if not exists historial_empleados(
@@ -345,8 +356,8 @@ CREATE TRIGGER trg_personas_ai
 AFTER INSERT ON personas
 FOR EACH ROW
 BEGIN
-  INSERT INTO historial_personas(persona_id, accion, nombre, edad, dni)
-  VALUES (NEW.persona_id, 'INSERT', NEW.nombre, NEW.edad, NEW.dni);
+  INSERT INTO historial_personas(persona_id, accion, nombre, apellido, fechaNacimiento, dni)
+  VALUES (NEW.persona_id, 'INSERT', NEW.nombre, NEW.apellido, NEW.fechaNacimiento, NEW.dni);
 END$$
 
 CREATE TRIGGER trg_personas_au
@@ -355,20 +366,24 @@ FOR EACH ROW
 BEGIN
     -- Detectar cambio en nombre
     IF (OLD.nombre <> NEW.nombre) THEN
-        INSERT INTO historial_personas(persona_id, accion, nombre, edad, dni, campo_modificado, valor_anterior, valor_nuevo)
-        VALUES (NEW.persona_id, 'UPDATE', NEW.nombre, NEW.edad, NEW.dni, 'nombre', OLD.nombre, NEW.nombre);
+        INSERT INTO historial_personas(persona_id, accion, nombre, apellido, fechaNacimiento, dni, campo_modificado, valor_anterior, valor_nuevo)
+        VALUES (NEW.persona_id, 'UPDATE', NEW.nombre, NEW.apellido, NEW.fechaNacimiento, NEW.dni, 'nombre', OLD.nombre, NEW.nombre);
+    END IF;
+    IF (OLD.nombre <> NEW.nombre) THEN
+        INSERT INTO historial_personas(persona_id, accion, nombre, apellido, fechaNacimiento, dni, campo_modificado, valor_anterior, valor_nuevo)
+        VALUES (NEW.persona_id, 'UPDATE', NEW.nombre, NEW.apellido, NEW.fechaNacimiento, NEW.dni, 'apellido', OLD.apellido, NEW.apellido);
     END IF;
 
     -- Detectar cambio en edad
-    IF (OLD.edad <> NEW.edad) THEN
-        INSERT INTO historial_personas(persona_id, accion, nombre, edad, dni, campo_modificado, valor_anterior, valor_nuevo)
-        VALUES (NEW.persona_id, 'UPDATE', NEW.nombre, NEW.edad, NEW.dni, 'edad', OLD.edad, NEW.edad);
+    IF (OLD.fechaNacimiento <> NEW.fechaNacimiento) THEN
+        INSERT INTO historial_personas(persona_id, accion, nombre, apellido, fechaNacimiento, dni, campo_modificado, valor_anterior, valor_nuevo)
+        VALUES (NEW.persona_id, 'UPDATE', NEW.nombre, NEW.apellido, NEW.fechaNacimiento, NEW.dni, 'fechaNacimiento', OLD.fechaNacimiento, NEW.fechaNacimiento);
     END IF;
 
     -- Detectar cambio en DNI
     IF (OLD.dni <> NEW.dni) THEN
-        INSERT INTO historial_personas(persona_id, accion, nombre, edad, dni, campo_modificado, valor_anterior, valor_nuevo)
-        VALUES (NEW.persona_id, 'UPDATE', NEW.nombre, NEW.edad, NEW.dni, 'dni', OLD.dni, NEW.dni);
+        INSERT INTO historial_personas(persona_id, accion, nombre, apellido, fechaNacimiento, dni, campo_modificado, valor_anterior, valor_nuevo)
+        VALUES (NEW.persona_id, 'UPDATE', NEW.nombre, NEW.apellido, NEW.fechaNacimiento, NEW.dni, 'dni', OLD.dni, NEW.dni);
     END IF;
 END$$
 
@@ -376,8 +391,8 @@ CREATE TRIGGER trg_personas_bd
 BEFORE DELETE ON personas
 FOR EACH ROW
 BEGIN
-  INSERT INTO historial_personas(persona_id, accion, nombre, edad, dni)
-  VALUES (OLD.persona_id, 'DELETE', OLD.nombre, OLD.edad, OLD.dni);
+  INSERT INTO historial_personas(persona_id, accion, nombre, apellido, fechaNacimiento, dni)
+  VALUES (OLD.persona_id, 'DELETE', OLD.nombre, OLD.apellido, OLD.fechaNacimiento, OLD.dni);
 END$$
 
 
@@ -416,24 +431,24 @@ CREATE TRIGGER trg_proveedores_ai
 AFTER INSERT ON proveedores
 FOR EACH ROW
 BEGIN
-  INSERT INTO historial_proveedores(proveedor_id, persona_id, accion)
-  VALUES (NEW.proveedor_id, NEW.persona_id, 'INSERT');
+  INSERT INTO historial_proveedores(proveedor_id, cuit_afectado, accion)
+  VALUES (NEW.proveedor_id, NEW.cuit, 'INSERT');
 END$$
 
 CREATE TRIGGER trg_proveedores_au
 AFTER UPDATE ON proveedores
 FOR EACH ROW
 BEGIN
-  INSERT INTO historial_proveedores(proveedor_id, persona_id, accion)
-  VALUES (NEW.proveedor_id, NEW.persona_id, 'UPDATE');
+  INSERT INTO historial_proveedores(proveedor_id, cuit_afectado, accion)
+  VALUES (NEW.proveedor_id, NEW.cuit, 'UPDATE');
 END$$
 
 CREATE TRIGGER trg_proveedores_bd
 BEFORE DELETE ON proveedores
 FOR EACH ROW
 BEGIN
-  INSERT INTO historial_proveedores(proveedor_id, persona_id, accion)
-  VALUES (OLD.proveedor_id, OLD.persona_id, 'DELETE');
+  INSERT INTO historial_proveedores(proveedor_id, cuit_afectado, accion)
+  VALUES (OLD.proveedor_id, OLD.cuit, 'DELETE');
 END$$
 
 

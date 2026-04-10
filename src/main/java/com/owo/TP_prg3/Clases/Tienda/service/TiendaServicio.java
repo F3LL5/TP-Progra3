@@ -47,7 +47,7 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
         tienda.setCaja(new Caja(tiendaDTO.getCaja()));
         
         //Buscar y asignar el duenio
-        Integer duenioDni = tiendaDTO.getDuenioDni();
+        Long duenioDni = tiendaDTO.getDuenioDni();
         tienda.setDuenio(duenioRepositorio.findByPersona_Dni(duenioDni).orElse(new Duenio(null, new Persona(), new Usuario())));
         
         return tienda;
@@ -227,7 +227,7 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
         ValidacionGeneral.validarDni(dto.getDuenioDni());
     }
 
-    private Duenio validarDuenioExiste(int dni) {
+    private Duenio validarDuenioExiste(Long dni) {
         return duenioRepositorio.findByPersona_Dni(dni)
                 .orElseThrow(() -> new EntidadNoEncontradaException("Duenio", "DNI", dni));
     }

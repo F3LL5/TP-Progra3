@@ -7,5 +7,5 @@ import java.util.Optional;
 
 @Repository
 public interface PersonaRepositorio extends JpaRepository<Persona, Long> {
-    Optional<Persona> findByDni(int dni);
+    Optional<Persona> findByDni(Long dni);
 }

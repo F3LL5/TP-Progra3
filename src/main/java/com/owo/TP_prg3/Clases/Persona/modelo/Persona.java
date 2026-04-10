@@ -1,5 +1,7 @@
 package com.owo.TP_prg3.Clases.Persona.modelo;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,8 +21,11 @@ public class Persona {
     protected String nombre;
 
     @Column(nullable = false)
-    protected Integer edad;
+    protected String apellido;
+
+    @Column(nullable = false)
+    protected LocalDate fechaNacimiento;
 
     @Column(nullable = false, unique = true)
-    protected Integer dni;
+    protected Long dni;
 }
