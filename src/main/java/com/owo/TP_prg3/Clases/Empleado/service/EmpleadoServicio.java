@@ -47,6 +47,7 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
         validarDatosEmpleado(fDTO);
         Empleado empleado = new Empleado();
         empleado.setNombre(fDTO.getNombre());
+        empleado.setApellido(fDTO.getApellido());
         empleado.setFechaNacimiento(fDTO.getFechaNacimiento());
         empleado.setDni(fDTO.getDni());
         Usuario usuario = new Usuario(null, fDTO.getEmail(), passwordEncoder.encode(fDTO.getContraseña()), RolUsuario.ROLE_EMPLEADO);

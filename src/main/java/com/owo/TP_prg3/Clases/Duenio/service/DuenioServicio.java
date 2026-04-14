@@ -53,6 +53,7 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
         validarDatosDuenio(fDTO);
 
         Duenio duenio = new Duenio();
+        duenio.setPersona(new Persona());
         duenio.setNombre(fDTO.getNombre());
         duenio.setApellido(fDTO.getApellido());
         duenio.setDni(fDTO.getDni());

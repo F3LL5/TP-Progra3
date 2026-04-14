@@ -12,6 +12,6 @@ public class FormProveedorDTO {
     private String nombreFantasia;
     private CondicionIVA condicion; 
     private Domicilio direccion; 
-    private Integer telefono; 
+    private Long telefono; 
     private String email;
 }

@@ -13,11 +13,10 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "clientes")
-@Data @NoArgsConstructor @AllArgsConstructor
+@Data @AllArgsConstructor
 public class Cliente {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,6 +30,10 @@ public class Cliente {
     // DELEGACIÓN (Patrón para evitar cliente.persona.getNombre())
     // ---------------------------------------------
     
+    public Cliente(){
+        this.persona = new Persona();
+    }
+
     public String getNombre() {
         return this.persona.getNombre();
     }
@@ -56,7 +59,7 @@ public class Cliente {
     }
 
     public void setApellido(String apellido) {
-        this.persona.setNombre(apellido);
+        this.persona.setApellido(apellido);
     }
 
     public void setDni(Long dni) {

@@ -1,5 +1,5 @@
-create database if not exists c5_proyecto_comercio;
-use c5_proyecto_comercio;
+create database if not exists proyecto_comercio;
+use proyecto_comercio;
 
 
 -- ---------------------------------------------------------------------------------------
@@ -17,8 +17,8 @@ create table if not exists personas(
 	persona_id bigint auto_increment primary key,
 	nombre varchar(255) not null,
 	apellido varchar(255) not null,
-  fechaNacimiento date not null,
-	dni int not null unique
+	fecha_nacimiento date not null,
+	dni bigint not null unique
 );
 
 create table if not exists clientes(
@@ -35,7 +35,7 @@ create table if not exists proveedores(
     razon_social varchar(150) not null,
     nombre_fantasia varchar(150),
     condicion_iva enum ('ResponsableInscripto','Monotributo','Exento','ConsumidorFinal') not null,
-    telefono int,
+    telefono bigint,
     email varchar(100),
     -- Campos del Domicilio (@Embedded)
     dir_calle VARCHAR(255),
@@ -61,9 +61,9 @@ create table if not exists empleados(
 
 create table if not exists duenios(
 	duenio_id bigint auto_increment primary key,
-    persona_id bigint not null,
+  persona_id bigint not null,
 	usuario_id bigint not null,
-    foreign key(persona_id) references personas(persona_id)
+  foreign key(persona_id) references personas(persona_id)
 	on delete cascade
     on update cascade,
     foreign key(usuario_id) references usuarios(usuario_id)
@@ -166,9 +166,9 @@ create table if not exists detalles_pedido (
     on delete restrict
     on update cascade
 );
--- ---------------------------------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- TABLAS historial
--- ---------------------------------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 create table if not exists historial_usuarios(
 	historial_usuario_id bigint auto_increment primary key,
 	usuario_id bigint,
@@ -186,8 +186,9 @@ CREATE TABLE IF NOT EXISTS historial_personas (
     fecha_evento DATETIME DEFAULT CURRENT_TIMESTAMP,
     -- Datos en ese momento
     nombre VARCHAR(255),
-    edad INT,
-    dni INT,
+    apellido VARCHAR(255),
+    fecha_nacimiento date,
+    dni bigint,
     -- Detalle del cambio
     campo_modificado VARCHAR(255),
     valor_anterior VARCHAR(255),
@@ -315,9 +316,9 @@ create table if not exists historial_detalles_pedido(
     subtotal decimal(10,2)
 );
 
--- ---------------------------------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- TRIGGERS 
--- ---------------------------------------------------------------------------------------
+-- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 DELIMITER $$
 
@@ -356,8 +357,8 @@ CREATE TRIGGER trg_personas_ai
 AFTER INSERT ON personas
 FOR EACH ROW
 BEGIN
-  INSERT INTO historial_personas(persona_id, accion, nombre, apellido, fechaNacimiento, dni)
-  VALUES (NEW.persona_id, 'INSERT', NEW.nombre, NEW.apellido, NEW.fechaNacimiento, NEW.dni);
+  INSERT INTO historial_personas(persona_id, accion, nombre, apellido, fecha_nacimiento, dni)
+  VALUES (NEW.persona_id, 'INSERT', NEW.nombre, NEW.apellido, NEW.fecha_nacimiento, NEW.dni);
 END$$
 
 CREATE TRIGGER trg_personas_au
@@ -366,24 +367,25 @@ FOR EACH ROW
 BEGIN
     -- Detectar cambio en nombre
     IF (OLD.nombre <> NEW.nombre) THEN
-        INSERT INTO historial_personas(persona_id, accion, nombre, apellido, fechaNacimiento, dni, campo_modificado, valor_anterior, valor_nuevo)
-        VALUES (NEW.persona_id, 'UPDATE', NEW.nombre, NEW.apellido, NEW.fechaNacimiento, NEW.dni, 'nombre', OLD.nombre, NEW.nombre);
+        INSERT INTO historial_personas(persona_id, accion, nombre, apellido, fecha_nacimiento, dni, campo_modificado, valor_anterior, valor_nuevo)
+        VALUES (NEW.persona_id, 'UPDATE', NEW.nombre, NEW.apellido, NEW.fecha_nacimiento, NEW.dni, 'nombre', OLD.nombre, NEW.nombre);
     END IF;
-    IF (OLD.nombre <> NEW.nombre) THEN
-        INSERT INTO historial_personas(persona_id, accion, nombre, apellido, fechaNacimiento, dni, campo_modificado, valor_anterior, valor_nuevo)
-        VALUES (NEW.persona_id, 'UPDATE', NEW.nombre, NEW.apellido, NEW.fechaNacimiento, NEW.dni, 'apellido', OLD.apellido, NEW.apellido);
+    
+    IF (OLD.apellido <> NEW.apellido) THEN
+        INSERT INTO historial_personas(persona_id, accion, nombre, apellido, fecha_nacimiento, dni, campo_modificado, valor_anterior, valor_nuevo)
+        VALUES (NEW.persona_id, 'UPDATE', NEW.nombre, NEW.apellido, NEW.fecha_nacimiento, NEW.dni, 'apellido', OLD.apellido, NEW.apellido);
     END IF;
 
     -- Detectar cambio en edad
-    IF (OLD.fechaNacimiento <> NEW.fechaNacimiento) THEN
-        INSERT INTO historial_personas(persona_id, accion, nombre, apellido, fechaNacimiento, dni, campo_modificado, valor_anterior, valor_nuevo)
-        VALUES (NEW.persona_id, 'UPDATE', NEW.nombre, NEW.apellido, NEW.fechaNacimiento, NEW.dni, 'fechaNacimiento', OLD.fechaNacimiento, NEW.fechaNacimiento);
+    IF (OLD.fecha_nacimiento <> NEW.fecha_nacimiento) THEN
+        INSERT INTO historial_personas(persona_id, accion, nombre, apellido, fecha_nacimiento, dni, campo_modificado, valor_anterior, valor_nuevo)
+        VALUES (NEW.persona_id, 'UPDATE', NEW.nombre, NEW.apellido, NEW.fecha_nacimiento, NEW.dni, 'fecha_nacimiento', OLD.fecha_nacimiento, NEW.fecha_nacimiento);
     END IF;
 
     -- Detectar cambio en DNI
     IF (OLD.dni <> NEW.dni) THEN
-        INSERT INTO historial_personas(persona_id, accion, nombre, apellido, fechaNacimiento, dni, campo_modificado, valor_anterior, valor_nuevo)
-        VALUES (NEW.persona_id, 'UPDATE', NEW.nombre, NEW.apellido, NEW.fechaNacimiento, NEW.dni, 'dni', OLD.dni, NEW.dni);
+        INSERT INTO historial_personas(persona_id, accion, nombre, apellido, fecha_nacimiento, dni, campo_modificado, valor_anterior, valor_nuevo)
+        VALUES (NEW.persona_id, 'UPDATE', NEW.nombre, NEW.apellido, NEW.fecha_nacimiento, NEW.dni, 'dni', OLD.dni, NEW.dni);
     END IF;
 END$$
 
@@ -391,8 +393,8 @@ CREATE TRIGGER trg_personas_bd
 BEFORE DELETE ON personas
 FOR EACH ROW
 BEGIN
-  INSERT INTO historial_personas(persona_id, accion, nombre, apellido, fechaNacimiento, dni)
-  VALUES (OLD.persona_id, 'DELETE', OLD.nombre, OLD.apellido, OLD.fechaNacimiento, OLD.dni);
+  INSERT INTO historial_personas(persona_id, accion, nombre, apellido, fecha_nacimiento, dni)
+  VALUES (OLD.persona_id, 'DELETE', OLD.nombre, OLD.apellido, OLD.fecha_nacimiento, OLD.dni);
 END$$
 
 

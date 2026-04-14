@@ -40,8 +40,8 @@ public class Proveedor {
     @Embedded
     private Domicilio direccion;
 
-    @Column(name = "telefono", length = 20)
-    private Integer telefono;
+    @Column(name = "telefono")
+    private Long telefono;
 
     @Column(name = "email", length = 100)
     private String email;
