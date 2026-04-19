@@ -4,5 +4,6 @@ public enum CondicionIVA {
     ResponsableInscripto,
     Monotributo,
     Exento,
-    ConsumidorFinal
+    ConsumidorFinal,
+    NoAlcanzado
 }
