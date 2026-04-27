@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
+import com.owo.TP_prg3.Clases.Persona.historial.Acciones;
+
 @Entity
 @Table(name = "historial_usuarios")
 @Data @AllArgsConstructor @NoArgsConstructor
@@ -19,19 +21,10 @@ public class HistorialUsuario {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Accion accion;
+    private Acciones accion;
 
     @Column(name = "fecha_evento", insertable = false, updatable = false)
     private LocalDateTime fechaEvento;
 
     private String email;
-
-    @Column(name = "contraseña")
-    private String contrasena;
-
-    @Enumerated(EnumType.STRING)
-    private Rol rol;
-
-    public enum Accion { INSERT, UPDATE, DELETE }
-    public enum Rol { ROLE_ADMIN, ROLE_DUENIO, ROLE_EMPLEADO }
 }

@@ -11,7 +11,7 @@ import com.owo.TP_prg3.Clases.Tienda.service.TiendaServicio;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/tiendas")
+@RequestMapping("/api/configuracion-tienda")
 public class TiendaControlador implements I_Controlador<TiendaDTO, FormTiendaDTO> {
 
     @Autowired

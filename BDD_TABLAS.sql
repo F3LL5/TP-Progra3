@@ -31,12 +31,12 @@ create table if not exists clientes(
 
 create table if not exists proveedores(
 	proveedor_id bigint auto_increment primary key,
-    cuit bigint(13) unique not null,
+    cuit bigint unique not null,
     razon_social varchar(150) not null,
     nombre_fantasia varchar(150),
     condicion_iva enum ('ResponsableInscripto','Monotributo','Exento','ConsumidorFinal','NoAlcanzado') not null,
-    ingresos_brutos varchar(255) not null,
-    fecha_inicio_actividades date not null,
+    ingresos_brutos varchar(255) default 'Exento',
+    fecha_inicio_actividades date default (current_date),
     telefono bigint,
     email varchar(100),
     -- Campos del Domicilio (@Embedded)
@@ -63,9 +63,9 @@ create table if not exists empleados(
 
 create table if not exists duenios(
 	duenio_id bigint auto_increment primary key,
-  persona_id bigint not null,
+    persona_id bigint not null,
 	usuario_id bigint not null,
-  foreign key(persona_id) references personas(persona_id)
+    foreign key(persona_id) references personas(persona_id)
 	on delete cascade
     on update cascade,
     foreign key(usuario_id) references usuarios(usuario_id)
@@ -75,10 +75,24 @@ create table if not exists duenios(
 
 create table if not exists tiendas (
 	tienda_id bigint auto_increment primary key,
-    nombre varchar(255) not null,
-    direccion varchar(255) not null,
-	caja decimal(38,2) not null,
-	duenio_id bigint not null,
+    razon_social varchar(150) not null,
+    nombre_fantasia varchar(150) not null,
+	cuit bigint not null,
+	condicion_iva enum('ResponsableInscripto','Monotributo','Exento','ConsumidorFinal','NoAlcanzado') not null,
+    ingresos_brutos varchar(255) default 'Exento',
+    fecha_inicio_actividades date default (current_date),
+    punto_de_venta bigint default 1,
+    caja decimal(38,2),
+    -- Campos del Domicilio (@Embedded)
+    dir_calle VARCHAR(255),
+    dir_altura VARCHAR(255),
+    dir_piso VARCHAR(255),
+    dir_cp VARCHAR(255),
+    dir_localidad VARCHAR(255),
+    dir_provincia VARCHAR(255),
+    dir_pais VARCHAR(255) DEFAULT 'Argentina',
+    -- Duenio
+    duenio_id bigint not null,
 	foreign key(duenio_id) references duenios(duenio_id)
 	ON DELETE RESTRICT
     ON UPDATE CASCADE
@@ -91,8 +105,8 @@ create table if not exists tiendas (
 
 create table if not exists productos (
 	producto_id bigint auto_increment primary key,
-  nombre varchar(255) not null,
-  categoria varchar(255) not null,
+    nombre varchar(255) not null,
+    categoria varchar(255) not null,
 	producto_imagen varchar(255),
 	UNIQUE KEY unique_producto (nombre, categoria)
 );

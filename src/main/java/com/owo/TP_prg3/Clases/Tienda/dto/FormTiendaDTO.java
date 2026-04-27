@@ -5,19 +5,34 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import com.owo.TP_prg3.Clases.Domicilio.Domicilio;
+import com.owo.TP_prg3.Clases.Enum.CondicionIVA;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class FormTiendaDTO {
 
-    protected String nombre;
+    protected Long cuit;
 
-    protected String direccion;
+    protected String RazonSocial;
+
+    protected String nombreFantasia;
+
+    protected CondicionIVA condicion;
+
+    protected Domicilio direccion;
+
+    protected String ingresosBrutos;
+
+    protected LocalDate fechaInicioActividades;
+
+    protected Long puntoDeVenta;
 
     protected BigDecimal caja;
 
     protected Long duenioDni;
-
 
 }

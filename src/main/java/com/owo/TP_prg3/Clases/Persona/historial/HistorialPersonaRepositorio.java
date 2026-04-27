@@ -7,7 +7,5 @@ import java.util.List;
 
 @Repository
 public interface HistorialPersonaRepositorio extends JpaRepository<HistorialPersona, Long> {
-    List<HistorialPersona> findByDniOrderByFechaEventoDesc(Integer dni);
-
     List<HistorialPersona> findAllByOrderByFechaEventoDesc();
 }

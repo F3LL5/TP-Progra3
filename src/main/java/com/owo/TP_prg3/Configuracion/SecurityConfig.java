@@ -97,14 +97,14 @@ public class SecurityConfig {
         //   - ADMIN / DUEÑO: alta, modif, baja
         // =====================================================
 
-        .requestMatchers(HttpMethod.GET, "/api/tiendas/**")
+        .requestMatchers(HttpMethod.GET, "/api/configuracion-tienda/**")
             .hasAnyRole("ADMIN","DUENIO")
 
-        .requestMatchers(HttpMethod.POST, "/api/tiendas/**")
+        .requestMatchers(HttpMethod.POST, "/api/configuracion-tienda/**")
             .hasAnyRole("ADMIN","DUENIO")
-        .requestMatchers(HttpMethod.PUT, "/api/tiendas/**")
+        .requestMatchers(HttpMethod.PUT, "/api/configuracion-tienda/**")
             .hasAnyRole("ADMIN","DUENIO")
-        .requestMatchers(HttpMethod.DELETE, "/api/tiendas/**")
+        .requestMatchers(HttpMethod.DELETE, "/api/configuracion-tienda/**")
             .hasAnyRole("ADMIN","DUENIO")
 
         // =====================================================

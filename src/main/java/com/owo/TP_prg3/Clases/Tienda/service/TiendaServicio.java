@@ -1,12 +1,9 @@
 package com.owo.TP_prg3.Clases.Tienda.service;
 
 import java.math.BigDecimal;
-import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,12 +11,10 @@ import com.owo.TP_prg3.Clases.Caja.Caja;
 import com.owo.TP_prg3.Clases.Duenio.modelo.Duenio;
 import com.owo.TP_prg3.Clases.Duenio.modelo.DuenioRepositorio;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
-import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
 import com.owo.TP_prg3.Clases.Tienda.dto.FormTiendaDTO;
 import com.owo.TP_prg3.Clases.Tienda.dto.TiendaDTO;
 import com.owo.TP_prg3.Clases.Tienda.modelo.Tienda;
 import com.owo.TP_prg3.Clases.Tienda.modelo.TiendaRepositorio;
-import com.owo.TP_prg3.Clases.Usuario.modelo.Usuario;
 import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
 import com.owo.TP_prg3.Excepciones.EntidadDuplicadaException;
 import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
@@ -38,17 +33,20 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
 
     @Override
     public Tienda convertir_a_Obj(FormTiendaDTO tiendaDTO) {
-        validarDatosTienda(tiendaDTO);
-        validarDuenioExiste(tiendaDTO.getDuenioDni());
+        //validarDatosTienda(tiendaDTO);
+        //Duenio duenio = validarDuenioExiste(tiendaDTO.getDuenioDni());
 
         Tienda tienda = new Tienda();
-        tienda.setNombre(tiendaDTO.getNombre());
-        tienda.setDireccion(tiendaDTO.getDireccion());
+        tienda.setCuit(tiendaDTO.getCuit());
+        tienda.setRazonSocial(tiendaDTO.getRazonSocial());
+        tienda.setNombreFantasia(tiendaDTO.getNombreFantasia());
+        tienda.setCondicion(tiendaDTO.getCondicion());
+        tienda.setDireccion(tiendaDTO.getDireccion()); 
+        tienda.setIngresosBrutos(tiendaDTO.getIngresosBrutos());
+        tienda.setFechaInicioActividades(tiendaDTO.getFechaInicioActividades());
+        tienda.setPuntoDeVenta(tiendaDTO.getPuntoDeVenta());    
         tienda.setCaja(new Caja(tiendaDTO.getCaja()));
-        
-        //Buscar y asignar el duenio
-        Long duenioDni = tiendaDTO.getDuenioDni();
-        tienda.setDuenio(duenioRepositorio.findByPersona_Dni(duenioDni).orElse(new Duenio(null, new Persona(), new Usuario())));
+        tienda.setDuenio(duenioRepositorio.findByPersona_Dni(tiendaDTO.getDuenioDni()).get());
         
         return tienda;
     }
@@ -57,10 +55,16 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
     public TiendaDTO convertir_a_DTO(Tienda tienda){
         return new TiendaDTO(
             tienda.getTiendaId(),
-            tienda.getNombre(),
+            tienda.getCuit(),
+            tienda.getRazonSocial(),
+            tienda.getNombreFantasia(),
+            tienda.getCondicion(),
             tienda.getDireccion(),
+            tienda.getIngresosBrutos(),
+            tienda.getFechaInicioActividades(),
+            tienda.getPuntoDeVenta(),
             tienda.getCaja().getSaldo(), 
-            tienda.getDuenio().getNombre()
+            tienda.getDuenio().getDni()
         );
     }
 
@@ -82,8 +86,7 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
     @Override
     @Transactional
     public boolean cargar(FormTiendaDTO createDTO) {
-        validarDatosTienda(createDTO);
-        validarTiendaNoExiste(createDTO.getNombre());
+        //validarTiendaNoExiste(createDTO.getRazonSocial());
         tiendaRepositorio.save(convertir_a_Obj(createDTO));
         return true;
     }
@@ -94,10 +97,12 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
         validarDatosTienda(updateDTO);
         Tienda tienda = obtenerTiendaPorId(id);
              
-        tienda.setNombre(updateDTO.getNombre().trim());
-        tienda.setDireccion(updateDTO.getDireccion().trim());
-        Caja caja = tienda.getCaja();
-        caja.setSaldo(updateDTO.getCaja());
+        tienda.setRazonSocial(updateDTO.getRazonSocial().trim());
+        tienda.setNombreFantasia(updateDTO.getNombreFantasia().trim());
+        tienda.setCondicion(updateDTO.getCondicion());
+        tienda.setDireccion(updateDTO.getDireccion());
+        tienda.setPuntoDeVenta(updateDTO.getPuntoDeVenta());
+        tienda.getCaja().setSaldo(updateDTO.getCaja());
         
         Duenio nuevoDuenio = validarDuenioExiste(updateDTO.getDuenioDni());
         tienda.setDuenio(nuevoDuenio);
@@ -113,62 +118,6 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
         Tienda tienda = obtenerTiendaPorId(id);
         tiendaRepositorio.delete(tienda);
         return true;
-    }
-
-    @Override
-    public Set<TiendaDTO> filtrar(String campo, Object valor) {
-        if (campo == null || campo.trim().isEmpty()) {
-            throw new CampoRequeridoException("campo de filtrado");
-        }
-        if (valor == null) {
-            throw new CampoRequeridoException("valor de filtrado");
-        }
-
-        Stream<Tienda> stream = tiendaRepositorio.findAll().stream();
-        Predicate<Tienda> filtro;
-        String campoTrim = campo.toLowerCase().trim();
-
-        switch (campoTrim) {
-            case "nombre" -> filtro = t -> t.getNombre().equalsIgnoreCase(valor.toString().trim());
-            case "direccion" -> filtro = t -> t.getDireccion().equalsIgnoreCase(valor.toString().trim());
-            case "duenioid" -> {
-                 try {
-                     Long duenioId = Long.parseLong(valor.toString());
-                     filtro = t -> t.getDuenio() != null && t.getDuenio().getDuenioId().equals(duenioId);
-                 } catch (NumberFormatException e) {
-                     throw new IngresoInvalidoException("valor", "debe ser un número entero para el campo 'duenioId'");
-                 }
-            }
-            default -> throw new IngresoInvalidoException(
-                "campo de filtrado",
-                "debe ser 'nombre', 'direccion' o 'duenioId'"
-            );
-        }
-
-        return stream.filter(filtro)
-                    .map(this::convertir_a_DTO)
-                    .collect(Collectors.toSet());
-    }
-
-    public Set<TiendaDTO> ordenar(String campo, boolean ascendente) {
-        if (campo == null || campo.trim().isEmpty()) {
-            throw new CampoRequeridoException("campo de ordenamiento");
-        }
-
-        Stream<Tienda> stream = tiendaRepositorio.findAll().stream();
-        Comparator<Tienda> comparador;
-        String campoTrim = campo.toLowerCase().trim();
-
-        switch (campoTrim) {
-            case "nombre" -> comparador = Comparator.comparing(Tienda::getNombre);
-            case "duenioid" -> comparador = Comparator.comparing(t -> t.getDuenio() != null ? t.getDuenio().getDuenioId() : Long.MIN_VALUE);
-            default -> comparador = Comparator.comparing(Tienda::getTiendaId);
-        }
-        if (!ascendente) comparador = comparador.reversed();
-
-        return stream.sorted(comparador)
-                    .map(this::convertir_a_DTO)
-                    .collect(Collectors.toSet());
     }
 
     @Transactional
@@ -220,10 +169,12 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
             throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");
         }
         
-        ValidacionGeneral.validarStringNoVacio(dto.getNombre(), "nombre");
-        ValidacionGeneral.validarStringNoVacio(dto.getDireccion(), "dirección");
+        ValidacionGeneral.validarStringNoVacio(dto.getRazonSocial(), "razón social");
+        if (dto.getCuit() == null) throw new CampoRequeridoException("CUIT");
+        if (dto.getCondicion() == null) throw new CampoRequeridoException("Condición IVA");
+        if (dto.getPuntoDeVenta() == null) throw new CampoRequeridoException("Punto de Venta");
+        if (dto.getDuenioDni() == null) throw new CampoRequeridoException("DNI Dueño");
         
-        if (dto.getDuenioDni() == null) throw new CampoRequeridoException("dniDuenio");
         ValidacionGeneral.validarDni(dto.getDuenioDni());
     }
 
@@ -232,10 +183,10 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
                 .orElseThrow(() -> new EntidadNoEncontradaException("Duenio", "DNI", dni));
     }
 
-    private void validarTiendaNoExiste(String nombre) {
-        Optional<Tienda> existente = tiendaRepositorio.findByNombre(nombre.trim());
+    private void validarTiendaNoExiste(String razonSocial) {
+        Optional<Tienda> existente = tiendaRepositorio.findByRazonSocial(razonSocial.trim());
         if (existente.isPresent()) {
-            throw new EntidadDuplicadaException(ENTIDAD, "nombre", nombre.trim());
+            throw new EntidadDuplicadaException(ENTIDAD, "razon social", razonSocial.trim());
         }
     }
 
@@ -243,5 +194,15 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
         ValidacionGeneral.validarIdValido(id);
         return tiendaRepositorio.findById(id)
                 .orElseThrow(() -> new EntidadNoEncontradaException(ENTIDAD, id));
+    }
+
+    @Override
+    public Set<TiendaDTO> filtrar(String campo, Object valor) {
+        throw new UnsupportedOperationException("Unimplemented method 'filtrar'");
+    }
+
+    @Override
+    public Set<TiendaDTO> ordenar(String campo, boolean ascendente) {
+        throw new UnsupportedOperationException("Unimplemented method 'ordenar'");
     }
 }

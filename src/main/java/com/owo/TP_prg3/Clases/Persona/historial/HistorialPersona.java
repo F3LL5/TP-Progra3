@@ -29,8 +29,7 @@ public class HistorialPersona {
     private LocalDateTime fechaEvento;
 
     private String nombre;
-    private Integer edad;
-    private Integer dni;
+    private String apellido;
 
     @Column(name = "campo_modificado")
     private String campoModificado;

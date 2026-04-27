@@ -17,11 +17,5 @@ public class HistorialPersonaServicio {
     public List<HistorialPersona> obtenerTodo() {
         return repositorio.findAllByOrderByFechaEventoDesc();
     }
-
-
-    @Transactional(readOnly = true)
-    public List<HistorialPersona> obtenerPorDni(Integer dni) {
-        return repositorio.findByDniOrderByFechaEventoDesc(dni);
-    }
 }
 
