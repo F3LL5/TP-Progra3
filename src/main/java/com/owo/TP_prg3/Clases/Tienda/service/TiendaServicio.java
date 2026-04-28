@@ -122,6 +122,7 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
 
     @Transactional
     public void acreditarMontoCaja(Long tiendaId, BigDecimal monto) {
+        System.out.println("acreditar ------------------------------------------------------------------------------------------------------------------------");
         if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IngresoInvalidoException("monto", "debe ser un valor positivo.");
         }
@@ -143,6 +144,7 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
 
     @Transactional
     public void debitarMontoCaja(Long tiendaId, BigDecimal monto) {
+        System.out.println("Debitar caja ------------------------------------------------------------------------------------------------------------------------");
         if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IngresoInvalidoException("monto", "debe ser un valor positivo.");
         }

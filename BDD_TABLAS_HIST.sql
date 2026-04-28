@@ -330,55 +330,55 @@ CREATE TRIGGER trg_tiendas_au AFTER UPDATE ON tiendas FOR EACH ROW
 BEGIN
     -- Razon Social
     IF (OLD.razon_social <> NEW.razon_social) THEN 
-        INSERT INTO historial_tiendas(tienda_id, nombre, accion, campo_modificado, valor_anterior, valor_nuevo) 
+        INSERT INTO historial_tiendas(tienda_id, nombre_fantasia, accion, campo_modificado, valor_anterior, valor_nuevo) 
         VALUES (NEW.tienda_id, NEW.nombre_fantasia, 'UPDATE', 'razon_social', OLD.razon_social, NEW.razon_social); 
     END IF;
 
     -- Nombre Fantasía
     IF (OLD.nombre_fantasia <> NEW.nombre_fantasia) THEN 
-        INSERT INTO historial_tiendas(tienda_id, nombre, accion, campo_modificado, valor_anterior, valor_nuevo) 
+        INSERT INTO historial_tiendas(tienda_id, nombre_fantasia, accion, campo_modificado, valor_anterior, valor_nuevo) 
         VALUES (NEW.tienda_id, NEW.nombre_fantasia, 'UPDATE', 'nombre_fantasia', OLD.nombre_fantasia, NEW.nombre_fantasia); 
     END IF;
 
     -- CUIT
     IF (OLD.cuit <> NEW.cuit) THEN 
-        INSERT INTO historial_tiendas(tienda_id, nombre, accion, campo_modificado, valor_anterior, valor_nuevo) 
+        INSERT INTO historial_tiendas(tienda_id, nombre_fantasia, accion, campo_modificado, valor_anterior, valor_nuevo) 
         VALUES (NEW.tienda_id, NEW.nombre_fantasia, 'UPDATE', 'cuit', CAST(OLD.cuit AS CHAR), CAST(NEW.cuit AS CHAR)); 
     END IF;
 
     -- Condición IVA
     IF (OLD.condicion_iva <> NEW.condicion_iva) THEN 
-        INSERT INTO historial_tiendas(tienda_id, nombre, accion, campo_modificado, valor_anterior, valor_nuevo) 
+        INSERT INTO historial_tiendas(tienda_id, nombre_fantasia, accion, campo_modificado, valor_anterior, valor_nuevo) 
         VALUES (NEW.tienda_id, NEW.nombre_fantasia, 'UPDATE', 'condicion_iva', OLD.condicion_iva, NEW.condicion_iva); 
     END IF;
 
     -- Ingresos Brutos
     IF (OLD.ingresos_brutos <> NEW.ingresos_brutos) THEN 
-        INSERT INTO historial_tiendas(tienda_id, nombre, accion, campo_modificado, valor_anterior, valor_nuevo) 
+        INSERT INTO historial_tiendas(tienda_id, nombre_fantasia, accion, campo_modificado, valor_anterior, valor_nuevo) 
         VALUES (NEW.tienda_id, NEW.nombre_fantasia, 'UPDATE', 'ingresos_brutos', OLD.ingresos_brutos, NEW.ingresos_brutos); 
     END IF;
 
     -- Punto de Venta
     IF (OLD.punto_de_venta <> NEW.punto_de_venta) THEN 
-        INSERT INTO historial_tiendas(tienda_id, nombre, accion, campo_modificado, valor_anterior, valor_nuevo) 
+        INSERT INTO historial_tiendas(tienda_id, nombre_fantasia, accion, campo_modificado, valor_anterior, valor_nuevo) 
         VALUES (NEW.tienda_id, NEW.nombre_fantasia, 'UPDATE', 'punto_de_venta', CAST(OLD.punto_de_venta AS CHAR), CAST(NEW.punto_de_venta AS CHAR)); 
     END IF;
 
     -- Saldo Caja (Usamos COALESCE por si el saldo inicial era NULL)
     IF (COALESCE(OLD.caja, 0) <> COALESCE(NEW.caja, 0)) THEN 
-        INSERT INTO historial_tiendas(tienda_id, nombre, accion, campo_modificado, valor_anterior, valor_nuevo) 
+        INSERT INTO historial_tiendas(tienda_id, nombre_fantasia, accion, campo_modificado, valor_anterior, valor_nuevo) 
         VALUES (NEW.tienda_id, NEW.nombre_fantasia, 'UPDATE', 'caja', CAST(OLD.caja AS CHAR), CAST(NEW.caja AS CHAR)); 
     END IF;
 
     -- Dirección (Calle y Altura como ejemplo de auditoría de domicilio)
     IF (OLD.dir_calle <> NEW.dir_calle OR OLD.dir_altura <> NEW.dir_altura) THEN 
-        INSERT INTO historial_tiendas(tienda_id, nombre, accion, campo_modificado, valor_anterior, valor_nuevo) 
+        INSERT INTO historial_tiendas(tienda_id, nombre_fantasia, accion, campo_modificado, valor_anterior, valor_nuevo) 
         VALUES (NEW.tienda_id, NEW.nombre_fantasia, 'UPDATE', 'domicilio', CONCAT(OLD.dir_calle, ' ', OLD.dir_altura), CONCAT(NEW.dir_calle, ' ', NEW.dir_altura)); 
     END IF;
 
     -- Duenio
     IF (OLD.duenio_id <> NEW.duenio_id) THEN 
-        INSERT INTO historial_tiendas(tienda_id, nombre, accion, campo_modificado, valor_anterior, valor_nuevo) 
+        INSERT INTO historial_tiendas(tienda_id, nombre_fantasia, accion, campo_modificado, valor_anterior, valor_nuevo) 
         VALUES (NEW.tienda_id, NEW.nombre_fantasia, 'UPDATE', 'duenio_id', OLD.duenio_id, NEW.duenio_id); 
     END IF;
 END$$

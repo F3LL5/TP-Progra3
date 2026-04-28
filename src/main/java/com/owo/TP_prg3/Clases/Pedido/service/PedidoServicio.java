@@ -195,8 +195,8 @@ public class PedidoServicio {
         Pedido pedido = optional.get();
          
         if (pedido.getEstado() == EstadoPedido.FINALIZADO) {
-        throw new ReglaNegocioException("No se puede modificar un pedido finalizado.");
-    }
+            throw new ReglaNegocioException("No se puede modificar un pedido finalizado.");
+        }
 
         // 1. Actualizar campos del Pedido
         pedido.setTipo(updateDTO.getTipo());
