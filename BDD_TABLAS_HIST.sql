@@ -399,8 +399,46 @@ END$$
 -- =========================
 -- CLIENTES, EMPLEADOS, DUENIOS (Relaciones)
 -- =========================
-CREATE TRIGGER trg_clientes_ai AFTER INSERT ON clientes FOR EACH ROW BEGIN INSERT INTO historial_clientes(cliente_id, persona_id, accion) VALUES (NEW.cliente_id, NEW.persona_id, 'INSERT'); END$$
+
 CREATE TRIGGER trg_empleados_ai AFTER INSERT ON empleados FOR EACH ROW BEGIN INSERT INTO historial_empleados(empleado_id, accion) VALUES (NEW.empleado_id, 'INSERT'); END$$
 CREATE TRIGGER trg_duenios_ai AFTER INSERT ON duenios FOR EACH ROW BEGIN INSERT INTO historial_duenios(duenio_id, accion) VALUES (NEW.duenio_id, 'INSERT'); END$$
+
+
+-- CLIENTES
+DELIMITER $$
+
+-- Trigger para capturar MODIFICACIONES en Clientes
+CREATE TRIGGER trg_clientes_au AFTER UPDATE ON clientes FOR EACH ROW
+BEGIN
+    -- Si cambia la persona asociada (aunque es raro en un OneToOne)
+    IF (OLD.persona_id <> NEW.persona_id) THEN 
+        INSERT INTO historial_clientes(cliente_id, persona_id, accion, campo_modificado, valor_anterior, valor_nuevo) 
+        VALUES (NEW.cliente_id, NEW.persona_id, 'UPDATE', 'persona_id', OLD.persona_id, NEW.persona_id); 
+    END IF;
+END$$
+
+-- Trigger para capturar ELIMINACIONES en Clientes
+CREATE TRIGGER trg_clientes_bd BEFORE DELETE ON clientes FOR EACH ROW
+BEGIN
+    INSERT INTO historial_clientes(cliente_id, persona_id, accion) 
+    VALUES (OLD.cliente_id, OLD.persona_id, 'DELETE');
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER trg_clientes_ai AFTER INSERT ON clientes FOR EACH ROW
+BEGIN
+    -- Declaramos variables para traer el nombre de la otra tabla
+    DECLARE v_nombre VARCHAR(255);
+    DECLARE v_apellido VARCHAR(255);
+
+    SELECT nombre, apellido INTO v_nombre, v_apellido FROM personas WHERE persona_id = NEW.persona_id;
+
+    INSERT INTO historial_clientes(cliente_id, persona_id, nombre, apellido, accion) 
+    VALUES (NEW.cliente_id, NEW.persona_id, v_nombre, v_apellido, 'INSERT');
+END$$
+DELIMITER ;
+
 
 DELIMITER ;
