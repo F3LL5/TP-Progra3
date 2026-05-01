@@ -127,7 +127,11 @@ public class SecurityConfig {
         ).hasAnyRole("ADMIN","DUENIO","EMPLEADO")
 
         .requestMatchers(
-                "/api/historial/**"
+                "/api/historial/**" 
+        ).hasAnyRole("ADMIN","DUENIO","EMPLEADO")
+
+        .requestMatchers(
+                "/api/stats/**"
         ).hasAnyRole("ADMIN","DUENIO","EMPLEADO")
 
         // Cualquier otra cosa que no matchea lo de arriba → prohibido

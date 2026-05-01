@@ -1,0 +1,67 @@
+package com.owo.TP_prg3.Clases.Estadisticas;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
+
+@Repository
+public interface EstadisticasRepository extends JpaRepository<Pedido, Long> {
+
+    // Sumar montos de transacciones según el tipo de pedido (VENTA o COMPRA)
+    @Query("""
+        SELECT SUM(p.transaccion.monto) 
+        FROM Pedido p
+        WHERE p.tipo = :tipo 
+        AND p.transaccion.fecha BETWEEN :inicio AND :fin """)          
+    BigDecimal sumMontoPorTipoEnRango(@Param("tipo") Enum<?> tipo, @Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
+
+    // Obtener ventas agrupadas por el tipo de transacción (EFECTIVO, DEBITO)
+    @Query("""
+        SELECT p.transaccion.tipo, SUM(p.transaccion.monto) 
+        FROM Pedido p 
+        WHERE p.tipo = com.owo.TP_prg3.Clases.Enum.TipoPedido.VENTA 
+        AND p.transaccion.fecha BETWEEN :inicio AND :fin GROUP BY p.transaccion.tipo """)
+    List<Object[]> getVentasPorMetodoPago(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
+
+    // Conteo de clientes en cualquier rango de tiempo
+    @Query("""
+        SELECT COUNT(h) 
+        FROM HistorialCliente h 
+        WHERE h.accion = com.owo.TP_prg3.Clases.Persona.historial.Acciones.INSERT
+        AND h.fechaEvento BETWEEN :inicio AND :fin """)
+    Long countNuevosClientesHistorial(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
+
+    @Query("""
+        SELECT FUNCTION('MONTHNAME', p.transaccion.fecha), 
+            SUM(CASE WHEN p.tipo = com.owo.TP_prg3.Clases.Enum.TipoPedido.VENTA THEN p.transaccion.monto ELSE 0 END),
+            SUM(CASE WHEN p.tipo = com.owo.TP_prg3.Clases.Enum.TipoPedido.VENTA THEN p.transaccion.monto ELSE -p.transaccion.monto END)
+        FROM Pedido p
+        WHERE p.transaccion.fecha BETWEEN :inicio AND :fin
+        GROUP BY FUNCTION('MONTHNAME', p.transaccion.fecha) """)
+    List<Object[]> getTendenciaMensual(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
+
+    @Query("""
+        SELECT FUNCTION('DATE', p.transaccion.fecha), 
+            SUM(CASE WHEN p.tipo = com.owo.TP_prg3.Clases.Enum.TipoPedido.VENTA THEN p.transaccion.monto ELSE 0 END),
+            SUM(CASE WHEN p.tipo = com.owo.TP_prg3.Clases.Enum.TipoPedido.VENTA THEN p.transaccion.monto ELSE -p.transaccion.monto END)
+        FROM Pedido p
+        WHERE p.transaccion.fecha BETWEEN :inicio AND :fin
+        GROUP BY FUNCTION('DATE', p.transaccion.fecha)
+        ORDER BY FUNCTION('DATE', p.transaccion.fecha) ASC """)
+    List<Object[]> getTendenciaDiaria(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
+
+    @Query("""
+        SELECT CONCAT(FUNCTION('HOUR', p.transaccion.fecha), ':00'), 
+            SUM(CASE WHEN p.tipo = com.owo.TP_prg3.Clases.Enum.TipoPedido.VENTA THEN p.transaccion.monto ELSE 0 END),
+            SUM(CASE WHEN p.tipo = com.owo.TP_prg3.Clases.Enum.TipoPedido.VENTA THEN p.transaccion.monto ELSE -p.transaccion.monto END)
+        FROM Pedido p
+        WHERE p.transaccion.fecha BETWEEN :inicio AND :fin
+        GROUP BY CONCAT(FUNCTION('HOUR', p.transaccion.fecha), ':00'), FUNCTION('HOUR', p.transaccion.fecha)
+        ORDER BY FUNCTION('HOUR', p.transaccion.fecha) ASC """)
+    List<Object[]> getTendenciaPorHora(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
+}
