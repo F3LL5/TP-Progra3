@@ -1,5 +1,6 @@
 package com.owo.TP_prg3.Clases.Proveedor.service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -17,6 +18,7 @@ import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 
 import jakarta.transaction.Transactional;
 
+import com.owo.TP_prg3.Clases.Herramientas.ExcelExportService;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 
 @Service
@@ -26,6 +28,8 @@ public class ProveedorServicio implements I_CRUD<Proveedor, ProveedorDTO, FormPr
 
     @Autowired
     private ProveedorRepositorio proveedorRepositorio;
+    @Autowired
+    private ExcelExportService excelExportService;
 
     // CONVERSIÓN
     @Override
@@ -113,6 +117,14 @@ public class ProveedorServicio implements I_CRUD<Proveedor, ProveedorDTO, FormPr
         Proveedor proveedor = obtenerProveedorPorId(id);
         proveedorRepositorio.delete(proveedor);
         return true;
+    }
+
+    // OTROS MÉTODOS -------------------------------------------------------------------------
+
+    public byte[] exportar() {
+        List<ProveedorDTO> lista = List.copyOf(obtenerTodos());
+        byte[] excel = excelExportService.generarExcel(lista, "Proveedores");
+        return excel;
     }
 
     // VALIDACIONES -------------------------------------------------------------------------
