@@ -2,6 +2,7 @@ package com.owo.TP_prg3.Clases.Persona.controlador;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.owo.TP_prg3.Clases.Interfaces.I_Controlador;
@@ -40,6 +41,12 @@ public class PersonaControlador implements I_Controlador<PersonaDTO, FormPersona
     @GetMapping("/ordenar")
     public ResponseEntity<Set<PersonaDTO>> ordenar(@RequestParam String campo, @RequestParam boolean ascendente) {
         return ResponseEntity.ok(personaServicio.ordenar(campo, ascendente));
+    }
+     @GetMapping("/exportar")
+    public ResponseEntity<byte[]> exportar() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=proveedores.xlsx");
+        return ResponseEntity.ok().headers(headers).body(personaServicio.exportar());
     }
 
     // --- Métodos POST ---

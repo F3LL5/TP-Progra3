@@ -3,6 +3,7 @@ package com.owo.TP_prg3.Clases.Duenio.controlador;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.owo.TP_prg3.Clases.Duenio.dto.DuenioDTO;
@@ -47,6 +48,13 @@ public class DuenioControlador implements I_Controlador<DuenioDTO, FormDuenioDTO
     @GetMapping("/ordenar")
     public ResponseEntity<Set<DuenioDTO>> ordenar(@RequestParam String campo, @RequestParam boolean ascendente) {
         return ResponseEntity.ok(duenioServicio.ordenar(campo, ascendente));
+    }
+
+     @GetMapping("/exportar")
+    public ResponseEntity<byte[]> exportar() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=proveedores.xlsx");
+        return ResponseEntity.ok().headers(headers).body(duenioServicio.exportar());
     }
 
     // --- Métodos POST ---

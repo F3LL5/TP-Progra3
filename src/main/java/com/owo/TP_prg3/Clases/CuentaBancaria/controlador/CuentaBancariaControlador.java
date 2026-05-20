@@ -1,8 +1,10 @@
 package com.owo.TP_prg3.Clases.CuentaBancaria.controlador;
 
+
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CuentaBancariaDTO;
@@ -40,6 +42,13 @@ public class CuentaBancariaControlador implements I_Controlador<CuentaBancariaDT
     @GetMapping("/ordenar")
     public ResponseEntity<Set<CuentaBancariaDTO>> ordenar(@RequestParam String campo, @RequestParam boolean ascendente) {
         return ResponseEntity.ok(cuentabancariaServicio.ordenar(campo, ascendente));
+    }
+
+      @GetMapping("/exportar")
+    public ResponseEntity<byte[]> exportar() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=proveedores.xlsx");
+        return ResponseEntity.ok().headers(headers).body(cuentabancariaServicio.exportar());
     }
 
     // --- Métodos POST ---

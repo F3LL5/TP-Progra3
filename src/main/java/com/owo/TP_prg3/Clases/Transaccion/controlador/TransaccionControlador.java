@@ -6,6 +6,7 @@ import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
 import com.owo.TP_prg3.Clases.Transaccion.service.TransaccionServicio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Set;
@@ -40,6 +41,13 @@ public class TransaccionControlador implements I_Controlador<TransaccionDTO, For
     @GetMapping("/ordenar")
     public ResponseEntity<Set<TransaccionDTO>> ordenar(@RequestParam String campo, @RequestParam boolean ascendente) {
         return ResponseEntity.ok(transaccionServicio.ordenar(campo, ascendente));
+    }
+
+     @GetMapping("/exportar")
+    public ResponseEntity<byte[]> exportar() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=proveedores.xlsx");
+        return ResponseEntity.ok().headers(headers).body(transaccionServicio.exportar());
     }
 
     // --- Métodos POST (Creación) ---

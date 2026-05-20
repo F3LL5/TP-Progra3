@@ -4,7 +4,7 @@ import com.owo.TP_prg3.Clases.Interfaces.I_Controlador;
 import com.owo.TP_prg3.Clases.Inventario.dto.FormInventarioDTO;
 import com.owo.TP_prg3.Clases.Inventario.dto.InventarioDTO;
 import com.owo.TP_prg3.Clases.Inventario.service.InventarioServicio;
-
+import org.springframework.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +42,14 @@ public class InventarioControlador implements I_Controlador<InventarioDTO, FormI
     public ResponseEntity<Set<InventarioDTO>> ordenar(@RequestParam String campo, @RequestParam boolean ascendente) {
         return ResponseEntity.ok(inventarioServicio.ordenar(campo, ascendente));
     }
+
+     @GetMapping("/exportar")
+    public ResponseEntity<byte[]> exportar() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=proveedores.xlsx");
+        return ResponseEntity.ok().headers(headers).body(inventarioServicio.exportar());
+    }
+
 
     // --- Métodos POST ---
     @Override

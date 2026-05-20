@@ -7,6 +7,7 @@ import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
 import com.owo.TP_prg3.Clases.Pedido.service.PedidoServicio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Set;
@@ -40,6 +41,13 @@ public class PedidoControlador  {
     @GetMapping("/ordenar")
     public ResponseEntity<Set<PedidoDTO>> ordenar(@RequestParam String campo, @RequestParam(defaultValue = "true") boolean ascendente) {
         return ResponseEntity.ok(pedidoServicio.ordenar(campo, ascendente));
+    }
+
+     @GetMapping("/exportar")
+    public ResponseEntity<byte[]> exportar() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=proveedores.xlsx");
+        return ResponseEntity.ok().headers(headers).body(pedidoServicio.exportar());
     }
 
     // --- Métodos POST (Creación) ---

@@ -2,12 +2,15 @@ package com.owo.TP_prg3.Clases.Cliente.controlador;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.owo.TP_prg3.Clases.Cliente.dto.ClienteDTO;
 import com.owo.TP_prg3.Clases.Cliente.service.ClienteServicio;
 import com.owo.TP_prg3.Clases.Interfaces.I_Controlador;
 import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
+
+
 import java.util.Set;
 
 @RestController
@@ -40,6 +43,12 @@ public class ClienteControlador implements I_Controlador<ClienteDTO, FormPersona
     @GetMapping("/ordenar")
     public ResponseEntity<Set<ClienteDTO>> ordenar(@RequestParam String campo, @RequestParam boolean ascendente) {
         return ResponseEntity.ok(clienteServicio.ordenar(campo, ascendente));
+    }
+     @GetMapping("/exportar")
+    public ResponseEntity<byte[]> exportar() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=proveedores.xlsx");
+        return ResponseEntity.ok().headers(headers).body(clienteServicio.exportar());
     }
 
     // --- Métodos POST ---

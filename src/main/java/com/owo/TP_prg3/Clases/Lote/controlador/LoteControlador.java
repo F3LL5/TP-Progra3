@@ -3,6 +3,7 @@ package com.owo.TP_prg3.Clases.Lote.controlador;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,6 +47,13 @@ public class LoteControlador implements I_Controlador<LoteDTO, FormLoteDTO>{
     @GetMapping("/ordenar")
     public ResponseEntity<Set<LoteDTO>> ordenar(String campo, boolean ascendente) {
         return ResponseEntity.ok(loteServicio.ordenar(campo, ascendente));
+    }
+
+     @GetMapping("/exportar")
+    public ResponseEntity<byte[]> exportar() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=proveedores.xlsx");
+        return ResponseEntity.ok().headers(headers).body(loteServicio.exportar());
     }
 
     @Override

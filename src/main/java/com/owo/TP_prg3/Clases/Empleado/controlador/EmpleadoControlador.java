@@ -1,6 +1,7 @@
 package com.owo.TP_prg3.Clases.Empleado.controlador;
 
 import java.util.Set;
+import org.springframework.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,6 +49,14 @@ public class EmpleadoControlador implements I_Controlador<EmpleadoDTO, FormEmple
     public ResponseEntity<Set<EmpleadoDTO>> ordenar(@RequestParam String campo, @RequestParam boolean ascendente) {
         return ResponseEntity.ok(empleadoServicio.ordenar(campo, ascendente));
     }
+
+     @GetMapping("/exportar")
+    public ResponseEntity<byte[]> exportar() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=proveedores.xlsx");
+        return ResponseEntity.ok().headers(headers).body(empleadoServicio.exportar());
+    }
+
 
     // --- Métodos POST ---
     @Override
