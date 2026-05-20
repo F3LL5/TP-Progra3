@@ -1,16 +1,20 @@
 package com.owo.TP_prg3.Clases.Empleado.service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import com.owo.TP_prg3.Clases.Duenio.dto.DuenioDTO;
 import com.owo.TP_prg3.Clases.Empleado.dto.EmpleadoDTO;
 import com.owo.TP_prg3.Clases.Empleado.dto.FormEmpleadoDTO;
 import com.owo.TP_prg3.Clases.Empleado.modelo.Empleado;
 import com.owo.TP_prg3.Clases.Empleado.modelo.EmpleadoRepositorio;
 import com.owo.TP_prg3.Clases.Enum.RolUsuario;
+import com.owo.TP_prg3.Clases.Herramientas.ExcelExportService;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
 import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
@@ -40,6 +44,9 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private ExcelExportService excelExportService;
 
     // Conversion
     @Override
@@ -97,6 +104,13 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
         return empleadoRepositorio.findByUsuario_Email(email.trim())
                 .map(this::convertir_a_DTO);
     }
+
+       public byte[] exportar() {
+        List<EmpleadoDTO> lista = List.copyOf(obtenerTodos());
+        byte[] excel = excelExportService.generarExcel(lista, "Empleados");
+        return excel;
+    }
+
 
     // POST
     @Override

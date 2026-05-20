@@ -1,9 +1,11 @@
 package com.owo.TP_prg3.Clases.Producto.service;
 
 import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedidoRepositorio;
+import com.owo.TP_prg3.Clases.Herramientas.ExcelExportService;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 import com.owo.TP_prg3.Clases.Inventario.dto.FormInventarioDTO;
 import com.owo.TP_prg3.Clases.Inventario.service.InventarioServicio;
+import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
 import com.owo.TP_prg3.Clases.Producto.dto.FormProductoDTO;
 import com.owo.TP_prg3.Clases.Producto.dto.ProductoDTO;
 import com.owo.TP_prg3.Clases.Producto.modelo.Producto;
@@ -19,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -38,6 +41,10 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
     private InventarioServicio inventarioService;
     @Autowired
     private DetallePedidoRepositorio detallePedidoRepositorio;
+
+     
+    @Autowired
+    private ExcelExportService excelExportService;
 
     // CONVERSION ------------------------------------------------------------------------------------------------------------------------------------------------
     @Override
@@ -139,6 +146,13 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
         return stream.sorted(comparador)
                     .map(this::convertir_a_DTO)
                     .collect(Collectors.toSet());
+    }
+
+    
+    public byte[] exportar() {
+        List<ProductoDTO> lista = List.copyOf(obtenerTodos());
+        byte[] excel = excelExportService.generarExcel(lista, "Productos");
+        return excel;
     }
 
     // POST

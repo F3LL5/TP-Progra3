@@ -1,9 +1,11 @@
 package com.owo.TP_prg3.Clases.CuentaBancaria.service;
 
 import com.owo.TP_prg3.Clases.CuentaBancaria.dto.FormCuentaBancariaDTO;
+import com.owo.TP_prg3.Clases.Cliente.dto.ClienteDTO;
 import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CuentaBancariaDTO;
 import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancaria;
 import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancariaRepositorio;
+import com.owo.TP_prg3.Clases.Herramientas.ExcelExportService;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 import com.owo.TP_prg3.Clases.Tienda.modelo.Tienda;
 import com.owo.TP_prg3.Clases.Tienda.modelo.TiendaRepositorio;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -34,6 +37,10 @@ public class CuentaBancariaServicio implements I_CRUD<CuentaBancaria, CuentaBanc
 
     @Autowired
     private TiendaRepositorio tiendaRepositorio;
+
+    @Autowired
+    private ExcelExportService excelExportService;
+
     private Tienda getTiendaUnica() {
         // Asumimos que la tienda siempre tiene ID 1.
         return tiendaRepositorio.findById(1L).orElseThrow(()-> new EntidadNoEncontradaException("Por favor, primero realice el registro inicial de la Tienda.") );
@@ -162,6 +169,13 @@ public class CuentaBancariaServicio implements I_CRUD<CuentaBancaria, CuentaBanc
 
         cuenta.setSaldo(cuenta.getSaldo().subtract(monto)); // Restar monto
         cbRepositorio.save(cuenta);
+    }
+
+    
+    public byte[] exportar() {
+        List<CuentaBancariaDTO> lista = List.copyOf(obtenerTodos());
+        byte[] excel = excelExportService.generarExcel(lista, "CuentaBancaria");
+        return excel;
     }
 
     // VALIDACIONES PRIVADAS

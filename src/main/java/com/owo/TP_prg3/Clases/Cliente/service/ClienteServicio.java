@@ -1,5 +1,6 @@
 package com.owo.TP_prg3.Clases.Cliente.service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -17,6 +18,7 @@ import jakarta.transaction.Transactional;
 import com.owo.TP_prg3.Clases.Cliente.dto.ClienteDTO;
 import com.owo.TP_prg3.Clases.Cliente.modelo.Cliente;
 import com.owo.TP_prg3.Clases.Cliente.modelo.ClienteRepositorio;
+import com.owo.TP_prg3.Clases.Herramientas.ExcelExportService;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 
 @Service
@@ -31,6 +33,9 @@ public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaD
 
     @Autowired
     private ClienteRepositorio clienteRepositorio;
+
+    @Autowired
+    private ExcelExportService excelExportService;
 
     // Conversión
     @Override
@@ -78,6 +83,12 @@ public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaD
         return clienteRepositorio.findByPersona_Dni(dni).map(this::convertir_a_DTO);
     }
 
+    public byte[] exportar() {
+        List<ClienteDTO> lista = List.copyOf(obtenerTodos());
+        byte[] excel = excelExportService.generarExcel(lista, "Clientes");
+        return excel;
+    }
+
     // POST
     @Override
     @Transactional
@@ -113,6 +124,8 @@ public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaD
         clienteRepositorio.delete(cliente);
         return true;
     }
+
+    
 
     // VALIDACIONES PRIVADAS ==================================================================================================================================
 

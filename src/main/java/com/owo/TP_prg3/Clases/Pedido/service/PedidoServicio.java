@@ -7,6 +7,8 @@ import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedidoRepositorio;
 import com.owo.TP_prg3.Clases.DetallePedido.service.DetallePedidoServicio;
 import com.owo.TP_prg3.Clases.Enum.EstadoPedido;
 import com.owo.TP_prg3.Clases.Enum.TipoPedido;
+import com.owo.TP_prg3.Clases.Herramientas.ExcelExportService;
+import com.owo.TP_prg3.Clases.Inventario.dto.InventarioDTO;
 import com.owo.TP_prg3.Clases.Inventario.service.InventarioServicio;
 import com.owo.TP_prg3.Clases.Lote.service.LoteServicio;
 import com.owo.TP_prg3.Clases.Pedido.dto.*;
@@ -28,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -67,6 +70,10 @@ public class PedidoServicio {
 
     @Autowired
     CuentaBancariaServicio cuentaBancariaServicio;
+
+    
+    @Autowired
+    private ExcelExportService excelExportService;
 
     
 
@@ -172,6 +179,12 @@ public class PedidoServicio {
         return stream.sorted(comparador)
                     .map(this::convertir_a_DTO)
                     .collect(Collectors.toSet());
+    }
+
+    public byte[] exportar() {
+        List<PedidoDTO> lista = List.copyOf(obtenerTodos());
+        byte[] excel = excelExportService.generarExcel(lista, "Pedidos");
+        return excel;
     }
 
     // --- ESCRITURA (POST) ---

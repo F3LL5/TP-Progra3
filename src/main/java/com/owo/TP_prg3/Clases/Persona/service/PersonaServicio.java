@@ -1,6 +1,8 @@
 package com.owo.TP_prg3.Clases.Persona.service;
 
+import com.owo.TP_prg3.Clases.Herramientas.ExcelExportService;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
+import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
 import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
 import com.owo.TP_prg3.Clases.Persona.dto.PersonaDTO;
 import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
@@ -12,6 +14,8 @@ import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,6 +25,10 @@ public class PersonaServicio implements I_CRUD<Persona, PersonaDTO, FormPersonaD
 
     @Autowired
     private PersonaRepositorio personaRepositorio;
+
+    
+    @Autowired
+    private ExcelExportService excelExportService;
 
     // Conversión
     @Override
@@ -74,6 +82,13 @@ public class PersonaServicio implements I_CRUD<Persona, PersonaDTO, FormPersonaD
         validarPersonaNoExiste(cDTO.getDni());
         personaRepositorio.save(convertir_a_Obj(cDTO));
         return true;
+    }
+
+    
+    public byte[] exportar() {
+        List<PersonaDTO> lista = List.copyOf(obtenerTodos());
+        byte[] excel = excelExportService.generarExcel(lista, "Personas");
+        return excel;
     }
 
     // PUT

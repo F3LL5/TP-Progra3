@@ -11,7 +11,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.owo.TP_prg3.Clases.Herramientas.ExcelExportService;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
+import com.owo.TP_prg3.Clases.Inventario.dto.InventarioDTO;
 import com.owo.TP_prg3.Clases.Inventario.service.InventarioServicio;
 import com.owo.TP_prg3.Clases.Lote.dto.FormLoteDTO;
 import com.owo.TP_prg3.Clases.Lote.dto.LoteDTO;
@@ -41,6 +44,10 @@ public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
     private ProductoServicio productoServicio;
     @Autowired
     private InventarioServicio inventarioServicio;
+
+    
+    @Autowired
+    private ExcelExportService excelExportService;
 
     // CONVERSION
     // ------------------------------------------------------------------------------------------------------------------------------------------------
@@ -124,6 +131,12 @@ public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
         return stream.sorted(comparador)
                 .map(this::convertir_a_DTO)
                 .collect(Collectors.toSet());
+    }
+
+       public byte[] exportar() {
+        List<LoteDTO> lista = List.copyOf(obtenerTodos());
+        byte[] excel = excelExportService.generarExcel(lista, "Lotes");
+        return excel;
     }
 
     // POST

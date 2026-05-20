@@ -1,6 +1,8 @@
 package com.owo.TP_prg3.Clases.Transaccion.service;
 
+import com.owo.TP_prg3.Clases.Herramientas.ExcelExportService;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
+import com.owo.TP_prg3.Clases.Producto.dto.ProductoDTO;
 import com.owo.TP_prg3.Clases.Transaccion.dto.FormTransaccionDTO;
 import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.Transaccion;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -31,6 +34,10 @@ public class TransaccionServicio implements I_CRUD<Transaccion, TransaccionDTO, 
     
     @Autowired
     private TransaccionRepositorio transaccionRepositorio;
+
+     
+    @Autowired
+    private ExcelExportService excelExportService;
 
     // CONVERSION ------------------------------------------------------------------------------------------------------------------------------------------------
     @Override
@@ -110,6 +117,14 @@ public class TransaccionServicio implements I_CRUD<Transaccion, TransaccionDTO, 
                     .map(this::convertir_a_DTO)
                     .collect(Collectors.toSet());
     }
+
+    public byte[] exportar() {
+        List<TransaccionDTO> lista = List.copyOf(obtenerTodos());
+        byte[] excel = excelExportService.generarExcel(lista,"Transacciones");
+        return excel;
+    }
+
+
 
     // ESCRITURA (POST) ------------------------------------------------------------------------------------------------------------------------------------------------
     @Override

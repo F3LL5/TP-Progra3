@@ -1,16 +1,20 @@
 package com.owo.TP_prg3.Clases.Duenio.service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import com.owo.TP_prg3.Clases.Cliente.dto.ClienteDTO;
 import com.owo.TP_prg3.Clases.Duenio.dto.DuenioDTO;
 import com.owo.TP_prg3.Clases.Duenio.dto.FormDuenioDTO;
 import com.owo.TP_prg3.Clases.Duenio.modelo.Duenio;
 import com.owo.TP_prg3.Clases.Duenio.modelo.DuenioRepositorio;
 import com.owo.TP_prg3.Clases.Enum.RolUsuario;
+import com.owo.TP_prg3.Clases.Herramientas.ExcelExportService;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
 import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
@@ -46,6 +50,9 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private ExcelExportService excelExportService;
 
     // Conversion
     @Override
@@ -106,6 +113,13 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
 
         return duenioRepositorio.findByUsuario_Email(email.trim())
                 .map(this::convertir_a_DTO);
+    }
+
+    
+    public byte[] exportar() {
+        List<DuenioDTO> lista = List.copyOf(obtenerTodos());
+        byte[] excel = excelExportService.generarExcel(lista, "Duenios");
+        return excel;
     }
 
     // POST
