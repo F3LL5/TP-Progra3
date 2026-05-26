@@ -2,6 +2,7 @@ package com.owo.TP_prg3.Clases.Estadisticas;
 
 import java.math.BigDecimal;
 import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,7 +20,14 @@ public class DashboardDTO {
     
     // Gráfico de Líneas 
     private List<TrendPointDTO> tendenciaVentas;
-    
+
+    // KPIs avanzaduchos
+    private List<DataPointDTO> topProductos;
+    private DataPointDTO productoMenosVendido;
+    private String mejorMes;
+    private String categoriaTop;
+    private BigDecimal gananciasPromedioDia;
+    private Double incrementoVentasMesAnterior;
 }
 
 // Clases para ayudar a las librerías de gráficos

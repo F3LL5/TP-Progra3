@@ -3,10 +3,12 @@ package com.owo.TP_prg3.Clases.Estadisticas;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
 import com.owo.TP_prg3.Clases.Pedido.modelo.Pedido;
 
 @Repository
@@ -64,4 +66,36 @@ public interface EstadisticasRepository extends JpaRepository<Pedido, Long> {
         GROUP BY CONCAT(FUNCTION('HOUR', p.transaccion.fecha), ':00'), FUNCTION('HOUR', p.transaccion.fecha)
         ORDER BY FUNCTION('HOUR', p.transaccion.fecha) ASC """)
     List<Object[]> getTendenciaPorHora(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
+
+    // ----- QUERYS PARA LOS KPIs AVANZADOS -----
+
+    // Top 5 productos más vendidos (Casteamos el SUM a Long de manera segura)
+    @Query("""
+        SELECT d.producto.nombre, SUM(d.cantidad) 
+        FROM Pedido p JOIN p.detalles d
+        WHERE p.tipo = com.owo.TP_prg3.Clases.Enum.TipoPedido.VENTA
+        AND p.transaccion.fecha BETWEEN :inicio AND :fin
+        GROUP BY d.producto.nombre
+        ORDER BY SUM(d.cantidad) DESC """)
+    List<Object[]> getTopProductosEnRango(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
+
+    // Producto menos vendido
+    @Query("""
+        SELECT d.producto.nombre, SUM(d.cantidad) 
+        FROM Pedido p JOIN p.detalles d
+        WHERE p.tipo = com.owo.TP_prg3.Clases.Enum.TipoPedido.VENTA
+        AND p.transaccion.fecha BETWEEN :inicio AND :fin
+        GROUP BY d.producto.nombre
+        ORDER BY SUM(d.cantidad) ASC """)
+    List<Object[]> getProductoMenosVendidoEnRango(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
+
+    // Categoría que MÁS VENDE
+    @Query("""
+        SELECT d.producto.categoria, SUM(p.transaccion.monto)
+        FROM Pedido p JOIN p.detalles d
+        WHERE p.tipo = com.owo.TP_prg3.Clases.Enum.TipoPedido.VENTA
+        AND p.transaccion.fecha BETWEEN :inicio AND :fin
+        GROUP BY d.producto.categoria
+        ORDER BY SUM(p.transaccion.monto) DESC """)
+    List<Object[]> getCategoriaTopEnRango(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
 }
