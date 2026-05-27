@@ -19,6 +19,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -162,8 +163,14 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
         validarProductoNoExiste(createDTO.getNombre().trim(), createDTO.getCategoria().trim());
 
         Producto p = productoRepositorio.save(convertir_a_Obj(createDTO));
-        //Crea un inventario default a ese Producto
-        return inventarioService.cargar(new FormInventarioDTO(p.getProductoId()));
+        //Crea un inventario con los valores recibidos (stockMin, precioVenta) o defaults
+        return inventarioService.cargar(new FormInventarioDTO(
+            0,
+            p.getProductoId(),
+            createDTO.getStockMin() != null ? createDTO.getStockMin() : 0,
+            createDTO.getPrecioVenta() != null ? createDTO.getPrecioVenta() : BigDecimal.ZERO,
+            BigDecimal.ZERO
+        ));
     }
 
     // PUT
