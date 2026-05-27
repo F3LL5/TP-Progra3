@@ -11,10 +11,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.owo.TP_prg3.Clases.Herramientas.ExcelExportService;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
-import com.owo.TP_prg3.Clases.Inventario.dto.InventarioDTO;
 import com.owo.TP_prg3.Clases.Inventario.service.InventarioServicio;
 import com.owo.TP_prg3.Clases.Lote.dto.FormLoteDTO;
 import com.owo.TP_prg3.Clases.Lote.dto.LoteDTO;

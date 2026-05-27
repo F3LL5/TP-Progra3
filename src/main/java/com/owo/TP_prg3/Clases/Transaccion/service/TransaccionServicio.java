@@ -2,7 +2,6 @@ package com.owo.TP_prg3.Clases.Transaccion.service;
 
 import com.owo.TP_prg3.Clases.Herramientas.ExcelExportService;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
-import com.owo.TP_prg3.Clases.Producto.dto.ProductoDTO;
 import com.owo.TP_prg3.Clases.Transaccion.dto.FormTransaccionDTO;
 import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.Transaccion;

@@ -1,6 +1,5 @@
 package com.owo.TP_prg3.Clases.Inventario.service;
 
-import com.owo.TP_prg3.Clases.Duenio.dto.DuenioDTO;
 import com.owo.TP_prg3.Clases.Herramientas.ExcelExportService;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 import com.owo.TP_prg3.Clases.Inventario.dto.FormInventarioDTO;
@@ -17,7 +16,6 @@ import com.owo.TP_prg3.Excepciones.OperacionNoPermitidaException;
 import com.owo.TP_prg3.Excepciones.ReglaNegocioException;
 import com.owo.TP_prg3.Excepciones.StockInsuficienteException;
 import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
-
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;

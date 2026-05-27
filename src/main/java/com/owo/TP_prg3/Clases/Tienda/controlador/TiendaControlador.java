@@ -8,6 +8,9 @@ import com.owo.TP_prg3.Clases.Interfaces.I_Controlador;
 import com.owo.TP_prg3.Clases.Tienda.dto.FormTiendaDTO;
 import com.owo.TP_prg3.Clases.Tienda.dto.TiendaDTO;
 import com.owo.TP_prg3.Clases.Tienda.service.TiendaServicio;
+
+import java.time.LocalDate;
+import java.util.Optional;
 import java.util.Set;
 
 @RestController
@@ -41,6 +44,18 @@ public class TiendaControlador implements I_Controlador<TiendaDTO, FormTiendaDTO
     @GetMapping("/ordenar")
     public ResponseEntity<Set<TiendaDTO>> ordenar(@RequestParam String campo, @RequestParam boolean ascendente) {
         return ResponseEntity.ok(tiendaServicio.ordenar(campo, ascendente));
+    }
+
+    @GetMapping("/ultimoCierre")
+    public ResponseEntity<LocalDate> obtenerUltimoCierreDeCaja() {
+        Optional<LocalDate> optionalCierre = tiendaServicio.obtenerUltimoCierreDeCaja();
+        // Si está presente devuelve 200 OK con la fecha, si está vacío devuelve 204 No Content
+        return optionalCierre.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.noContent().build());
+    }
+
+    @GetMapping("/cerrarCaja")
+    public ResponseEntity<Boolean> cerrarCaja() {
+        return ResponseEntity.ok(tiendaServicio.cerrarCaja());
     }
 
     // --- Métodos POST ---

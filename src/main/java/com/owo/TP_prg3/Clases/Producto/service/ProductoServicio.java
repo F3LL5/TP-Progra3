@@ -5,7 +5,6 @@ import com.owo.TP_prg3.Clases.Herramientas.ExcelExportService;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
 import com.owo.TP_prg3.Clases.Inventario.dto.FormInventarioDTO;
 import com.owo.TP_prg3.Clases.Inventario.service.InventarioServicio;
-import com.owo.TP_prg3.Clases.Pedido.dto.PedidoDTO;
 import com.owo.TP_prg3.Clases.Producto.dto.FormProductoDTO;
 import com.owo.TP_prg3.Clases.Producto.dto.ProductoDTO;
 import com.owo.TP_prg3.Clases.Producto.modelo.Producto;

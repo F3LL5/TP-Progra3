@@ -1,7 +1,6 @@
 package com.owo.TP_prg3.Clases.CuentaBancaria.service;
 
 import com.owo.TP_prg3.Clases.CuentaBancaria.dto.FormCuentaBancariaDTO;
-import com.owo.TP_prg3.Clases.Cliente.dto.ClienteDTO;
 import com.owo.TP_prg3.Clases.CuentaBancaria.dto.CuentaBancariaDTO;
 import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancaria;
 import com.owo.TP_prg3.Clases.CuentaBancaria.modelo.CuentaBancariaRepositorio;

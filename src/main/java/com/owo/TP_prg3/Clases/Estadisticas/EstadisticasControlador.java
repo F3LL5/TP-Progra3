@@ -19,4 +19,10 @@ public class EstadisticasControlador {
         
         return estadisticasServicio.obtenerResumen(inicio, fin);
     }
+
+    @GetMapping("/caja-diaria")
+    public CierreCajaDTO getCajaDiaria(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
+        return estadisticasServicio.obtenerMovimientosCajaDiaria(fecha);
+    }
 }

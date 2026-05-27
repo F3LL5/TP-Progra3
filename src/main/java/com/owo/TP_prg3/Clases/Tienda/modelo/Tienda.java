@@ -69,6 +69,9 @@ public class Tienda {
     @Embedded
     private Caja caja;
 
+    @Column(name = "ultimo_cierre_caja")
+    private LocalDate ultimoCierreCaja;
+
     @EqualsAndHashCode.Exclude @ToString.Exclude
     @OneToMany(mappedBy = "tienda", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     protected Set<CuentaBancaria> cuentaBancaria;

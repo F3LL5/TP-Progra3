@@ -8,7 +8,6 @@ import com.owo.TP_prg3.Clases.DetallePedido.service.DetallePedidoServicio;
 import com.owo.TP_prg3.Clases.Enum.EstadoPedido;
 import com.owo.TP_prg3.Clases.Enum.TipoPedido;
 import com.owo.TP_prg3.Clases.Herramientas.ExcelExportService;
-import com.owo.TP_prg3.Clases.Inventario.dto.InventarioDTO;
 import com.owo.TP_prg3.Clases.Inventario.service.InventarioServicio;
 import com.owo.TP_prg3.Clases.Lote.service.LoteServicio;
 import com.owo.TP_prg3.Clases.Pedido.dto.*;
@@ -29,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -223,6 +223,21 @@ public class PedidoServicio {
         return true;
     }
 
+    @Transactional
+    public boolean ajustarSaldoCaja(BigDecimal monto) {
+        if (monto == null || monto.compareTo(BigDecimal.ZERO) == 0) {
+            throw new IngresoInvalidoException("El monto no puede ser nulo o cero.");
+        }
+
+        if (monto.signum() > 0) {
+            tiendaServicio.acreditarMontoCaja(1L, monto);
+        } else {
+            tiendaServicio.debitarMontoCaja(1L, monto.abs());
+        }
+
+        return true;
+    }
+
     // --- ELIMINACION (DELETE) ---
     @Transactional
     public boolean eliminar(Long id) {
@@ -330,6 +345,18 @@ public class PedidoServicio {
         if (dto.getTipo() == null) throw new CampoRequeridoException("tipo");
         if (dto.getTransaccion() == null) throw new CampoRequeridoException("transaccion");
 
+        //Valida q sea un movimiento de tipo efectivo
+        if ("EFECTIVO".equalsIgnoreCase(dto.getTransaccion().getTipo().toString())) {
+            
+            Optional<LocalDate> ultimoCierre = tiendaServicio.obtenerUltimoCierreDeCaja(); 
+            
+            // Compara la fecha guardada con el día de hoy
+            if (ultimoCierre.isPresent() && ultimoCierre.get().isEqual(LocalDate.now())) {
+                
+                // Lanza la excepción para rechazar el pedido de inmediato
+                throw new IngresoInvalidoException("Operación rechazada: La caja física ya ha sido cerrada por el día de hoy.");
+            }
+        }
     }
 
     private Pedido obtenerPedidoPorId(Long id) {

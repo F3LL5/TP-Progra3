@@ -98,4 +98,23 @@ public interface EstadisticasRepository extends JpaRepository<Pedido, Long> {
         GROUP BY d.producto.categoria
         ORDER BY SUM(p.transaccion.monto) DESC """)
     List<Object[]> getCategoriaTopEnRango(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
+
+    // ----- QUERYS PARA LA CAJA -----
+
+    // Sumar ventas que fueron hechas estrictamente en EFECTIVO en un rango 
+    @Query("""
+        SELECT SUM(p.transaccion.monto) 
+        FROM Pedido p
+        WHERE p.tipo = com.owo.TP_prg3.Clases.Enum.TipoPedido.VENTA 
+        AND p.transaccion.tipo = 'EFECTIVO'
+        AND p.transaccion.fecha BETWEEN :inicio AND :fin """)
+    BigDecimal sumVentasEfectivoEnRango(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
+
+    // Sumar los gastos/compras hechos en un rango 
+    @Query("""
+        SELECT SUM(p.transaccion.monto) 
+        FROM Pedido p
+        WHERE p.tipo = com.owo.TP_prg3.Clases.Enum.TipoPedido.COMPRA 
+        AND p.transaccion.fecha BETWEEN :inicio AND :fin """)
+    BigDecimal sumGastosEnRango(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
 }

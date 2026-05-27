@@ -7,8 +7,6 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import com.owo.TP_prg3.Clases.Duenio.dto.DuenioDTO;
 import com.owo.TP_prg3.Clases.Empleado.dto.EmpleadoDTO;
 import com.owo.TP_prg3.Clases.Empleado.dto.FormEmpleadoDTO;
 import com.owo.TP_prg3.Clases.Empleado.modelo.Empleado;

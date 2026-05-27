@@ -1,6 +1,7 @@
 package com.owo.TP_prg3.Clases.Tienda.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -18,7 +19,6 @@ import com.owo.TP_prg3.Clases.Tienda.dto.TiendaDTO;
 import com.owo.TP_prg3.Clases.Tienda.modelo.Tienda;
 import com.owo.TP_prg3.Clases.Tienda.modelo.TiendaRepositorio;
 import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
-import com.owo.TP_prg3.Excepciones.EntidadDuplicadaException;
 import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
@@ -84,6 +84,18 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
     public Optional<TiendaDTO> buscarPorID(Long id) {
         ValidacionGeneral.validarIdValido(id);
         return tiendaRepositorio.findById(id).map(this::convertir_a_DTO);
+    }
+
+    // Metodos de caja
+    public Optional<LocalDate> obtenerUltimoCierreDeCaja() {
+        return tiendaRepositorio.findUltimoCierreCajaById(1L);
+    }
+
+    public Boolean cerrarCaja() {
+        Tienda tienda = obtenerTiendaPorId(1L);
+        tienda.setUltimoCierreCaja(LocalDate.now());
+        tiendaRepositorio.save(tienda);
+        return true;
     }
 
     // POST
@@ -188,13 +200,6 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
     private Duenio validarDuenioExiste(Long dni) {
         return duenioRepositorio.findByPersona_Dni(dni)
                 .orElseThrow(() -> new EntidadNoEncontradaException("Duenio", "DNI", dni));
-    }
-
-    private void validarTiendaNoExiste(String razonSocial) {
-        Optional<Tienda> existente = tiendaRepositorio.findByRazonSocial(razonSocial.trim());
-        if (existente.isPresent()) {
-            throw new EntidadDuplicadaException(ENTIDAD, "razon social", razonSocial.trim());
-        }
     }
 
     private Tienda obtenerTiendaPorId(Long id) {

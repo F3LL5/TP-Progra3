@@ -44,6 +44,8 @@ CREATE TABLE historial_clientes (
     persona_id BIGINT,
     accion ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL,
     fecha_evento DATETIME DEFAULT CURRENT_TIMESTAMP,
+    nombre varchar(255),
+    apellido varchar(255),
     -- Detalle del cambio 
     campo_modificado VARCHAR(255),
     valor_anterior VARCHAR(255),
@@ -386,6 +388,12 @@ BEGIN
     IF (OLD.duenio_id <> NEW.duenio_id) THEN 
         INSERT INTO historial_tiendas(tienda_id, nombre_fantasia, accion, campo_modificado, valor_anterior, valor_nuevo) 
         VALUES (NEW.tienda_id, NEW.nombre_fantasia, 'UPDATE', 'duenio_id', OLD.duenio_id, NEW.duenio_id); 
+    END IF;
+
+    -- CierreCaja
+    IF (OLD.ultimo_cierre_caja <> NEW.ultimo_cierre_caja) THEN 
+        INSERT INTO historial_tiendas(tienda_id, nombre_fantasia, accion, campo_modificado, valor_anterior, valor_nuevo) 
+        VALUES (NEW.tienda_id, NEW.nombre_fantasia, 'UPDATE', 'ultimo_cierre_caja', OLD.ultimo_cierre_caja, NEW.ultimo_cierre_caja); 
     END IF;
 END$$
 

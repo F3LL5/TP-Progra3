@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.math.BigDecimal;
 import java.util.Set;
 import java.util.Map;
 
@@ -74,7 +75,7 @@ public class PedidoControlador  {
         else return ResponseEntity.notFound().build();
     }
 
-  @PutMapping("/{id}/finalizar")
+    @PutMapping("/{id}/finalizar")
     public ResponseEntity<?> finalizarPedido(@PathVariable Long id) {
     try {
         boolean exito = pedidoServicio.finalizarPedido(id);
@@ -94,10 +95,16 @@ public class PedidoControlador  {
                 ? e.getMessage()
                 : "Error interno al finalizar el pedido.";
 
-        // mando SIEMPRE 400 con el mensaje real para que Angular lo muestre
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("mensaje", msg));
     }
+    }
+
+    @PutMapping("/ajustar-caja")
+    public ResponseEntity<?> ajustarSaldoCaja(@RequestBody Map<String, BigDecimal> body) {
+        BigDecimal monto = body.get("monto");
+        pedidoServicio.ajustarSaldoCaja(monto);
+        return ResponseEntity.ok(true);
     }
 }
