@@ -20,6 +20,10 @@ public class CuentaBancaria implements MetodoDePago {
     @Column(name = "cuenta_bancaria_id")
     private Long cuentaBancariaId;
 
+    
+    @Column(name= "nombre_banco", unique = false, nullable = false)
+    protected String nombre_banco;
+
     @Column(name = "cbu", nullable = false, unique = true)
     private Integer cbu;
 
@@ -35,6 +39,7 @@ public class CuentaBancaria implements MetodoDePago {
     public Long obtenerId() {
         return 0L; 
     }
+
 
     @Override
     public BigDecimal obtenerSaldo() {

@@ -62,6 +62,7 @@ public class CuentaBancariaServicio implements I_CRUD<CuentaBancaria, CuentaBanc
     public CuentaBancariaDTO convertir_a_DTO(CuentaBancaria cuentaBancaria) {
         return new CuentaBancariaDTO(
             cuentaBancaria.getCuentaBancariaId(),
+            cuentaBancaria.getNombre_banco(),
             cuentaBancaria.getCbu(),
             cuentaBancaria.getSaldo()
         );
@@ -99,6 +100,7 @@ public class CuentaBancariaServicio implements I_CRUD<CuentaBancaria, CuentaBanc
         validarUnicidadCbu(updateDTO.getCbu(), id);
         CuentaBancaria cuenta = obtenerCuentaBancariaPorId(id);
         
+        cuenta.setNombre_banco(updateDTO.getNombre_banco());
         cuenta.setCbu(updateDTO.getCbu());
         cuenta.setSaldo(updateDTO.getSaldo());
 

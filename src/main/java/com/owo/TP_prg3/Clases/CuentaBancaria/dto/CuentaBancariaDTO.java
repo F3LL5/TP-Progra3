@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 public class CuentaBancariaDTO {
 
     protected Long cuentaBancariaId;
+    
+    protected String nombre_banco;
 
     private Integer cbu;
 

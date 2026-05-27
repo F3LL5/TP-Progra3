@@ -143,6 +143,7 @@ create table if not exists lotes (
 create table if not exists cuenta_bancarias(
 	cuenta_bancaria_id bigint auto_increment primary key,
 	tienda_id bigint not null,
+    nombre_banco varchar(100) not null,
 	cbu bigint not null unique,
 	saldo decimal(38,2) not null,
 	foreign key(tienda_id) references tiendas(tienda_id)
