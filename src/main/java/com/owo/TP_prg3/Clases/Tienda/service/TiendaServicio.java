@@ -4,9 +4,11 @@ import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import com.owo.TP_prg3.Clases.Caja.Caja;
 import com.owo.TP_prg3.Clases.Duenio.modelo.Duenio;
 import com.owo.TP_prg3.Clases.Duenio.modelo.DuenioRepositorio;
@@ -41,6 +43,7 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
         tienda.setRazonSocial(tiendaDTO.getRazonSocial());
         tienda.setNombreFantasia(tiendaDTO.getNombreFantasia());
         tienda.setCondicion(tiendaDTO.getCondicion());
+        tienda.setUrl(tiendaDTO.getUrl()==null? null : tiendaDTO.getUrl());
         tienda.setDireccion(tiendaDTO.getDireccion()); 
         tienda.setIngresosBrutos(tiendaDTO.getIngresosBrutos());
         tienda.setFechaInicioActividades(tiendaDTO.getFechaInicioActividades());
@@ -59,6 +62,7 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
             tienda.getRazonSocial(),
             tienda.getNombreFantasia(),
             tienda.getCondicion(),
+            tienda.getUrl()==null? null : tienda.getUrl(),
             tienda.getDireccion(),
             tienda.getIngresosBrutos(),
             tienda.getFechaInicioActividades(),
@@ -100,6 +104,7 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
         tienda.setRazonSocial(updateDTO.getRazonSocial().trim());
         tienda.setNombreFantasia(updateDTO.getNombreFantasia().trim());
         tienda.setCondicion(updateDTO.getCondicion());
+        tienda.setUrl(updateDTO.getUrl());
         tienda.setDireccion(updateDTO.getDireccion());
         tienda.setPuntoDeVenta(updateDTO.getPuntoDeVenta());
         tienda.getCaja().setSaldo(updateDTO.getCaja());

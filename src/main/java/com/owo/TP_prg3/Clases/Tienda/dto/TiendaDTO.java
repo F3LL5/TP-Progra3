@@ -25,6 +25,8 @@ public class TiendaDTO {
 
     protected CondicionIVA condicion;
 
+    protected String url;
+
     protected Domicilio direccion;
 
     protected String ingresosBrutos;

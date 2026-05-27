@@ -352,6 +352,12 @@ BEGIN
         VALUES (NEW.tienda_id, NEW.nombre_fantasia, 'UPDATE', 'condicion_iva', OLD.condicion_iva, NEW.condicion_iva); 
     END IF;
 
+        -- URL Imagen de la Tienda
+    IF (OLD.tienda_imagen <> NEW.tienda_imagen) THEN 
+        INSERT INTO historial_tiendas(tienda_id, nombre_fantasia, accion, campo_modificado, valor_anterior, valor_nuevo) 
+        VALUES (NEW.tienda_id, NEW.nombre_fantasia, 'UPDATE', 'tienda_imagen', OLD.tienda_imagen, NEW.tienda_imagen); 
+    END IF;
+
     -- Ingresos Brutos
     IF (OLD.ingresos_brutos <> NEW.ingresos_brutos) THEN 
         INSERT INTO historial_tiendas(tienda_id, nombre_fantasia, accion, campo_modificado, valor_anterior, valor_nuevo) 

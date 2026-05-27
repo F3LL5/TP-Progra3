@@ -83,6 +83,7 @@ create table if not exists tiendas (
     fecha_inicio_actividades date default (current_date),
     punto_de_venta bigint default 1,
     caja decimal(38,2),
+	tienda_imagen varchar(255),
     -- Campos del Domicilio (@Embedded)
     dir_calle VARCHAR(255),
     dir_altura VARCHAR(255),
