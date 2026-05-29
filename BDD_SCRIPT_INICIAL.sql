@@ -19,7 +19,7 @@ VALUES ('abe.simpson@springfield.com', '$2a$10$I1uXCIrxExQMhc2b9dJZjuWo5e0wLEjld
 -- 3. DUEÑO
 -- ======================================================================================
 INSERT INTO duenios (persona_id, usuario_id)
-VALUES (1, 1);
+VALUES (1, 2);
 
 -- ======================================================================================
 -- 4. TIENDA
@@ -42,8 +42,8 @@ VALUES (
 -- ======================================================================================
 -- 5. CUENTA BANCARIA
 -- ======================================================================================
-INSERT INTO cuenta_bancarias (tienda_id, cbu, saldo)
-VALUES (1, 123456789, 250.00);
+INSERT INTO cuenta_bancarias (tienda_id, nombre_banco, cbu, saldo)
+VALUES (1, 'Banco Provincia', 123456789, 250.00);
 
 -- ======================================================================================
 -- 6. PROVEEDOR
