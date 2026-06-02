@@ -22,7 +22,7 @@ public interface EstadisticasRepository extends JpaRepository<Pedido, Long> {
         AND p.transaccion.fecha BETWEEN :inicio AND :fin """)          
     BigDecimal sumMontoPorTipoEnRango(@Param("tipo") Enum<?> tipo, @Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
 
-    // Obtener ventas agrupadas por el tipo de transacción (EFECTIVO, DEBITO)
+    // Obtener ventas agrupadas por el tipo de transacción (EFECTIVO, TRANSFERENCIA)
     @Query("""
         SELECT p.transaccion.tipo, SUM(p.transaccion.monto) 
         FROM Pedido p 

@@ -100,10 +100,10 @@ VALUES
 -- ======================================================================================
 
 -- --------------------------------------------------------------------------------------
--- Mov 1: COMPRA 5 remeras — DEBITO (sale de cuenta bancaria)
+-- Mov 1: COMPRA 5 remeras — TRANSFERENCIA (sale de cuenta bancaria)
 -- --------------------------------------------------------------------------------------
 INSERT INTO transacciones (tipo, fecha, monto, origen_id, destino_id)
-VALUES ('DEBITO', '2024-03-05 10:00:00', 500.00, 1, 1);
+VALUES ('TRANSFERENCIA', '2024-03-05 10:00:00', 500.00, 1, 1);
 
 INSERT INTO pedidos (transaccion_id, tipo, estado)
 VALUES (1, 'COMPRA', 'FINALIZADO');
@@ -149,10 +149,10 @@ INSERT INTO detalles_pedido (pedido_id, producto_id, cantidad, subtotal)
 VALUES (4, 3, 3, 240.00);
 
 -- --------------------------------------------------------------------------------------
--- Mov 5: COMPRA 2 pantalones — DEBITO (sale de cuenta) -760
+-- Mov 5: COMPRA 2 pantalones — TRANSFERENCIA (sale de cuenta) -760
 -- --------------------------------------------------------------------------------------
 INSERT INTO transacciones (tipo, fecha, monto, origen_id, destino_id)
-VALUES ('DEBITO', '2024-03-12 10:00:00', 760.00, 1, 1);
+VALUES ('TRANSFERENCIA', '2024-03-12 10:00:00', 760.00, 1, 1);
 
 INSERT INTO pedidos (transaccion_id, tipo, estado)
 VALUES (5, 'COMPRA', 'FINALIZADO');
@@ -161,10 +161,10 @@ INSERT INTO detalles_pedido (pedido_id, producto_id, cantidad, subtotal)
 VALUES (5, 2, 2, 760.00);
 
 -- --------------------------------------------------------------------------------------
--- Mov 6: VENTA 1 pantalon — DEBITO (entra a cuenta) +500
+-- Mov 6: VENTA 1 pantalon — TRANSFERENCIA (entra a cuenta) +500
 -- --------------------------------------------------------------------------------------
 INSERT INTO transacciones (tipo, fecha, monto, origen_id, destino_id)
-VALUES ('DEBITO', '2024-03-13 16:00:00', 500.00, NULL, 1);
+VALUES ('TRANSFERENCIA', '2024-03-13 16:00:00', 500.00, NULL, 1);
 
 INSERT INTO pedidos (transaccion_id, tipo, estado)
 VALUES (6, 'VENTA', 'FINALIZADO');
@@ -173,10 +173,10 @@ INSERT INTO detalles_pedido (pedido_id, producto_id, cantidad, subtotal)
 VALUES (6, 2, 1, 500.00);
 
 -- --------------------------------------------------------------------------------------
--- Mov 7: VENTA 2 remeras — DEBITO (entra a cuenta) +240
+-- Mov 7: VENTA 2 remeras — TRANSFERENCIA (entra a cuenta) +240
 -- --------------------------------------------------------------------------------------
 INSERT INTO transacciones (tipo, fecha, monto, origen_id, destino_id)
-VALUES ('DEBITO', '2024-03-15 12:00:00', 240.00, NULL, 1);
+VALUES ('TRANSFERENCIA', '2024-03-15 12:00:00', 240.00, NULL, 1);
 
 INSERT INTO pedidos (transaccion_id, tipo, estado)
 VALUES (7, 'VENTA', 'FINALIZADO');
@@ -185,11 +185,11 @@ INSERT INTO detalles_pedido (pedido_id, producto_id, cantidad, subtotal)
 VALUES (7, 1, 2, 240.00);
 
 -- --------------------------------------------------------------------------------------
--- Mov 8: COMPRA 3 remeras — DEBITO (sale de cuenta) -300
+-- Mov 8: COMPRA 3 remeras — TRANSFERENCIA (sale de cuenta) -300
 -- Cuenta: -500 -760 +500 +240 -300 = -820 → falta +1070 con mov9
 -- --------------------------------------------------------------------------------------
 INSERT INTO transacciones (tipo, fecha, monto, origen_id, destino_id)
-VALUES ('DEBITO', '2024-03-18 09:30:00', 300.00, 1, 1);
+VALUES ('TRANSFERENCIA', '2024-03-18 09:30:00', 300.00, 1, 1);
 
 INSERT INTO pedidos (transaccion_id, tipo, estado)
 VALUES (8, 'COMPRA', 'FINALIZADO');
@@ -198,11 +198,11 @@ INSERT INTO detalles_pedido (pedido_id, producto_id, cantidad, subtotal)
 VALUES (8, 1, 3, 300.00);
 
 -- --------------------------------------------------------------------------------------
--- Mov 9: VENTA 1 remera + 2 medias — DEBITO (entra a cuenta) +1070
+-- Mov 9: VENTA 1 remera + 2 medias — TRANSFERENCIA (entra a cuenta) +1070
 -- Cuenta: -500 -760 +500 +240 -300 +1070 = +250 ✓
 -- --------------------------------------------------------------------------------------
 INSERT INTO transacciones (tipo, fecha, monto, origen_id, destino_id)
-VALUES ('DEBITO', '2024-03-20 17:00:00', 1070.00, NULL, 1);
+VALUES ('TRANSFERENCIA', '2024-03-20 17:00:00', 1070.00, NULL, 1);
 
 INSERT INTO pedidos (transaccion_id, tipo, estado)
 VALUES (9, 'VENTA', 'FINALIZADO');
@@ -216,7 +216,7 @@ VALUES
 -- Mov 10: COMPRA 5 medias + 1 pantalon — PENDIENTE (no afecta saldos)
 -- --------------------------------------------------------------------------------------
 INSERT INTO transacciones (tipo, fecha, monto, origen_id, destino_id)
-VALUES ('DEBITO', '2024-03-22 08:00:00', 630.00, 1, 1);
+VALUES ('TRANSFERENCIA', '2024-03-22 08:00:00', 630.00, 1, 1);
 
 INSERT INTO pedidos (transaccion_id, tipo, estado)
 VALUES (10, 'COMPRA', 'PENDIENTE');

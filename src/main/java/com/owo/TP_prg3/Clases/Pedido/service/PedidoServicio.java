@@ -325,7 +325,7 @@ public class PedidoServicio {
                 if (esVenta) tiendaServicio.acreditarMontoCaja(metodoPagoId, monto);
                 else tiendaServicio.debitarMontoCaja(metodoPagoId, monto);
             }
-            case DEBITO -> {
+            case TRANSFERENCIA -> {
                 if (esVenta) cuentaBancariaServicio.acreditarMonto(metodoPagoId, monto);
                 else cuentaBancariaServicio.debitarMonto(metodoPagoId, monto);
             }
