@@ -227,13 +227,32 @@ END$$
 
 CREATE TRIGGER trg_usuarios_au AFTER UPDATE ON usuarios FOR EACH ROW
 BEGIN
-    IF (OLD.email <> NEW.email) THEN INSERT INTO historial_usuarios(usuario_id, email, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.usuario_id, NEW.email, 'UPDATE', 'email', OLD.email, NEW.email); END IF;
-    IF (OLD.rol <> NEW.rol) THEN INSERT INTO historial_usuarios(usuario_id, email, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.usuario_id, NEW.email, 'UPDATE', 'rol', OLD.rol, NEW.rol); END IF;
+    DECLARE v_empleado_id BIGINT;
+    DECLARE v_duenio_id BIGINT;
+    SELECT empleado_id INTO v_empleado_id FROM empleados WHERE usuario_id = NEW.usuario_id LIMIT 1;
+    SELECT duenio_id INTO v_duenio_id FROM duenios WHERE usuario_id = NEW.usuario_id LIMIT 1;
+
+    IF (OLD.email <> NEW.email) THEN
+        INSERT INTO historial_usuarios(usuario_id, email, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.usuario_id, NEW.email, 'UPDATE', 'email', OLD.email, NEW.email);
+        IF v_empleado_id IS NOT NULL THEN INSERT INTO historial_empleados(empleado_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (v_empleado_id, 'UPDATE', 'email', OLD.email, NEW.email); END IF;
+        IF v_duenio_id IS NOT NULL THEN INSERT INTO historial_duenios(duenio_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (v_duenio_id, 'UPDATE', 'email', OLD.email, NEW.email); END IF;
+    END IF;
+    IF (OLD.rol <> NEW.rol) THEN
+        INSERT INTO historial_usuarios(usuario_id, email, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.usuario_id, NEW.email, 'UPDATE', 'rol', OLD.rol, NEW.rol);
+        IF v_empleado_id IS NOT NULL THEN INSERT INTO historial_empleados(empleado_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (v_empleado_id, 'UPDATE', 'rol', OLD.rol, NEW.rol); END IF;
+        IF v_duenio_id IS NOT NULL THEN INSERT INTO historial_duenios(duenio_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (v_duenio_id, 'UPDATE', 'rol', OLD.rol, NEW.rol); END IF;
+    END IF;
 END$$
 
 CREATE TRIGGER trg_usuarios_bd BEFORE DELETE ON usuarios FOR EACH ROW
 BEGIN
+  DECLARE v_empleado_id BIGINT;
+  DECLARE v_duenio_id BIGINT;
+  SELECT empleado_id INTO v_empleado_id FROM empleados WHERE usuario_id = OLD.usuario_id LIMIT 1;
+  SELECT duenio_id INTO v_duenio_id FROM duenios WHERE usuario_id = OLD.usuario_id LIMIT 1;
   INSERT INTO historial_usuarios(usuario_id, email, accion) VALUES (OLD.usuario_id, OLD.email, 'DELETE');
+  IF v_empleado_id IS NOT NULL THEN INSERT INTO historial_empleados(empleado_id, accion) VALUES (v_empleado_id, 'DELETE'); END IF;
+  IF v_duenio_id IS NOT NULL THEN INSERT INTO historial_duenios(duenio_id, accion) VALUES (v_duenio_id, 'DELETE'); END IF;
 END$$
 
 -- =========================
@@ -246,15 +265,51 @@ END$$
 
 CREATE TRIGGER trg_personas_au AFTER UPDATE ON personas FOR EACH ROW
 BEGIN
-    IF (OLD.nombre <> NEW.nombre) THEN INSERT INTO historial_personas(persona_id, nombre, apellido, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.persona_id, NEW.nombre, NEW.apellido, 'UPDATE', 'nombre', OLD.nombre, NEW.nombre); END IF;
-    IF (OLD.apellido <> NEW.apellido) THEN INSERT INTO historial_personas(persona_id, nombre, apellido, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.persona_id, NEW.nombre, NEW.apellido, 'UPDATE', 'apellido', OLD.apellido, NEW.apellido); END IF;
-    IF (OLD.dni <> NEW.dni) THEN INSERT INTO historial_personas(persona_id, nombre, apellido, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.persona_id, NEW.nombre, NEW.apellido, 'UPDATE', 'dni', OLD.dni, NEW.dni); END IF;
-    IF (OLD.fecha_nacimiento <> NEW.fecha_nacimiento) THEN INSERT INTO historial_personas(persona_id, nombre, apellido, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.persona_id, NEW.nombre, NEW.apellido, 'UPDATE', 'fecha_nacimiento', OLD.fecha_nacimiento, NEW.fecha_nacimiento); END IF;
+    DECLARE v_cliente_id BIGINT;
+    DECLARE v_empleado_id BIGINT;
+    DECLARE v_duenio_id BIGINT;
+    SELECT cliente_id INTO v_cliente_id FROM clientes WHERE persona_id = NEW.persona_id LIMIT 1;
+    SELECT empleado_id INTO v_empleado_id FROM empleados WHERE persona_id = NEW.persona_id LIMIT 1;
+    SELECT duenio_id INTO v_duenio_id FROM duenios WHERE persona_id = NEW.persona_id LIMIT 1;
+
+    IF (OLD.nombre <> NEW.nombre) THEN
+        INSERT INTO historial_personas(persona_id, nombre, apellido, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.persona_id, NEW.nombre, NEW.apellido, 'UPDATE', 'nombre', OLD.nombre, NEW.nombre);
+        IF v_cliente_id IS NOT NULL THEN INSERT INTO historial_clientes(cliente_id, persona_id, nombre, apellido, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (v_cliente_id, NEW.persona_id, NEW.nombre, NEW.apellido, 'UPDATE', 'nombre', OLD.nombre, NEW.nombre); END IF;
+        IF v_empleado_id IS NOT NULL THEN INSERT INTO historial_empleados(empleado_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (v_empleado_id, 'UPDATE', 'nombre', OLD.nombre, NEW.nombre); END IF;
+        IF v_duenio_id IS NOT NULL THEN INSERT INTO historial_duenios(duenio_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (v_duenio_id, 'UPDATE', 'nombre', OLD.nombre, NEW.nombre); END IF;
+    END IF;
+    IF (OLD.apellido <> NEW.apellido) THEN
+        INSERT INTO historial_personas(persona_id, nombre, apellido, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.persona_id, NEW.nombre, NEW.apellido, 'UPDATE', 'apellido', OLD.apellido, NEW.apellido);
+        IF v_cliente_id IS NOT NULL THEN INSERT INTO historial_clientes(cliente_id, persona_id, nombre, apellido, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (v_cliente_id, NEW.persona_id, NEW.nombre, NEW.apellido, 'UPDATE', 'apellido', OLD.apellido, NEW.apellido); END IF;
+        IF v_empleado_id IS NOT NULL THEN INSERT INTO historial_empleados(empleado_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (v_empleado_id, 'UPDATE', 'apellido', OLD.apellido, NEW.apellido); END IF;
+        IF v_duenio_id IS NOT NULL THEN INSERT INTO historial_duenios(duenio_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (v_duenio_id, 'UPDATE', 'apellido', OLD.apellido, NEW.apellido); END IF;
+    END IF;
+    IF (OLD.dni <> NEW.dni) THEN
+        INSERT INTO historial_personas(persona_id, nombre, apellido, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.persona_id, NEW.nombre, NEW.apellido, 'UPDATE', 'dni', OLD.dni, NEW.dni);
+        IF v_cliente_id IS NOT NULL THEN INSERT INTO historial_clientes(cliente_id, persona_id, nombre, apellido, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (v_cliente_id, NEW.persona_id, NEW.nombre, NEW.apellido, 'UPDATE', 'dni', OLD.dni, NEW.dni); END IF;
+        IF v_empleado_id IS NOT NULL THEN INSERT INTO historial_empleados(empleado_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (v_empleado_id, 'UPDATE', 'dni', OLD.dni, NEW.dni); END IF;
+        IF v_duenio_id IS NOT NULL THEN INSERT INTO historial_duenios(duenio_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (v_duenio_id, 'UPDATE', 'dni', OLD.dni, NEW.dni); END IF;
+    END IF;
+    IF (OLD.fecha_nacimiento <> NEW.fecha_nacimiento) THEN
+        INSERT INTO historial_personas(persona_id, nombre, apellido, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.persona_id, NEW.nombre, NEW.apellido, 'UPDATE', 'fecha_nacimiento', OLD.fecha_nacimiento, NEW.fecha_nacimiento);
+        IF v_cliente_id IS NOT NULL THEN INSERT INTO historial_clientes(cliente_id, persona_id, nombre, apellido, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (v_cliente_id, NEW.persona_id, NEW.nombre, NEW.apellido, 'UPDATE', 'fecha_nacimiento', OLD.fecha_nacimiento, NEW.fecha_nacimiento); END IF;
+        IF v_empleado_id IS NOT NULL THEN INSERT INTO historial_empleados(empleado_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (v_empleado_id, 'UPDATE', 'fecha_nacimiento', OLD.fecha_nacimiento, NEW.fecha_nacimiento); END IF;
+        IF v_duenio_id IS NOT NULL THEN INSERT INTO historial_duenios(duenio_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (v_duenio_id, 'UPDATE', 'fecha_nacimiento', OLD.fecha_nacimiento, NEW.fecha_nacimiento); END IF;
+    END IF;
 END$$
 
 CREATE TRIGGER trg_personas_bd BEFORE DELETE ON personas FOR EACH ROW
 BEGIN
+  DECLARE v_cliente_id BIGINT;
+  DECLARE v_empleado_id BIGINT;
+  DECLARE v_duenio_id BIGINT;
+  SELECT cliente_id INTO v_cliente_id FROM clientes WHERE persona_id = OLD.persona_id LIMIT 1;
+  SELECT empleado_id INTO v_empleado_id FROM empleados WHERE persona_id = OLD.persona_id LIMIT 1;
+  SELECT duenio_id INTO v_duenio_id FROM duenios WHERE persona_id = OLD.persona_id LIMIT 1;
   INSERT INTO historial_personas(persona_id, nombre, apellido, accion) VALUES (OLD.persona_id, OLD.nombre, OLD.apellido, 'DELETE');
+  IF v_cliente_id IS NOT NULL THEN INSERT INTO historial_clientes(cliente_id, persona_id, nombre, apellido, accion) VALUES (v_cliente_id, OLD.persona_id, OLD.nombre, OLD.apellido, 'DELETE'); END IF;
+  IF v_empleado_id IS NOT NULL THEN INSERT INTO historial_empleados(empleado_id, accion) VALUES (v_empleado_id, 'DELETE'); END IF;
+  IF v_duenio_id IS NOT NULL THEN INSERT INTO historial_duenios(duenio_id, accion) VALUES (v_duenio_id, 'DELETE'); END IF;
 END$$
 
 -- =========================
@@ -448,5 +503,126 @@ BEGIN
 END$$
 DELIMITER ;
 
+DELIMITER $$
+
+-- =========================
+-- EMPLEADOS (UPDATE, DELETE faltantes)
+-- =========================
+CREATE TRIGGER trg_empleados_au AFTER UPDATE ON empleados FOR EACH ROW
+BEGIN
+    IF (OLD.persona_id <> NEW.persona_id) THEN INSERT INTO historial_empleados(empleado_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.empleado_id, 'UPDATE', 'persona_id', OLD.persona_id, NEW.persona_id); END IF;
+    IF (OLD.usuario_id <> NEW.usuario_id) THEN INSERT INTO historial_empleados(empleado_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.empleado_id, 'UPDATE', 'usuario_id', OLD.usuario_id, NEW.usuario_id); END IF;
+END$$
+
+CREATE TRIGGER trg_empleados_bd BEFORE DELETE ON empleados FOR EACH ROW
+BEGIN
+  INSERT INTO historial_empleados(empleado_id, accion) VALUES (OLD.empleado_id, 'DELETE');
+END$$
+
+-- =========================
+-- DUENIOS (UPDATE, DELETE faltantes)
+-- =========================
+CREATE TRIGGER trg_duenios_au AFTER UPDATE ON duenios FOR EACH ROW
+BEGIN
+    IF (OLD.persona_id <> NEW.persona_id) THEN INSERT INTO historial_duenios(duenio_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.duenio_id, 'UPDATE', 'persona_id', OLD.persona_id, NEW.persona_id); END IF;
+    IF (OLD.usuario_id <> NEW.usuario_id) THEN INSERT INTO historial_duenios(duenio_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.duenio_id, 'UPDATE', 'usuario_id', OLD.usuario_id, NEW.usuario_id); END IF;
+END$$
+
+CREATE TRIGGER trg_duenios_bd BEFORE DELETE ON duenios FOR EACH ROW
+BEGIN
+  INSERT INTO historial_duenios(duenio_id, accion) VALUES (OLD.duenio_id, 'DELETE');
+END$$
+
+-- =========================
+-- TIENDAS (DELETE faltante)
+-- =========================
+CREATE TRIGGER trg_tiendas_bd BEFORE DELETE ON tiendas FOR EACH ROW
+BEGIN
+  INSERT INTO historial_tiendas(tienda_id, nombre_fantasia, accion) VALUES (OLD.tienda_id, OLD.nombre_fantasia, 'DELETE');
+END$$
+
+-- =========================
+-- PEDIDOS (DELETE faltante)
+-- =========================
+CREATE TRIGGER trg_pedidos_bd BEFORE DELETE ON pedidos FOR EACH ROW
+BEGIN
+  INSERT INTO historial_pedidos(pedido_id, accion) VALUES (OLD.pedido_id, 'DELETE');
+END$$
+
+-- =========================
+-- LOTES (todos faltantes)
+-- =========================
+CREATE TRIGGER trg_lotes_ai AFTER INSERT ON lotes FOR EACH ROW
+BEGIN
+  INSERT INTO historial_lotes(lote_id, accion) VALUES (NEW.lote_id, 'INSERT');
+END$$
+
+CREATE TRIGGER trg_lotes_au AFTER UPDATE ON lotes FOR EACH ROW
+BEGIN
+    IF (OLD.cantidad_disponible <> NEW.cantidad_disponible) THEN INSERT INTO historial_lotes(lote_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.lote_id, 'UPDATE', 'cantidad_disponible', OLD.cantidad_disponible, NEW.cantidad_disponible); END IF;
+    IF (OLD.costo_unitario <> NEW.costo_unitario) THEN INSERT INTO historial_lotes(lote_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.lote_id, 'UPDATE', 'costo_unitario', OLD.costo_unitario, NEW.costo_unitario); END IF;
+END$$
+
+CREATE TRIGGER trg_lotes_bd BEFORE DELETE ON lotes FOR EACH ROW
+BEGIN
+  INSERT INTO historial_lotes(lote_id, accion) VALUES (OLD.lote_id, 'DELETE');
+END$$
+
+-- =========================
+-- CUENTA_BANCARIAS (todos faltantes)
+-- =========================
+CREATE TRIGGER trg_cuenta_bancarias_ai AFTER INSERT ON cuenta_bancarias FOR EACH ROW
+BEGIN
+  INSERT INTO historial_cuenta_bancarias(cuenta_bancaria_id, accion) VALUES (NEW.cuenta_bancaria_id, 'INSERT');
+END$$
+
+CREATE TRIGGER trg_cuenta_bancarias_au AFTER UPDATE ON cuenta_bancarias FOR EACH ROW
+BEGIN
+    IF (OLD.nombre_banco <> NEW.nombre_banco) THEN INSERT INTO historial_cuenta_bancarias(cuenta_bancaria_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.cuenta_bancaria_id, 'UPDATE', 'nombre_banco', OLD.nombre_banco, NEW.nombre_banco); END IF;
+    IF (OLD.saldo <> NEW.saldo) THEN INSERT INTO historial_cuenta_bancarias(cuenta_bancaria_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.cuenta_bancaria_id, 'UPDATE', 'saldo', OLD.saldo, NEW.saldo); END IF;
+END$$
+
+CREATE TRIGGER trg_cuenta_bancarias_bd BEFORE DELETE ON cuenta_bancarias FOR EACH ROW
+BEGIN
+  INSERT INTO historial_cuenta_bancarias(cuenta_bancaria_id, accion) VALUES (OLD.cuenta_bancaria_id, 'DELETE');
+END$$
+
+-- =========================
+-- TRANSACCIONES (todos faltantes)
+-- =========================
+CREATE TRIGGER trg_transacciones_ai AFTER INSERT ON transacciones FOR EACH ROW
+BEGIN
+  INSERT INTO historial_transacciones(transaccion_id, accion) VALUES (NEW.transaccion_id, 'INSERT');
+END$$
+
+CREATE TRIGGER trg_transacciones_au AFTER UPDATE ON transacciones FOR EACH ROW
+BEGIN
+    IF (OLD.tipo <> NEW.tipo) THEN INSERT INTO historial_transacciones(transaccion_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.transaccion_id, 'UPDATE', 'tipo', OLD.tipo, NEW.tipo); END IF;
+    IF (OLD.monto <> NEW.monto) THEN INSERT INTO historial_transacciones(transaccion_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.transaccion_id, 'UPDATE', 'monto', OLD.monto, NEW.monto); END IF;
+END$$
+
+CREATE TRIGGER trg_transacciones_bd BEFORE DELETE ON transacciones FOR EACH ROW
+BEGIN
+  INSERT INTO historial_transacciones(transaccion_id, accion) VALUES (OLD.transaccion_id, 'DELETE');
+END$$
+
+-- =========================
+-- DETALLES_PEDIDO (todos faltantes)
+-- =========================
+CREATE TRIGGER trg_detalles_pedido_ai AFTER INSERT ON detalles_pedido FOR EACH ROW
+BEGIN
+  INSERT INTO historial_detalles_pedido(detalle_pedido_id, accion) VALUES (NEW.detalle_pedido_id, 'INSERT');
+END$$
+
+CREATE TRIGGER trg_detalles_pedido_au AFTER UPDATE ON detalles_pedido FOR EACH ROW
+BEGIN
+    IF (OLD.cantidad <> NEW.cantidad) THEN INSERT INTO historial_detalles_pedido(detalle_pedido_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.detalle_pedido_id, 'UPDATE', 'cantidad', OLD.cantidad, NEW.cantidad); END IF;
+    IF (OLD.subtotal <> NEW.subtotal) THEN INSERT INTO historial_detalles_pedido(detalle_pedido_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.detalle_pedido_id, 'UPDATE', 'subtotal', OLD.subtotal, NEW.subtotal); END IF;
+END$$
+
+CREATE TRIGGER trg_detalles_pedido_bd BEFORE DELETE ON detalles_pedido FOR EACH ROW
+BEGIN
+  INSERT INTO historial_detalles_pedido(detalle_pedido_id, accion) VALUES (OLD.detalle_pedido_id, 'DELETE');
+END$$
 
 DELIMITER ;
