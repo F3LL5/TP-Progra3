@@ -1,7 +1,9 @@
 package com.owo.TP_prg3.Clases.Herramientas;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -19,13 +21,17 @@ import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
+
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 import org.apache.poi.xssf.usermodel.XSSFColor;
+import org.apache.poi.xssf.usermodel.XSSFDrawing;
 import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFPicture;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -114,7 +120,7 @@ public class ExcelExportService {
         int cols = Math.max(numCols, 2);
 
         Row row0 = sheet.createRow(0);
-        row0.setHeightInPoints(36);
+        row0.setHeightInPoints(40);
         for (int i = 0; i < cols; i++) {
             Cell c = row0.createCell(i);
             c.setCellStyle(titleStyle);
@@ -123,6 +129,40 @@ public class ExcelExportService {
         row0.getCell(0).setCellValue(nombre != null ? nombre.toUpperCase() : "MI EMPRESA");
         if (cols > 1) {
             sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, cols - 1));
+        }
+
+        String urlLogo = tienda.getUrl();
+        if (urlLogo != null && !urlLogo.isBlank()) {
+            try {
+                InputStream in = new URL(urlLogo).openStream();
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                byte[] buffer = new byte[4096];
+                int n;
+                while ((n = in.read(buffer)) != -1) baos.write(buffer, 0, n);
+                in.close();
+                byte[] imgBytes = baos.toByteArray();
+
+                int pictureType = urlLogo.toLowerCase().endsWith("png")
+                    ? Workbook.PICTURE_TYPE_PNG : Workbook.PICTURE_TYPE_JPEG;
+                int pictureIdx = workbook.addPicture(imgBytes, pictureType);
+
+                XSSFDrawing drawing = (XSSFDrawing) sheet.createDrawingPatriarch();
+                XSSFClientAnchor anchor = new XSSFClientAnchor();
+                anchor.setAnchorType(org.apache.poi.ss.usermodel.ClientAnchor.AnchorType.MOVE_AND_RESIZE);
+                anchor.setCol1(0);
+                anchor.setRow1(0);
+                anchor.setCol2(1);
+                anchor.setRow2(1);
+                anchor.setDx1(30);
+                anchor.setDy1(4);
+                anchor.setDx2(0);
+                anchor.setDy2(0);
+
+                XSSFPicture picture = drawing.createPicture(anchor, pictureIdx);
+                picture.resize(0.6);
+            } catch (Exception e) {
+                // Logo no disponible, se omite
+            }
         }
 
         Row row1 = sheet.createRow(1);
