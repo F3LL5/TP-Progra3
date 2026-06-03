@@ -36,7 +36,4 @@ public class TiendaDTO {
     protected Long puntoDeVenta;
 
     protected BigDecimal caja;
-
-    protected Long duenioDni;
-
 }

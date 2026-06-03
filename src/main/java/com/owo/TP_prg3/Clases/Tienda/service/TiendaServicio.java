@@ -48,9 +48,7 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
         tienda.setIngresosBrutos(tiendaDTO.getIngresosBrutos());
         tienda.setFechaInicioActividades(tiendaDTO.getFechaInicioActividades());
         tienda.setPuntoDeVenta(tiendaDTO.getPuntoDeVenta());    
-        tienda.setCaja(new Caja(tiendaDTO.getCaja()));
-        tienda.setDuenio(duenioRepositorio.findByPersona_Dni(tiendaDTO.getDuenioDni()).get());
-        
+        tienda.setCaja(new Caja(tiendaDTO.getCaja())); 
         return tienda;
     }
 
@@ -67,8 +65,7 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
             tienda.getIngresosBrutos(),
             tienda.getFechaInicioActividades(),
             tienda.getPuntoDeVenta(),
-            tienda.getCaja().getSaldo(), 
-            tienda.getDuenio().getDni()
+            tienda.getCaja().getSaldo()
         );
     }
 
@@ -119,11 +116,7 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
         tienda.setUrl(updateDTO.getUrl());
         tienda.setDireccion(updateDTO.getDireccion());
         tienda.setPuntoDeVenta(updateDTO.getPuntoDeVenta());
-        tienda.getCaja().setSaldo(updateDTO.getCaja());
-        
-        Duenio nuevoDuenio = validarDuenioExiste(updateDTO.getDuenioDni());
-        tienda.setDuenio(nuevoDuenio);
-        
+        tienda.getCaja().setSaldo(updateDTO.getCaja());   
         tiendaRepositorio.save(tienda);
         return true;
     }
@@ -192,16 +185,9 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
         if (dto.getCuit() == null) throw new CampoRequeridoException("CUIT");
         if (dto.getCondicion() == null) throw new CampoRequeridoException("Condición IVA");
         if (dto.getPuntoDeVenta() == null) throw new CampoRequeridoException("Punto de Venta");
-        if (dto.getDuenioDni() == null) throw new CampoRequeridoException("DNI Dueño");
-        
-        ValidacionGeneral.validarDni(dto.getDuenioDni());
+     
     }
-
-    private Duenio validarDuenioExiste(Long dni) {
-        return duenioRepositorio.findByPersona_Dni(dni)
-                .orElseThrow(() -> new EntidadNoEncontradaException("Duenio", "DNI", dni));
-    }
-
+    
     private Tienda obtenerTiendaPorId(Long id) {
         ValidacionGeneral.validarIdValido(id);
         return tiendaRepositorio.findById(id)

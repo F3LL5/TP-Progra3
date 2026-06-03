@@ -384,12 +384,6 @@ BEGIN
         VALUES (NEW.tienda_id, NEW.nombre_fantasia, 'UPDATE', 'domicilio', CONCAT(OLD.dir_calle, ' ', OLD.dir_altura), CONCAT(NEW.dir_calle, ' ', NEW.dir_altura)); 
     END IF;
 
-    -- Duenio
-    IF (OLD.duenio_id <> NEW.duenio_id) THEN 
-        INSERT INTO historial_tiendas(tienda_id, nombre_fantasia, accion, campo_modificado, valor_anterior, valor_nuevo) 
-        VALUES (NEW.tienda_id, NEW.nombre_fantasia, 'UPDATE', 'duenio_id', OLD.duenio_id, NEW.duenio_id); 
-    END IF;
-
     -- CierreCaja
     IF (OLD.ultimo_cierre_caja <> NEW.ultimo_cierre_caja) THEN 
         INSERT INTO historial_tiendas(tienda_id, nombre_fantasia, accion, campo_modificado, valor_anterior, valor_nuevo) 

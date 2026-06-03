@@ -92,12 +92,7 @@ create table if not exists tiendas (
     dir_cp VARCHAR(255),
     dir_localidad VARCHAR(255),
     dir_provincia VARCHAR(255),
-    dir_pais VARCHAR(255) DEFAULT 'Argentina',
-    -- Duenio
-    duenio_id bigint not null,
-	foreign key(duenio_id) references duenios(duenio_id)
-	ON DELETE RESTRICT
-    ON UPDATE CASCADE
+    dir_pais VARCHAR(255) DEFAULT 'Argentina'
 );
 
 

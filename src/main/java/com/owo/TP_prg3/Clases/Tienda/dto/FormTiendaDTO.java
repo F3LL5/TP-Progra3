@@ -34,7 +34,4 @@ public class FormTiendaDTO {
     protected Long puntoDeVenta;
 
     protected BigDecimal caja;
-
-    protected Long duenioDni;
-
 }

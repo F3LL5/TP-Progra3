@@ -28,15 +28,13 @@ INSERT INTO tiendas (
     razon_social, nombre_fantasia, cuit, condicion_iva,
     ingresos_brutos, fecha_inicio_actividades, punto_de_venta,
     caja,
-    dir_calle, dir_altura, dir_piso, dir_cp, dir_localidad, dir_provincia, dir_pais,
-    duenio_id
+    dir_calle, dir_altura, dir_piso, dir_cp, dir_localidad, dir_provincia, dir_pais
 )
 VALUES (
     'Tiendita S.A.', 'Tiendita', 20123456789, 'ResponsableInscripto',
     'Convenio Multilateral', '2024-01-01', 1,
     150.00,
-    'Calle Siempre Viva', '742', 'PB', '1234', 'Springfield', 'Buenos Aires', 'Argentina',
-    1
+    'Calle Siempre Viva', '742', 'PB', '1234', 'Springfield', 'Buenos Aires', 'Argentina'
 );
 
 -- ======================================================================================
