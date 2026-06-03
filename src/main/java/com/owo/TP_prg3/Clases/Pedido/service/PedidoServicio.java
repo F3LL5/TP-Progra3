@@ -7,6 +7,7 @@ import com.owo.TP_prg3.Clases.DetallePedido.modelo.DetallePedidoRepositorio;
 import com.owo.TP_prg3.Clases.DetallePedido.service.DetallePedidoServicio;
 import com.owo.TP_prg3.Clases.Enum.EstadoPedido;
 import com.owo.TP_prg3.Clases.Enum.TipoPedido;
+import com.owo.TP_prg3.Clases.Enum.TipoTransaccion;
 import com.owo.TP_prg3.Clases.Herramientas.ExcelExportService;
 import com.owo.TP_prg3.Clases.Inventario.service.InventarioServicio;
 import com.owo.TP_prg3.Clases.Lote.service.LoteServicio;
@@ -16,6 +17,7 @@ import com.owo.TP_prg3.Clases.Pedido.modelo.PedidoRepositorio;
 import com.owo.TP_prg3.Clases.Producto.modelo.ProductoRepositorio;
 import com.owo.TP_prg3.Clases.Tienda.service.TiendaServicio;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.Transaccion;
+import com.owo.TP_prg3.Clases.Transaccion.modelo.TransaccionRepositorio;
 import com.owo.TP_prg3.Clases.Transaccion.service.TransaccionServicio;
 import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
 import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
@@ -29,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -70,6 +73,9 @@ public class PedidoServicio {
 
     @Autowired
     CuentaBancariaServicio cuentaBancariaServicio;
+
+    @Autowired
+    private TransaccionRepositorio transaccionRepositorio;
 
     
     @Autowired
@@ -229,11 +235,23 @@ public class PedidoServicio {
             throw new IngresoInvalidoException("El monto no puede ser nulo o cero.");
         }
 
+        Optional<LocalDate> ultimoCierre = tiendaServicio.obtenerUltimoCierreDeCaja();
+        if (ultimoCierre.isPresent() && ultimoCierre.get().isEqual(LocalDate.now())) {
+            throw new IngresoInvalidoException("Operación rechazada: La caja ya ha sido cerrada por el día de hoy.");
+        }
+
         if (monto.signum() > 0) {
             tiendaServicio.acreditarMontoCaja(1L, monto);
         } else {
             tiendaServicio.debitarMontoCaja(1L, monto.abs());
         }
+
+        Transaccion transaccion = new Transaccion();
+        transaccion.setTipo(TipoTransaccion.AJUSTE_CAJA);
+        transaccion.setFecha(LocalDateTime.now());
+        transaccion.setMonto(monto);
+        transaccion.setDestino_id(1L);
+        transaccionRepositorio.save(transaccion);
 
         return true;
     }

@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 @Data @NoArgsConstructor @AllArgsConstructor
 public class FormCuentaBancariaDTO {
 
-    private String nombre_banco;
+    private String nombreBanco;
 
     private Integer cbu;
 

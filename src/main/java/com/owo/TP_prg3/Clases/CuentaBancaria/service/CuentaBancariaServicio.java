@@ -50,6 +50,7 @@ public class CuentaBancariaServicio implements I_CRUD<CuentaBancaria, CuentaBanc
     public CuentaBancaria convertir_a_Obj(FormCuentaBancariaDTO fDTO) {
         validarDatosCuenta(fDTO);
         CuentaBancaria cuentaBancaria = new CuentaBancaria();
+        cuentaBancaria.setNombreBanco(fDTO.getNombreBanco());
         cuentaBancaria.setSaldo(fDTO.getSaldo());
         cuentaBancaria.setTienda(getTiendaUnica());
         cuentaBancaria.setCbu(fDTO.getCbu());
@@ -61,7 +62,7 @@ public class CuentaBancariaServicio implements I_CRUD<CuentaBancaria, CuentaBanc
     public CuentaBancariaDTO convertir_a_DTO(CuentaBancaria cuentaBancaria) {
         return new CuentaBancariaDTO(
             cuentaBancaria.getCuentaBancariaId(),
-            cuentaBancaria.getNombre_banco(),
+            cuentaBancaria.getNombreBanco(),
             cuentaBancaria.getCbu(),
             cuentaBancaria.getSaldo()
         );
@@ -99,7 +100,7 @@ public class CuentaBancariaServicio implements I_CRUD<CuentaBancaria, CuentaBanc
         validarUnicidadCbu(updateDTO.getCbu(), id);
         CuentaBancaria cuenta = obtenerCuentaBancariaPorId(id);
         
-        cuenta.setNombre_banco(updateDTO.getNombre_banco());
+        cuenta.setNombreBanco(updateDTO.getNombreBanco());
         cuenta.setCbu(updateDTO.getCbu());
         cuenta.setSaldo(updateDTO.getSaldo());
 
@@ -183,6 +184,7 @@ public class CuentaBancariaServicio implements I_CRUD<CuentaBancaria, CuentaBanc
     private void validarDatosCuenta(FormCuentaBancariaDTO dto) {
         if (dto == null) throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");
 
+        if (dto.getNombreBanco() == null || dto.getNombreBanco().isBlank()) throw new CampoRequeridoException("nombre del banco");
         if (dto.getCbu() == null) throw new CampoRequeridoException("CBU");
         if (dto.getSaldo() == null) throw new CampoRequeridoException("saldo");
 

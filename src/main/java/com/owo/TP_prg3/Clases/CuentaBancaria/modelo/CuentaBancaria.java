@@ -22,7 +22,7 @@ public class CuentaBancaria implements MetodoDePago {
 
     
     @Column(name= "nombre_banco", unique = false, nullable = false)
-    protected String nombre_banco;
+    protected String nombreBanco;
 
     @Column(name = "cbu", nullable = false, unique = true)
     private Integer cbu;

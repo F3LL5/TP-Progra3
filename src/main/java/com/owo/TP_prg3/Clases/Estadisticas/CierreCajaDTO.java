@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class CierreCajaDTO {
     private BigDecimal ingresosEfectivo;
     private BigDecimal egresosGastos;
+    private BigDecimal ajustesHoy;
 }

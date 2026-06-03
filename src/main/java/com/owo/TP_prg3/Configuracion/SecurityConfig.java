@@ -33,7 +33,10 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(authorize -> authorize
                         
-                                    // --- Endpoints públicos (si en algún momento agregás login/register REST) ---
+        // Permitir OPTIONS para CORS preflight
+        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+        
+                                    // --- Endpoints públicos ---
         .requestMatchers(
                 "/api/auth/login",
                 "/api/auth/register"
@@ -98,7 +101,7 @@ public class SecurityConfig {
         // =====================================================
 
         .requestMatchers(HttpMethod.GET, "/api/configuracion-tienda/**")
-            .hasAnyRole("ADMIN","DUENIO")
+            .hasAnyRole("ADMIN","DUENIO","EMPLEADO")
 
         .requestMatchers(HttpMethod.POST, "/api/configuracion-tienda/**")
             .hasAnyRole("ADMIN","DUENIO")
@@ -148,8 +151,8 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Permitir el origen de la aplicación
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200")); 
+        // Permitir cualquier origen (desarrollo)
+        configuration.setAllowedOriginPatterns(Arrays.asList("*")); 
         
         // Es necesario permitir los métodos HTTP
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));

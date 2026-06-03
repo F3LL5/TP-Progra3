@@ -10,7 +10,7 @@ public class CuentaBancariaDTO {
 
     protected Long cuentaBancariaId;
     
-    protected String nombre_banco;
+    protected String nombreBanco;
 
     private Integer cbu;
 

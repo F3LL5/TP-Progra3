@@ -117,4 +117,11 @@ public interface EstadisticasRepository extends JpaRepository<Pedido, Long> {
         WHERE p.tipo = com.owo.TP_prg3.Clases.Enum.TipoPedido.COMPRA 
         AND p.transaccion.fecha BETWEEN :inicio AND :fin """)
     BigDecimal sumGastosEnRango(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
+
+    @Query("""
+        SELECT SUM(t.monto)
+        FROM Transaccion t
+        WHERE t.tipo = 'AJUSTE_CAJA'
+        AND t.fecha BETWEEN :inicio AND :fin """)
+    BigDecimal sumAjustesCajaEnRango(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
 }

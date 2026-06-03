@@ -151,16 +151,17 @@ public class EstadisticasServicio {
     }
 
     public CierreCajaDTO obtenerMovimientosCajaDiaria(LocalDate fecha) {
-        // Convertimos el día (ej: 2026-05-19) en el rango completo de horas de ese día
-        var inicioDT = fecha.atStartOfDay();              // 2026-05-19 00:00:00
-        var finDT = fecha.atTime(LocalTime.MAX);          // 2026-05-19 23:59:59.999
+        var inicioDT = fecha.atStartOfDay();
+        var finDT = fecha.atTime(LocalTime.MAX);
 
         BigDecimal ingresos = statsRepo.sumVentasEfectivoEnRango(inicioDT, finDT);
         BigDecimal egresos = statsRepo.sumGastosEnRango(inicioDT, finDT);
+        BigDecimal ajustes = statsRepo.sumAjustesCajaEnRango(inicioDT, finDT);
 
         return CierreCajaDTO.builder()
                 .ingresosEfectivo(ingresos != null ? ingresos : BigDecimal.ZERO)
                 .egresosGastos(egresos != null ? egresos : BigDecimal.ZERO)
+                .ajustesHoy(ajustes != null ? ajustes : BigDecimal.ZERO)
                 .build();
     }
 }
