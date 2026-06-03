@@ -12,6 +12,7 @@ import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -85,7 +86,10 @@ public class PersonaServicio implements I_CRUD<Persona, PersonaDTO, FormPersonaD
 
     
     public byte[] exportar() {
-        List<PersonaDTO> lista = List.copyOf(obtenerTodos());
+        List<PersonaDTO> lista = personaRepositorio.findAll(Sort.by(Sort.Direction.ASC, "personaId"))
+            .stream()
+            .map(this::convertir_a_DTO)
+            .collect(Collectors.toList());
         byte[] excel = excelExportService.generarExcel(lista, "Personas");
         return excel;
     }

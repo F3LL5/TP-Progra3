@@ -137,8 +137,11 @@ public class InventarioServicio implements I_CRUD<Inventario, InventarioDTO, For
                     .collect(Collectors.toSet());
     }
 
-      public byte[] exportar() {
-        List<InventarioDTO> lista = List.copyOf(obtenerTodos());
+    public byte[] exportar() {
+        List<InventarioDTO> lista = inventarioRepositorio.findAll().stream()
+            .map(this::convertir_a_DTO)
+            .sorted(Comparator.comparing(InventarioDTO::getInventario_id))
+            .collect(Collectors.toList());
         byte[] excel = excelExportService.generarExcel(lista, "Inventarios");
         return excel;
     }

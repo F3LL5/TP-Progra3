@@ -28,6 +28,7 @@ import com.owo.TP_prg3.Excepciones.ReglaNegocioException;
 import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Sort;
 
 @Service
 public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> {
@@ -115,7 +116,10 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
 
     
     public byte[] exportar() {
-        List<DuenioDTO> lista = List.copyOf(obtenerTodos());
+        List<DuenioDTO> lista = duenioRepositorio.findAll(Sort.by(Sort.Direction.ASC, "duenioId"))
+            .stream()
+            .map(this::convertir_a_DTO)
+            .collect(Collectors.toList());
         byte[] excel = excelExportService.generarExcel(lista, "Duenios");
         return excel;
     }

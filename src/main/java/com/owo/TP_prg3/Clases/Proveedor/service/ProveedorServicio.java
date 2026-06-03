@@ -17,6 +17,7 @@ import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Sort;
 
 import com.owo.TP_prg3.Clases.Herramientas.ExcelExportService;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
@@ -122,7 +123,10 @@ public class ProveedorServicio implements I_CRUD<Proveedor, ProveedorDTO, FormPr
     // OTROS MÉTODOS -------------------------------------------------------------------------
 
     public byte[] exportar() {
-        List<ProveedorDTO> lista = List.copyOf(obtenerTodos());
+        List<ProveedorDTO> lista = proveedorRepositorio.findAll(Sort.by(Sort.Direction.ASC, "proveedorId"))
+            .stream()
+            .map(this::convertir_a_DTO)
+            .collect(Collectors.toList());
         byte[] excel = excelExportService.generarExcel(lista, "Proveedores");
         return excel;
     }

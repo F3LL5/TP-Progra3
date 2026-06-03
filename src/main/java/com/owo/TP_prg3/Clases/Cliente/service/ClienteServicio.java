@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import com.owo.TP_prg3.Clases.Persona.dto.FormPersonaDTO;
 import com.owo.TP_prg3.Clases.Persona.modelo.Persona;
@@ -84,7 +85,10 @@ public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaD
     }
 
     public byte[] exportar() {
-        List<ClienteDTO> lista = List.copyOf(obtenerTodos());
+        List<ClienteDTO> lista = clienteRepositorio.findAll(Sort.by(Sort.Direction.ASC, "clienteId"))
+            .stream()
+            .map(this::convertir_a_DTO)
+            .collect(Collectors.toList());
         byte[] excel = excelExportService.generarExcel(lista, "Clientes");
         return excel;
     }

@@ -26,6 +26,7 @@ import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Sort;
 
 @Service
 public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmpleadoDTO> {
@@ -103,8 +104,11 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
                 .map(this::convertir_a_DTO);
     }
 
-       public byte[] exportar() {
-        List<EmpleadoDTO> lista = List.copyOf(obtenerTodos());
+    public byte[] exportar() {
+        List<EmpleadoDTO> lista = empleadoRepositorio.findAll(Sort.by(Sort.Direction.ASC, "empleadoId"))
+            .stream()
+            .map(this::convertir_a_DTO)
+            .collect(Collectors.toList());
         byte[] excel = excelExportService.generarExcel(lista, "Empleados");
         return excel;
     }

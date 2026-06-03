@@ -18,6 +18,7 @@ import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.Comparator;
@@ -150,7 +151,10 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
 
     
     public byte[] exportar() {
-        List<ProductoDTO> lista = List.copyOf(obtenerTodos());
+        List<ProductoDTO> lista = productoRepositorio.findAll(Sort.by(Sort.Direction.ASC, "productoId"))
+            .stream()
+            .map(this::convertir_a_DTO)
+            .collect(Collectors.toList());
         byte[] excel = excelExportService.generarExcel(lista, "Productos");
         return excel;
     }

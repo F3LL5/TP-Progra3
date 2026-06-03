@@ -26,6 +26,7 @@ import com.owo.TP_prg3.Excepciones.ReglaNegocioException;
 import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
@@ -188,7 +189,10 @@ public class PedidoServicio {
     }
 
     public byte[] exportar() {
-        List<PedidoDTO> lista = List.copyOf(obtenerTodos());
+        List<PedidoDTO> lista = pedidoRepositorio.findAll(Sort.by(Sort.Direction.ASC, "pedidoId"))
+            .stream()
+            .map(this::convertir_a_DTO)
+            .collect(Collectors.toList());
         byte[] excel = excelExportService.generarExcel(lista, "Pedidos");
         return excel;
     }

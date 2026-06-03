@@ -131,8 +131,11 @@ public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
                 .collect(Collectors.toSet());
     }
 
-       public byte[] exportar() {
-        List<LoteDTO> lista = List.copyOf(obtenerTodos());
+    public byte[] exportar() {
+        List<LoteDTO> lista = loteRepositorio.findAll().stream()
+            .map(this::convertir_a_DTO)
+            .sorted(Comparator.comparing(LoteDTO::getLote_id))
+            .collect(Collectors.toList());
         byte[] excel = excelExportService.generarExcel(lista, "Lotes");
         return excel;
     }

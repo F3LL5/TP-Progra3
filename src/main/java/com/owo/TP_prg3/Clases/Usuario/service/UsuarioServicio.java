@@ -16,6 +16,7 @@ import com.owo.TP_prg3.Excepciones.ReglaNegocioException;
 import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Comparator;
@@ -139,7 +140,10 @@ public class UsuarioServicio implements I_CRUD<Usuario, UsuarioDTO, FormUsuarioD
     }
 
     public byte[] exportar() {
-        List<UsuarioDTO> lista = List.copyOf(obtenerTodos());
+        List<UsuarioDTO> lista = usuarioRepositorio.findAll(Sort.by(Sort.Direction.ASC, "usuarioId"))
+            .stream()
+            .map(this::convertir_a_DTO)
+            .collect(Collectors.toList());
         byte[] excel = excelExportService.generarExcel(lista, "Usuarios");
         return excel;
     }

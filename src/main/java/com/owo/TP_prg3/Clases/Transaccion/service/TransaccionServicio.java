@@ -118,7 +118,10 @@ public class TransaccionServicio implements I_CRUD<Transaccion, TransaccionDTO, 
     }
 
     public byte[] exportar() {
-        List<TransaccionDTO> lista = List.copyOf(obtenerTodos());
+        List<TransaccionDTO> lista = transaccionRepositorio.findAll().stream()
+            .map(this::convertir_a_DTO)
+            .sorted(Comparator.comparing(TransaccionDTO::getTransaccion_id))
+            .collect(Collectors.toList());
         byte[] excel = excelExportService.generarExcel(lista,"Transacciones");
         return excel;
     }

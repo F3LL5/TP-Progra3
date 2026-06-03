@@ -15,6 +15,7 @@ import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
 import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.Comparator;
@@ -175,7 +176,10 @@ public class CuentaBancariaServicio implements I_CRUD<CuentaBancaria, CuentaBanc
 
     
     public byte[] exportar() {
-        List<CuentaBancariaDTO> lista = List.copyOf(obtenerTodos());
+        List<CuentaBancariaDTO> lista = cbRepositorio.findAll(Sort.by(Sort.Direction.ASC, "cuentaBancariaId"))
+            .stream()
+            .map(this::convertir_a_DTO)
+            .collect(Collectors.toList());
         byte[] excel = excelExportService.generarExcel(lista, "CuentaBancaria");
         return excel;
     }
