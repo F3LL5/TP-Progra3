@@ -639,6 +639,7 @@ CREATE TRIGGER trg_transacciones_au AFTER UPDATE ON transacciones FOR EACH ROW
 BEGIN
     IF (OLD.tipo <> NEW.tipo) THEN INSERT INTO historial_transacciones(transaccion_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.transaccion_id, 'UPDATE', 'tipo', OLD.tipo, NEW.tipo); END IF;
     IF (OLD.monto <> NEW.monto) THEN INSERT INTO historial_transacciones(transaccion_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.transaccion_id, 'UPDATE', 'monto', OLD.monto, NEW.monto); END IF;
+    IF (OLD.motivo <> NEW.motivo COLLATE utf8mb4_bin) THEN INSERT INTO historial_transacciones(transaccion_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.transaccion_id, 'UPDATE', 'motivo', OLD.motivo, NEW.motivo); END IF;
 END$$
 
 CREATE TRIGGER trg_transacciones_bd BEFORE DELETE ON transacciones FOR EACH ROW

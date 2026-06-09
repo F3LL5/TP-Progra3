@@ -1,7 +1,10 @@
 package com.owo.TP_prg3.Clases.Transaccion.service;
 
+import com.owo.TP_prg3.Clases.CuentaBancaria.service.CuentaBancariaServicio;
+import com.owo.TP_prg3.Clases.Enum.TipoTransaccion;
 import com.owo.TP_prg3.Clases.Herramientas.ExcelExportService;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
+import com.owo.TP_prg3.Clases.Tienda.service.TiendaServicio;
 import com.owo.TP_prg3.Clases.Transaccion.dto.FormTransaccionDTO;
 import com.owo.TP_prg3.Clases.Transaccion.dto.TransaccionDTO;
 import com.owo.TP_prg3.Clases.Transaccion.modelo.Transaccion;
@@ -38,6 +41,12 @@ public class TransaccionServicio implements I_CRUD<Transaccion, TransaccionDTO, 
     @Autowired
     private ExcelExportService excelExportService;
 
+    @Autowired
+    private TiendaServicio tiendaServicio;
+
+    @Autowired
+    private CuentaBancariaServicio cuentaBancariaServicio;
+
     // CONVERSION ------------------------------------------------------------------------------------------------------------------------------------------------
     @Override
     public Transaccion convertir_a_Obj(FormTransaccionDTO fDTO) {
@@ -48,10 +57,11 @@ public class TransaccionServicio implements I_CRUD<Transaccion, TransaccionDTO, 
         
         // 1. Inicialización de campos obligatorios (fecha) con valores seguros
         t.setFecha(fDTO.getFecha() != null ? fDTO.getFecha() : LocalDateTime.now());
-        t.setMonto(BigDecimal.ZERO);
+        t.setMonto(fDTO.getMonto() != null ? fDTO.getMonto() : BigDecimal.ZERO);
 
         t.setOrigen_id(fDTO.getOrigen_id()); 
         t.setDestino_id(fDTO.getDestino_id()); 
+        t.setMotivo(fDTO.getMotivo());
         
         return t;
     }
@@ -64,7 +74,8 @@ public class TransaccionServicio implements I_CRUD<Transaccion, TransaccionDTO, 
             transaccion.getFecha(),
             transaccion.getMonto(),
             transaccion.getOrigen_id(),
-            transaccion.getDestino_id()
+            transaccion.getDestino_id(),
+            transaccion.getMotivo()
         );
     }
 
@@ -145,11 +156,50 @@ public class TransaccionServicio implements I_CRUD<Transaccion, TransaccionDTO, 
 
         if (updateDTO.getTipo() != null) transaccion.setTipo(updateDTO.getTipo());
         if (updateDTO.getFecha() != null) transaccion.setFecha(updateDTO.getFecha());
+        if (updateDTO.getMonto() != null) transaccion.setMonto(updateDTO.getMonto());
         if (updateDTO.getOrigen_id() != null) transaccion.setOrigen_id(updateDTO.getOrigen_id());
         if (updateDTO.getDestino_id() != null) transaccion.setDestino_id(updateDTO.getDestino_id());
+        if (updateDTO.getMotivo() != null) transaccion.setMotivo(updateDTO.getMotivo());
 
         transaccionRepositorio.save(transaccion);
         return true;
+    }
+
+    // MOVIMIENTO MANUAL (INGRESO / EGRESO) ------------------------------------------------------------------------------------------------------------------------------------------------
+    @Transactional
+    public TransaccionDTO registrarMovimiento(FormTransaccionDTO dto) {
+        validarMovimiento(dto);
+
+        BigDecimal monto = dto.getMonto();
+        Long targetId;
+
+        switch (dto.getTipo()) {
+            case INGRESO_MANUAL -> {
+                targetId = dto.getDestino_id();
+                if (targetId != null && targetId == 1L) {
+                    tiendaServicio.acreditarMontoCaja(1L, monto);
+                } else if (targetId != null) {
+                    cuentaBancariaServicio.acreditarMonto(targetId, monto);
+                }
+            }
+            case EGRESO_MANUAL -> {
+                targetId = dto.getOrigen_id();
+                if (targetId != null && targetId == 1L) {
+                    tiendaServicio.debitarMontoCaja(1L, monto);
+                } else if (targetId != null) {
+                    cuentaBancariaServicio.debitarMonto(targetId, monto);
+                }
+            }
+            default -> throw new IngresoInvalidoException("Tipo de movimiento no soportado: " + dto.getTipo());
+        }
+
+        Transaccion t = convertir_a_Obj(dto);
+        if (dto.getTipo() == TipoTransaccion.EGRESO_MANUAL) {
+            t.setDestino_id(targetId);
+        }
+        t = transaccionRepositorio.save(t);
+
+        return convertir_a_DTO(t);
     }
 
     // ELIMINACION (DELETE) ------------------------------------------------------------------------------------------------------------------------------------------------
@@ -170,6 +220,26 @@ public class TransaccionServicio implements I_CRUD<Transaccion, TransaccionDTO, 
         if (dto.getDestino_id() != null) ValidacionGeneral.validarIdValido(dto.getDestino_id());
 
         // La fecha no se valida aquí, ya que el sistema puede establecerla automáticamente.
+    }
+
+    private void validarMovimiento(FormTransaccionDTO dto) {
+        validarDatosTransaccion(dto);
+
+        if (dto.getMonto() == null || dto.getMonto().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IngresoInvalidoException("El monto debe ser un valor positivo.");
+        }
+
+        if (dto.getMotivo() == null || dto.getMotivo().isBlank()) {
+            throw new CampoRequeridoException("motivo");
+        }
+
+        if (dto.getTipo() == TipoTransaccion.INGRESO_MANUAL && dto.getDestino_id() == null) {
+            throw new CampoRequeridoException("destino_id (ID de Caja o CuentaBancaria)");
+        }
+
+        if (dto.getTipo() == TipoTransaccion.EGRESO_MANUAL && dto.getOrigen_id() == null) {
+            throw new CampoRequeridoException("origen_id (ID de Caja o CuentaBancaria)");
+        }
     }
 
     private Transaccion obtenerTransaccionPorId(Long id) {

@@ -59,6 +59,11 @@ public class TransaccionControlador implements I_Controlador<TransaccionDTO, For
         else return ResponseEntity.badRequest().body(false);
     }
 
+    @PostMapping("/movimiento")
+    public ResponseEntity<TransaccionDTO> registrarMovimiento(@RequestBody FormTransaccionDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(transaccionServicio.registrarMovimiento(dto));
+    }
+
     // --- Métodos PUT (Actualización) ---
     @Override
     @PutMapping("/{id}")

@@ -156,7 +156,8 @@ create table if not exists transacciones(
 	fecha datetime default current_timestamp,
 	monto decimal(38,2) not null,
 	origen_id bigint,
-	destino_id bigint not null
+	destino_id bigint not null,
+	motivo varchar(255)
 );
 
 create table if not exists pedidos (

@@ -16,4 +16,5 @@ public class TransaccionDTO {
     private BigDecimal monto;
     private Long origen_id; 
     private Long destino_id; 
+    private String motivo;
 }

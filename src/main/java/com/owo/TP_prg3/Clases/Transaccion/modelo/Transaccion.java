@@ -33,4 +33,7 @@ public class Transaccion {
 
     @Column(name = "destino_id", nullable = false)
     private Long destino_id;
+
+    @Column(length = 255)
+    private String motivo;
 }
