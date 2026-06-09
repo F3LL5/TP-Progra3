@@ -24,8 +24,8 @@ public class CuentaBancaria implements MetodoDePago {
     @Column(name= "nombre_banco", unique = false, nullable = false)
     protected String nombreBanco;
 
-    @Column(name = "cbu", nullable = false, unique = true)
-    private Integer cbu;
+    @Column(name = "cbu", nullable = false, unique = true, length = 22)
+    private String cbu;
 
     @Column(name = "saldo", nullable = false)
     private BigDecimal saldo;

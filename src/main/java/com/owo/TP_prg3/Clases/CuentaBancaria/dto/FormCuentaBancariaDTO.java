@@ -10,7 +10,7 @@ public class FormCuentaBancariaDTO {
 
     private String nombreBanco;
 
-    private Integer cbu;
+    private String cbu;
 
     protected BigDecimal saldo;
 

@@ -189,10 +189,10 @@ public class CuentaBancariaServicio implements I_CRUD<CuentaBancaria, CuentaBanc
         if (dto == null) throw new IngresoInvalidoException("Los datos de " + ENTIDAD + " no pueden ser nulos");
 
         if (dto.getNombreBanco() == null || dto.getNombreBanco().isBlank()) throw new CampoRequeridoException("nombre del banco");
-        if (dto.getCbu() == null) throw new CampoRequeridoException("CBU");
+        if (dto.getCbu() == null || dto.getCbu().isBlank()) throw new CampoRequeridoException("CBU");
+        if (!dto.getCbu().matches("\\d{22}")) throw new IngresoInvalidoException("El CBU debe tener exactamente 22 dígitos numéricos.");
         if (dto.getSaldo() == null) throw new CampoRequeridoException("saldo");
 
-        ValidacionGeneral.mayorACero(dto.getCbu(), "CBU");
         ValidacionGeneral.noNegativo(dto.getSaldo(), "saldo");
     }
 
@@ -202,7 +202,7 @@ public class CuentaBancariaServicio implements I_CRUD<CuentaBancaria, CuentaBanc
                 .orElseThrow(() -> new EntidadNoEncontradaException(ENTIDAD, id));
     }
 
-    private void validarUnicidadCbu(int cbu, Long idExcluido) {
+    private void validarUnicidadCbu(String cbu, Long idExcluido) {
         Optional<CuentaBancaria> duplicado = cbRepositorio.findByCbu(cbu);
 
         if (duplicado.isPresent()) {
