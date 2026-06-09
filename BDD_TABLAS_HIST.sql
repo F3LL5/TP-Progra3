@@ -232,7 +232,7 @@ BEGIN
     SELECT empleado_id INTO v_empleado_id FROM empleados WHERE usuario_id = NEW.usuario_id LIMIT 1;
     SELECT duenio_id INTO v_duenio_id FROM duenios WHERE usuario_id = NEW.usuario_id LIMIT 1;
 
-    IF (OLD.email <> NEW.email) THEN
+    IF (OLD.email <> NEW.email COLLATE utf8mb4_bin) THEN
         INSERT INTO historial_usuarios(usuario_id, email, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.usuario_id, NEW.email, 'UPDATE', 'email', OLD.email, NEW.email);
         IF v_empleado_id IS NOT NULL THEN INSERT INTO historial_empleados(empleado_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (v_empleado_id, 'UPDATE', 'email', OLD.email, NEW.email); END IF;
         IF v_duenio_id IS NOT NULL THEN INSERT INTO historial_duenios(duenio_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (v_duenio_id, 'UPDATE', 'email', OLD.email, NEW.email); END IF;
@@ -272,13 +272,13 @@ BEGIN
     SELECT empleado_id INTO v_empleado_id FROM empleados WHERE persona_id = NEW.persona_id LIMIT 1;
     SELECT duenio_id INTO v_duenio_id FROM duenios WHERE persona_id = NEW.persona_id LIMIT 1;
 
-    IF (OLD.nombre <> NEW.nombre) THEN
+    IF (OLD.nombre <> NEW.nombre COLLATE utf8mb4_bin) THEN
         INSERT INTO historial_personas(persona_id, nombre, apellido, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.persona_id, NEW.nombre, NEW.apellido, 'UPDATE', 'nombre', OLD.nombre, NEW.nombre);
         IF v_cliente_id IS NOT NULL THEN INSERT INTO historial_clientes(cliente_id, persona_id, nombre, apellido, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (v_cliente_id, NEW.persona_id, NEW.nombre, NEW.apellido, 'UPDATE', 'nombre', OLD.nombre, NEW.nombre); END IF;
         IF v_empleado_id IS NOT NULL THEN INSERT INTO historial_empleados(empleado_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (v_empleado_id, 'UPDATE', 'nombre', OLD.nombre, NEW.nombre); END IF;
         IF v_duenio_id IS NOT NULL THEN INSERT INTO historial_duenios(duenio_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (v_duenio_id, 'UPDATE', 'nombre', OLD.nombre, NEW.nombre); END IF;
     END IF;
-    IF (OLD.apellido <> NEW.apellido) THEN
+    IF (OLD.apellido <> NEW.apellido COLLATE utf8mb4_bin) THEN
         INSERT INTO historial_personas(persona_id, nombre, apellido, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.persona_id, NEW.nombre, NEW.apellido, 'UPDATE', 'apellido', OLD.apellido, NEW.apellido);
         IF v_cliente_id IS NOT NULL THEN INSERT INTO historial_clientes(cliente_id, persona_id, nombre, apellido, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (v_cliente_id, NEW.persona_id, NEW.nombre, NEW.apellido, 'UPDATE', 'apellido', OLD.apellido, NEW.apellido); END IF;
         IF v_empleado_id IS NOT NULL THEN INSERT INTO historial_empleados(empleado_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (v_empleado_id, 'UPDATE', 'apellido', OLD.apellido, NEW.apellido); END IF;
@@ -323,9 +323,9 @@ END$$
 CREATE TRIGGER trg_proveedores_au AFTER UPDATE ON proveedores FOR EACH ROW
 BEGIN
     IF (OLD.cuit <> NEW.cuit) THEN INSERT INTO historial_proveedores(proveedor_id, razon_social, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.proveedor_id, NEW.razon_social, 'UPDATE', 'cuit', OLD.cuit, NEW.cuit); END IF;
-    IF (OLD.razon_social <> NEW.razon_social) THEN INSERT INTO historial_proveedores(proveedor_id, razon_social, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.proveedor_id, NEW.razon_social, 'UPDATE', 'razon_social', OLD.razon_social, NEW.razon_social); END IF;
+    IF (OLD.razon_social <> NEW.razon_social COLLATE utf8mb4_bin) THEN INSERT INTO historial_proveedores(proveedor_id, razon_social, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.proveedor_id, NEW.razon_social, 'UPDATE', 'razon_social', OLD.razon_social, NEW.razon_social); END IF;
     IF (OLD.condicion_iva <> NEW.condicion_iva) THEN INSERT INTO historial_proveedores(proveedor_id, razon_social, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.proveedor_id, NEW.razon_social, 'UPDATE', 'condicion_iva', OLD.condicion_iva, NEW.condicion_iva); END IF;
-    IF (OLD.ingresos_brutos <> NEW.ingresos_brutos) THEN INSERT INTO historial_proveedores(proveedor_id, razon_social, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.proveedor_id, NEW.razon_social, 'UPDATE', 'ingresos_brutos', OLD.ingresos_brutos, NEW.ingresos_brutos); END IF;
+    IF (OLD.ingresos_brutos <> NEW.ingresos_brutos COLLATE utf8mb4_bin) THEN INSERT INTO historial_proveedores(proveedor_id, razon_social, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.proveedor_id, NEW.razon_social, 'UPDATE', 'ingresos_brutos', OLD.ingresos_brutos, NEW.ingresos_brutos); END IF;
     IF (OLD.fecha_inicio_actividades <> NEW.fecha_inicio_actividades) THEN INSERT INTO historial_proveedores(proveedor_id, razon_social, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.proveedor_id, NEW.razon_social, 'UPDATE', 'fecha_inicio_actividades', OLD.fecha_inicio_actividades, NEW.fecha_inicio_actividades); END IF;
 END$$
 
@@ -344,9 +344,9 @@ END$$
 
 CREATE TRIGGER trg_productos_au AFTER UPDATE ON productos FOR EACH ROW
 BEGIN
-    IF (OLD.nombre <> NEW.nombre) THEN INSERT INTO historial_productos(producto_id, nombre, categoria, producto_imagen, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.producto_id, NEW.nombre, NEW.categoria, NEW.producto_imagen, 'UPDATE', 'nombre', OLD.nombre, NEW.nombre); END IF;
-    IF (OLD.categoria <> NEW.categoria) THEN INSERT INTO historial_productos(producto_id, nombre, categoria, producto_imagen, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.producto_id, NEW.nombre, NEW.categoria, NEW.producto_imagen, 'UPDATE', 'categoria', OLD.categoria, NEW.categoria); END IF;
-    IF (OLD.producto_imagen <> NEW.producto_imagen) THEN INSERT INTO historial_productos(producto_id, nombre, categoria, producto_imagen, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.producto_id, NEW.nombre, NEW.categoria, NEW.producto_imagen, 'UPDATE', 'producto_imagen', OLD.producto_imagen, NEW.producto_imagen); END IF;
+    IF (OLD.nombre <> NEW.nombre COLLATE utf8mb4_bin) THEN INSERT INTO historial_productos(producto_id, nombre, categoria, producto_imagen, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.producto_id, NEW.nombre, NEW.categoria, NEW.producto_imagen, 'UPDATE', 'nombre', OLD.nombre, NEW.nombre); END IF;
+    IF (OLD.categoria <> NEW.categoria COLLATE utf8mb4_bin) THEN INSERT INTO historial_productos(producto_id, nombre, categoria, producto_imagen, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.producto_id, NEW.nombre, NEW.categoria, NEW.producto_imagen, 'UPDATE', 'categoria', OLD.categoria, NEW.categoria); END IF;
+    IF (OLD.producto_imagen <> NEW.producto_imagen COLLATE utf8mb4_bin) THEN INSERT INTO historial_productos(producto_id, nombre, categoria, producto_imagen, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.producto_id, NEW.nombre, NEW.categoria, NEW.producto_imagen, 'UPDATE', 'producto_imagen', OLD.producto_imagen, NEW.producto_imagen); END IF;
 END$$
 
 CREATE TRIGGER trg_productos_bd BEFORE DELETE ON productos FOR EACH ROW
@@ -386,13 +386,13 @@ END$$
 CREATE TRIGGER trg_tiendas_au AFTER UPDATE ON tiendas FOR EACH ROW
 BEGIN
     -- Razon Social
-    IF (OLD.razon_social <> NEW.razon_social) THEN 
+    IF (OLD.razon_social <> NEW.razon_social COLLATE utf8mb4_bin) THEN 
         INSERT INTO historial_tiendas(tienda_id, nombre_fantasia, accion, campo_modificado, valor_anterior, valor_nuevo) 
         VALUES (NEW.tienda_id, NEW.nombre_fantasia, 'UPDATE', 'razon_social', OLD.razon_social, NEW.razon_social); 
     END IF;
 
     -- Nombre Fantasía
-    IF (OLD.nombre_fantasia <> NEW.nombre_fantasia) THEN 
+    IF (OLD.nombre_fantasia <> NEW.nombre_fantasia COLLATE utf8mb4_bin) THEN 
         INSERT INTO historial_tiendas(tienda_id, nombre_fantasia, accion, campo_modificado, valor_anterior, valor_nuevo) 
         VALUES (NEW.tienda_id, NEW.nombre_fantasia, 'UPDATE', 'nombre_fantasia', OLD.nombre_fantasia, NEW.nombre_fantasia); 
     END IF;
@@ -409,14 +409,14 @@ BEGIN
         VALUES (NEW.tienda_id, NEW.nombre_fantasia, 'UPDATE', 'condicion_iva', OLD.condicion_iva, NEW.condicion_iva); 
     END IF;
 
-        -- URL Imagen de la Tienda
-    IF (OLD.tienda_imagen <> NEW.tienda_imagen) THEN 
+        -- URL Imagen de la Tienda 
+    IF (OLD.tienda_imagen <> NEW.tienda_imagen COLLATE utf8mb4_bin) THEN 
         INSERT INTO historial_tiendas(tienda_id, nombre_fantasia, accion, campo_modificado, valor_anterior, valor_nuevo) 
         VALUES (NEW.tienda_id, NEW.nombre_fantasia, 'UPDATE', 'tienda_imagen', OLD.tienda_imagen, NEW.tienda_imagen); 
     END IF;
 
     -- Ingresos Brutos
-    IF (OLD.ingresos_brutos <> NEW.ingresos_brutos) THEN 
+    IF (OLD.ingresos_brutos <> NEW.ingresos_brutos COLLATE utf8mb4_bin) THEN 
         INSERT INTO historial_tiendas(tienda_id, nombre_fantasia, accion, campo_modificado, valor_anterior, valor_nuevo) 
         VALUES (NEW.tienda_id, NEW.nombre_fantasia, 'UPDATE', 'ingresos_brutos', OLD.ingresos_brutos, NEW.ingresos_brutos); 
     END IF;
@@ -433,8 +433,8 @@ BEGIN
         VALUES (NEW.tienda_id, NEW.nombre_fantasia, 'UPDATE', 'caja', CAST(OLD.caja AS CHAR), CAST(NEW.caja AS CHAR)); 
     END IF;
 
-    -- Dirección (Calle y Altura como ejemplo de auditoría de domicilio)
-    IF (OLD.dir_calle <> NEW.dir_calle OR OLD.dir_altura <> NEW.dir_altura) THEN 
+    -- Dirección
+    IF (OLD.dir_calle <> NEW.dir_calle COLLATE utf8mb4_bin OR OLD.dir_altura <> NEW.dir_altura COLLATE utf8mb4_bin) THEN 
         INSERT INTO historial_tiendas(tienda_id, nombre_fantasia, accion, campo_modificado, valor_anterior, valor_nuevo) 
         VALUES (NEW.tienda_id, NEW.nombre_fantasia, 'UPDATE', 'domicilio', CONCAT(OLD.dir_calle, ' ', OLD.dir_altura), CONCAT(NEW.dir_calle, ' ', NEW.dir_altura)); 
     END IF;
@@ -618,7 +618,7 @@ END$$
 
 CREATE TRIGGER trg_cuenta_bancarias_au AFTER UPDATE ON cuenta_bancarias FOR EACH ROW
 BEGIN
-    IF (OLD.nombre_banco <> NEW.nombre_banco) THEN INSERT INTO historial_cuenta_bancarias(cuenta_bancaria_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.cuenta_bancaria_id, 'UPDATE', 'nombre_banco', OLD.nombre_banco, NEW.nombre_banco); END IF;
+    IF (OLD.nombre_banco <> NEW.nombre_banco COLLATE utf8mb4_bin) THEN INSERT INTO historial_cuenta_bancarias(cuenta_bancaria_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.cuenta_bancaria_id, 'UPDATE', 'nombre_banco', OLD.nombre_banco, NEW.nombre_banco); END IF;
     IF (OLD.saldo <> NEW.saldo) THEN INSERT INTO historial_cuenta_bancarias(cuenta_bancaria_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.cuenta_bancaria_id, 'UPDATE', 'saldo', OLD.saldo, NEW.saldo); END IF;
 END$$
 
