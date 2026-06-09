@@ -501,6 +501,46 @@ BEGIN
     INSERT INTO historial_clientes(cliente_id, persona_id, nombre, apellido, accion) 
     VALUES (NEW.cliente_id, NEW.persona_id, v_nombre, v_apellido, 'INSERT');
 END$$
+
+-- =========================
+-- CUENTAS BANCARIAS
+-- =========================
+
+-- Trigger AFTER INSERT: registra en el historial cada nueva cuenta bancaria creada
+CREATE TRIGGER trg_cuenta_bancarias_ai AFTER INSERT ON cuenta_bancarias FOR EACH ROW
+BEGIN
+    INSERT INTO historial_cuenta_bancarias(cuenta_bancaria_id, accion) 
+    VALUES (NEW.cuenta_bancaria_id, 'INSERT');
+END$$
+
+-- Trigger AFTER UPDATE: registra en el historial cada modificacion en los campos de la cuenta bancaria
+CREATE TRIGGER trg_cuenta_bancarias_au AFTER UPDATE ON cuenta_bancarias FOR EACH ROW
+BEGIN
+    IF (OLD.nombre_banco <> NEW.nombre_banco) THEN 
+        INSERT INTO historial_cuenta_bancarias(cuenta_bancaria_id, accion, campo_modificado, valor_anterior, valor_nuevo) 
+        VALUES (NEW.cuenta_bancaria_id, 'UPDATE', 'nombre_banco', OLD.nombre_banco, NEW.nombre_banco); 
+    END IF;
+    IF (OLD.cbu <> NEW.cbu) THEN 
+        INSERT INTO historial_cuenta_bancarias(cuenta_bancaria_id, accion, campo_modificado, valor_anterior, valor_nuevo) 
+        VALUES (NEW.cuenta_bancaria_id, 'UPDATE', 'cbu', CAST(OLD.cbu AS CHAR), CAST(NEW.cbu AS CHAR)); 
+    END IF;
+    IF (OLD.saldo <> NEW.saldo) THEN 
+        INSERT INTO historial_cuenta_bancarias(cuenta_bancaria_id, accion, campo_modificado, valor_anterior, valor_nuevo) 
+        VALUES (NEW.cuenta_bancaria_id, 'UPDATE', 'saldo', CAST(OLD.saldo AS CHAR), CAST(NEW.saldo AS CHAR)); 
+    END IF;
+    IF (OLD.tienda_id <> NEW.tienda_id) THEN 
+        INSERT INTO historial_cuenta_bancarias(cuenta_bancaria_id, accion, campo_modificado, valor_anterior, valor_nuevo) 
+        VALUES (NEW.cuenta_bancaria_id, 'UPDATE', 'tienda_id', CAST(OLD.tienda_id AS CHAR), CAST(NEW.tienda_id AS CHAR)); 
+    END IF;
+END$$
+
+-- Trigger BEFORE DELETE: registra en el historial la eliminacion de una cuenta bancaria
+CREATE TRIGGER trg_cuenta_bancarias_bd BEFORE DELETE ON cuenta_bancarias FOR EACH ROW
+BEGIN
+    INSERT INTO historial_cuenta_bancarias(cuenta_bancaria_id, accion) 
+    VALUES (OLD.cuenta_bancaria_id, 'DELETE');
+END$$
+
 DELIMITER ;
 
 DELIMITER $$
