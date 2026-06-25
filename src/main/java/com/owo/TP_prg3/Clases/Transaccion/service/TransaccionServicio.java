@@ -12,6 +12,7 @@ import com.owo.TP_prg3.Clases.Transaccion.modelo.TransaccionRepositorio;
 import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
 import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
+import com.owo.TP_prg3.Excepciones.ReglaNegocioException;
 import com.owo.TP_prg3.Excepciones.ValidacionGeneral;
 
 import jakarta.transaction.Transactional;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -169,6 +171,16 @@ public class TransaccionServicio implements I_CRUD<Transaccion, TransaccionDTO, 
     @Transactional
     public TransaccionDTO registrarMovimiento(FormTransaccionDTO dto) {
         validarMovimiento(dto);
+
+        // Validar si la caja está cerrada (para movimientos que afectan la caja)
+        boolean afectaCaja = (dto.getTipo() == TipoTransaccion.INGRESO_MANUAL && dto.getDestino_id() != null && dto.getDestino_id() == 1L)
+                          || (dto.getTipo() == TipoTransaccion.EGRESO_MANUAL && dto.getOrigen_id() != null && dto.getOrigen_id() == 1L);
+        if (afectaCaja) {
+            Optional<LocalDate> ultimoCierre = tiendaServicio.obtenerUltimoCierreDeCaja();
+            if (ultimoCierre.isPresent() && ultimoCierre.get().isEqual(LocalDate.now())) {
+                throw new ReglaNegocioException("Operación rechazada: La caja ya ha sido cerrada por el día de hoy.");
+            }
+        }
 
         BigDecimal monto = dto.getMonto();
         Long targetId;
