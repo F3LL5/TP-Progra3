@@ -225,7 +225,6 @@ public class ProductoServicio implements I_CRUD<Producto, ProductoDTO, FormProdu
         if (nombre == null || nombre.trim().isEmpty()) throw new CampoRequeridoException("nombre");
         if (categoria == null || categoria.trim().isEmpty()) throw new CampoRequeridoException("categoria");
         
-        ValidacionGeneral.sinNumeros(nombre, "nombre");
         ValidacionGeneral.sinNumeros(categoria, "categoria");
     }
     

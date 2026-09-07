@@ -163,6 +163,9 @@ public class EmpleadoServicio implements I_CRUD<Empleado, EmpleadoDTO, FormEmple
         // Validaciones de Persona
         personaServicio.validarDatosPersona(new FormPersonaDTO(dto.getNombre(), dto.getApellido(), dto.getFechaNacimiento(), dto.getDni()));
         
+        // El empleado debe ser mayor o igual a 16 años
+        ValidacionGeneral.validarEdad(dto.getFechaNacimiento(), 16, "fechaNacimiento");
+        
         // Validaciones de Usuario
         if (dto.getEmail() == null) throw new CampoRequeridoException("email");
         if (dto.getContraseña() == null) throw new CampoRequeridoException("contrasenia");

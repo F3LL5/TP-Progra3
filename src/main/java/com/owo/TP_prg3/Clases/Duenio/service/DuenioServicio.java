@@ -176,6 +176,13 @@ public class DuenioServicio implements I_CRUD<Duenio, DuenioDTO, FormDuenioDTO> 
         // Validaciones de Persona
         personaServicio.validarDatosPersona(new FormPersonaDTO(dto.getNombre(), dto.getApellido(), dto.getFechaNacimiento(), dto.getDni()));
         
+        // El nombre y apellido del dueño no pueden contener números ni caracteres especiales
+        ValidacionGeneral.soloLetras(dto.getNombre(), "nombre");
+        ValidacionGeneral.soloLetras(dto.getApellido(), "apellido");
+        
+        // El dueño debe ser mayor o igual a 16 años
+        ValidacionGeneral.validarEdad(dto.getFechaNacimiento(), 16, "fechaNacimiento");
+        
         // Validaciones de Usuario
         if (dto.getEmail() == null) throw new CampoRequeridoException("email");
         if (dto.getContraseña() == null) throw new CampoRequeridoException("contrasenia");

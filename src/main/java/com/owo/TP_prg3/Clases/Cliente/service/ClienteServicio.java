@@ -137,6 +137,7 @@ public class ClienteServicio implements I_CRUD<Cliente, ClienteDTO, FormPersonaD
         @throws CampoRequeridoException si algún campo obligatorio es nulo o vacío. */
     private void validarDatosCliente(FormPersonaDTO dto) {
         personaServicio.validarDatosPersona(dto);
+        ValidacionGeneral.validarEdad(dto.getFechaNacimiento(), 16, "fechaNacimiento");
     }
 
     /** @param dni El DNI a verificar.

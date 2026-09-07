@@ -20,6 +20,7 @@ import com.owo.TP_prg3.Clases.Lote.modelo.Lote;
 import com.owo.TP_prg3.Clases.Lote.modelo.LoteRepositorio;
 import com.owo.TP_prg3.Clases.Producto.modelo.Producto;
 import com.owo.TP_prg3.Clases.Producto.service.ProductoServicio;
+import com.owo.TP_prg3.Clases.Tienda.modelo.TiendaRepositorio;
 import com.owo.TP_prg3.Excepciones.CampoRequeridoException;
 import com.owo.TP_prg3.Excepciones.EntidadNoEncontradaException;
 import com.owo.TP_prg3.Excepciones.IngresoInvalidoException;
@@ -46,6 +47,9 @@ public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
     
     @Autowired
     private ExcelExportService excelExportService;
+
+    @Autowired
+    private TiendaRepositorio tiendaRepositorio;
 
     // CONVERSION
     // ------------------------------------------------------------------------------------------------------------------------------------------------
@@ -271,6 +275,18 @@ public class LoteServicio implements I_CRUD<Lote, LoteDTO, FormLoteDTO> {
         ValidacionGeneral.noNegativo(dto.getCostoUnitario(), "costoUnitario");
         if (dto.getFechaIngreso() != null && dto.getFechaIngreso().isAfter(LocalDate.now())) {
             throw new IngresoInvalidoException("fechaIngreso", "no puede ser una fecha futura");
+        }
+
+        // La fecha de ingreso no puede ser anterior al inicio de actividades de la tienda
+        if (dto.getFechaIngreso() != null) {
+            tiendaRepositorio.findById(1L).ifPresent(tienda -> {
+                LocalDate inicio = tienda.getFechaInicioActividades();
+                if (inicio != null && dto.getFechaIngreso().isBefore(inicio)) {
+                    throw new IngresoInvalidoException(
+                        "fechaIngreso",
+                        "no puede ser anterior a la fecha de inicio de actividades de la tienda");
+                }
+            });
         }
     }
 

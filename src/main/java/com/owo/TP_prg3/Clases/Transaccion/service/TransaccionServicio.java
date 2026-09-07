@@ -245,6 +245,8 @@ public class TransaccionServicio implements I_CRUD<Transaccion, TransaccionDTO, 
             throw new CampoRequeridoException("motivo");
         }
 
+        ValidacionGeneral.sinNumeros(dto.getMotivo(), "motivo");
+
         if (dto.getTipo() == TipoTransaccion.INGRESO_MANUAL && dto.getDestino_id() == null) {
             throw new CampoRequeridoException("destino_id (ID de Caja o CuentaBancaria)");
         }

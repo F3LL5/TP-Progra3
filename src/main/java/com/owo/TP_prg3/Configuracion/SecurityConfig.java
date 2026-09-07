@@ -5,7 +5,6 @@ import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -18,8 +17,15 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.owo.TP_prg3.Clases.Usuario.service.CustomUserDetailsService;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.http.HttpMethod;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
+import java.io.IOException;
 
 @Configuration
 public class SecurityConfig {
@@ -148,8 +154,23 @@ public class SecurityConfig {
                 )
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .httpBasic(Customizer.withDefaults())
+                .httpBasic(basic -> basic.authenticationEntryPoint(jsonAuthenticationEntryPoint()))
                 .build();
+    }
+
+    @Bean
+    public BasicAuthenticationEntryPoint jsonAuthenticationEntryPoint() {
+        BasicAuthenticationEntryPoint entryPoint = new BasicAuthenticationEntryPoint() {
+            @Override
+            public void commence(HttpServletRequest request, HttpServletResponse response,
+                                 AuthenticationException authException) throws IOException {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"error\":\"Credenciales inválidas\"}");
+            }
+        };
+        entryPoint.setRealmName("gestion-mercado");
+        return entryPoint;
     }
 
     @Bean

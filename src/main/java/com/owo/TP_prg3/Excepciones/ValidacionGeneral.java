@@ -2,11 +2,13 @@ package com.owo.TP_prg3.Excepciones;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.regex.Pattern;
 
 public final class ValidacionGeneral {
 
     private static final Pattern PATTERN_DIGITS = Pattern.compile(".*\\d.*");
+    private static final Pattern PATTERN_SOLO_LETRAS = Pattern.compile("^[\\p{L} ]+$");
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$";
 
     private ValidacionGeneral() {
@@ -99,6 +101,24 @@ public final class ValidacionGeneral {
 
         if (edad > 120 || edad < 18) {
             throw new IngresoInvalidoException(campo, "la edad debe ser mayor a 18 o menos a 120 años");
+        }
+    }
+
+    public static void validarEdad(LocalDate fechaNac, int edadMinima, String campo) {
+        if (fechaNac == null) throw new CampoRequeridoException(campo);
+        long edad = ChronoUnit.YEARS.between(fechaNac, LocalDate.now());
+
+        if (edad < edadMinima || edad > 120) {
+            throw new IngresoInvalidoException(
+                campo,
+                "la edad debe ser mayor o igual a " + edadMinima + " y menor o igual a 120 años");
+        }
+    }
+
+    public static void soloLetras(String valor, String campo) {
+        if (valor == null || valor.trim().isEmpty()) return;
+        if (!PATTERN_SOLO_LETRAS.matcher(valor).matches()) {
+            throw new IngresoInvalidoException(campo, "solo debe contener letras, sin números ni caracteres especiales");
         }
     }
 }

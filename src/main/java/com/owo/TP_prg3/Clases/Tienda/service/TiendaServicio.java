@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.owo.TP_prg3.Clases.Caja.Caja;
 import com.owo.TP_prg3.Clases.Duenio.modelo.Duenio;
 import com.owo.TP_prg3.Clases.Duenio.modelo.DuenioRepositorio;
+import com.owo.TP_prg3.Clases.Enum.RolUsuario;
 import com.owo.TP_prg3.Clases.Empleado.modelo.Empleado;
 import com.owo.TP_prg3.Clases.Empleado.modelo.EmpleadoRepositorio;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
@@ -118,17 +119,23 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
         Optional<Empleado> empleado = empleadoRepositorio.findByUsuario_Email(email.trim());
         Optional<Usuario> usuario = usuarioRepositorio.findByEmail(email.trim());
 
-        boolean credencialValida = false;
+        Usuario usuarioValido = null;
         if (duenio.isPresent()) {
-            credencialValida = passwordEncoder.matches(password, duenio.get().getUsuario().getContraseña());
+            usuarioValido = duenio.get().getUsuario();
         } else if (empleado.isPresent()) {
-            credencialValida = passwordEncoder.matches(password, empleado.get().getUsuario().getContraseña());
+            usuarioValido = empleado.get().getUsuario();
         } else if (usuario.isPresent()) {
-            credencialValida = passwordEncoder.matches(password, usuario.get().getContraseña());
+            usuarioValido = usuario.get();
         }
 
-        if (!credencialValida) {
+        if (usuarioValido == null || !passwordEncoder.matches(password, usuarioValido.getContraseña())) {
             return Map.of("exito", false, "mensaje", "Credenciales inválidas.");
+        }
+
+        // Solo administradores o dueños pueden abrir la caja
+        RolUsuario rol = usuarioValido.getRol();
+        if (rol != RolUsuario.ROLE_ADMIN && rol != RolUsuario.ROLE_DUENIO) {
+            return Map.of("exito", false, "mensaje", "Solo un administrador o dueño puede abrir la caja.");
         }
 
         // Abrir la caja del día (limpiar el cierre de hoy para desbloquear el turno)
