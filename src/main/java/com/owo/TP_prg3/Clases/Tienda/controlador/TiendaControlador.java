@@ -10,6 +10,7 @@ import com.owo.TP_prg3.Clases.Tienda.dto.TiendaDTO;
 import com.owo.TP_prg3.Clases.Tienda.service.TiendaServicio;
 
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -56,6 +57,13 @@ public class TiendaControlador implements I_Controlador<TiendaDTO, FormTiendaDTO
     @GetMapping("/cerrarCaja")
     public ResponseEntity<Boolean> cerrarCaja() {
         return ResponseEntity.ok(tiendaServicio.cerrarCaja());
+    }
+
+    @PostMapping("/abrir-caja")
+    public ResponseEntity<Map<String, Object>> abrirCaja(@RequestBody Map<String, String> credenciales) {
+        String email = credenciales.get("email");
+        String password = credenciales.get("password");
+        return ResponseEntity.ok(tiendaServicio.abrirCaja(email, password));
     }
 
     // --- Métodos POST ---

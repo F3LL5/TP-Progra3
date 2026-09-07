@@ -2,18 +2,24 @@ package com.owo.TP_prg3.Clases.Tienda.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.owo.TP_prg3.Clases.Caja.Caja;
 import com.owo.TP_prg3.Clases.Duenio.modelo.Duenio;
 import com.owo.TP_prg3.Clases.Duenio.modelo.DuenioRepositorio;
+import com.owo.TP_prg3.Clases.Empleado.modelo.Empleado;
+import com.owo.TP_prg3.Clases.Empleado.modelo.EmpleadoRepositorio;
 import com.owo.TP_prg3.Clases.Interfaces.I_CRUD;
+import com.owo.TP_prg3.Clases.Usuario.modelo.Usuario;
+import com.owo.TP_prg3.Clases.Usuario.modelo.UsuarioRepositorio;
 import com.owo.TP_prg3.Clases.Tienda.dto.FormTiendaDTO;
 import com.owo.TP_prg3.Clases.Tienda.dto.TiendaDTO;
 import com.owo.TP_prg3.Clases.Tienda.modelo.Tienda;
@@ -32,6 +38,12 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
     private TiendaRepositorio tiendaRepositorio;
     @Autowired
     private DuenioRepositorio duenioRepositorio;
+    @Autowired
+    private EmpleadoRepositorio empleadoRepositorio;
+    @Autowired
+    private UsuarioRepositorio usuarioRepositorio;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public Tienda convertir_a_Obj(FormTiendaDTO tiendaDTO) {
@@ -93,6 +105,38 @@ public class TiendaServicio implements I_CRUD<Tienda, TiendaDTO, FormTiendaDTO> 
         tienda.setUltimoCierreCaja(LocalDate.now());
         tiendaRepositorio.save(tienda);
         return true;
+    }
+
+    public Map<String, Object> abrirCaja(String email, String password) {
+        ValidacionGeneral.validarStringNoVacio(email, "email");
+        if (password == null || password.isEmpty()) {
+            throw new CampoRequeridoException("contrasenia");
+        }
+
+        // Validar credenciales contra un dueño, un empleado o un usuario directo
+        Optional<Duenio> duenio = duenioRepositorio.findByUsuario_Email(email.trim());
+        Optional<Empleado> empleado = empleadoRepositorio.findByUsuario_Email(email.trim());
+        Optional<Usuario> usuario = usuarioRepositorio.findByEmail(email.trim());
+
+        boolean credencialValida = false;
+        if (duenio.isPresent()) {
+            credencialValida = passwordEncoder.matches(password, duenio.get().getUsuario().getContraseña());
+        } else if (empleado.isPresent()) {
+            credencialValida = passwordEncoder.matches(password, empleado.get().getUsuario().getContraseña());
+        } else if (usuario.isPresent()) {
+            credencialValida = passwordEncoder.matches(password, usuario.get().getContraseña());
+        }
+
+        if (!credencialValida) {
+            return Map.of("exito", false, "mensaje", "Credenciales inválidas.");
+        }
+
+        // Abrir la caja del día (limpiar el cierre de hoy para desbloquear el turno)
+        Tienda tienda = obtenerTiendaPorId(1L);
+        tienda.setUltimoCierreCaja(null);
+        tiendaRepositorio.save(tienda);
+
+        return Map.of("exito", true);
     }
 
     // POST

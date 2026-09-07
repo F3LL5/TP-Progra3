@@ -609,25 +609,6 @@ BEGIN
 END$$
 
 -- =========================
--- CUENTA_BANCARIAS (todos faltantes)
--- =========================
-CREATE TRIGGER trg_cuenta_bancarias_ai AFTER INSERT ON cuenta_bancarias FOR EACH ROW
-BEGIN
-  INSERT INTO historial_cuenta_bancarias(cuenta_bancaria_id, accion) VALUES (NEW.cuenta_bancaria_id, 'INSERT');
-END$$
-
-CREATE TRIGGER trg_cuenta_bancarias_au AFTER UPDATE ON cuenta_bancarias FOR EACH ROW
-BEGIN
-    IF (OLD.nombre_banco <> NEW.nombre_banco COLLATE utf8mb4_bin) THEN INSERT INTO historial_cuenta_bancarias(cuenta_bancaria_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.cuenta_bancaria_id, 'UPDATE', 'nombre_banco', OLD.nombre_banco, NEW.nombre_banco); END IF;
-    IF (OLD.saldo <> NEW.saldo) THEN INSERT INTO historial_cuenta_bancarias(cuenta_bancaria_id, accion, campo_modificado, valor_anterior, valor_nuevo) VALUES (NEW.cuenta_bancaria_id, 'UPDATE', 'saldo', OLD.saldo, NEW.saldo); END IF;
-END$$
-
-CREATE TRIGGER trg_cuenta_bancarias_bd BEFORE DELETE ON cuenta_bancarias FOR EACH ROW
-BEGIN
-  INSERT INTO historial_cuenta_bancarias(cuenta_bancaria_id, accion) VALUES (OLD.cuenta_bancaria_id, 'DELETE');
-END$$
-
--- =========================
 -- TRANSACCIONES (todos faltantes)
 -- =========================
 CREATE TRIGGER trg_transacciones_ai AFTER INSERT ON transacciones FOR EACH ROW

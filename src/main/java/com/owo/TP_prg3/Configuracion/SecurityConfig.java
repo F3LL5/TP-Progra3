@@ -103,6 +103,11 @@ public class SecurityConfig {
         .requestMatchers(HttpMethod.GET, "/api/configuracion-tienda/**")
             .hasAnyRole("ADMIN","DUENIO","EMPLEADO")
 
+        // Abrir caja: lo puede ejecutar cualquier usuario autenticado;
+        // la validación de credenciales de administrador/dueño se hace en el servicio.
+        .requestMatchers(HttpMethod.POST, "/api/configuracion-tienda/abrir-caja")
+            .authenticated()
+
         .requestMatchers(HttpMethod.POST, "/api/configuracion-tienda/**")
             .hasAnyRole("ADMIN","DUENIO")
         .requestMatchers(HttpMethod.PUT, "/api/configuracion-tienda/**")
